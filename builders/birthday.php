@@ -33,11 +33,14 @@ if ( ! defined( 'ABSPATH' ) ) {
   html,body{ height:100%; }
   body{
     font-family:-apple-system, 'Segoe UI', Roboto, sans-serif;
-    background:linear-gradient(160deg,#faf3ec,#f3ddc8 55%,#f7e6d4);
+    background:linear-gradient(160deg,#faf3ec,#e6d6e0 30%,#f3ddc8 65%,#f7e6d4);
     min-height:100vh; overflow-x:hidden; color:var(--ink); position:relative;
   }
   h2, .closing-wrap .big, .night .big{ font-family:var(--font-display); letter-spacing:-.01em; }
   @keyframes shimmer{ 0%{ transform:translateX(-120%) skewX(-15deg); } 100%{ transform:translateX(220%) skewX(-15deg); } }
+  @keyframes stepIn{ 0%{ opacity:0; transform:translateY(14px); } 100%{ opacity:1; transform:translateY(0); } }
+  @keyframes balloonBob{ 0%,100%{ transform:translateY(0) rotate(-2deg); } 50%{ transform:translateY(-8px) rotate(2deg); } }
+  @keyframes float{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-6px); } }
   .wordmark{ text-align:center; padding:14px 0 0; }
   .wordmark .script{ font-family:var(--font-script); font-size:2.1rem; color:var(--gold-deep); line-height:1; }
   .wordmark .sans{ font-family:var(--font-display); font-size:1rem; font-weight:600; color:var(--muted); letter-spacing:.08em; margin-top:-4px; }
@@ -108,7 +111,11 @@ if ( ! defined( 'ABSPATH' ) ) {
   .balloon-pop h2{ text-align:center; font-size:1.3rem; }
   .balloon-pop .sub{ text-align:center; font-size:.82rem; opacity:.7; margin:8px 0 22px; }
   .pop-field{ display:flex; flex-wrap:wrap; gap:22px; justify-content:center; margin-bottom:10px; }
-  .balloon{ width:64px; height:80px; border-radius:50% 50% 50% 50% / 60% 60% 40% 40%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:1.4rem; box-shadow:inset -6px -8px 14px rgba(0,0,0,.15); transition:transform .12s ease; }
+  .balloon{ width:64px; height:80px; border-radius:50% 50% 50% 50% / 60% 60% 40% 40%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:1.4rem; box-shadow:inset -6px -8px 14px rgba(0,0,0,.15); transition:transform .12s ease; animation:balloonBob 3.4s ease-in-out infinite; }
+  .balloon:nth-child(2){ animation-delay:.3s; }
+  .balloon:nth-child(3){ animation-delay:.6s; }
+  .balloon:nth-child(4){ animation-delay:.9s; }
+  .balloon:nth-child(5){ animation-delay:1.2s; }
   .balloon:active{ transform:scale(.9); }
   .balloon.popped{ visibility:hidden; }
   .reasons{ display:flex; flex-direction:column; gap:10px; margin-top:18px; }
@@ -120,7 +127,7 @@ if ( ! defined( 'ABSPATH' ) ) {
   .envelope-wrap{ background:linear-gradient(180deg,var(--night),#4a2a4d); border-radius:22px; margin:14px 20px; padding:40px 24px; color:#fff; text-align:center; min-height:55vh; display:flex; flex-direction:column; align-items:center; justify-content:center; }
   .envelope-wrap h3{ font-size:1.2rem; margin-bottom:4px; }
   .envelope-wrap .sub{ font-size:.82rem; opacity:.7; margin-bottom:26px; }
-  .envelope{ width:180px; height:120px; background:linear-gradient(160deg,#ffcf7a,#f2a83c); border-radius:8px; position:relative; cursor:pointer; box-shadow:0 14px 30px rgba(0,0,0,.3); }
+  .envelope{ width:180px; height:120px; background:linear-gradient(160deg,#ffcf7a,#f2a83c); border-radius:8px; position:relative; cursor:pointer; box-shadow:0 14px 30px rgba(0,0,0,.3); animation:float 3s ease-in-out infinite; }
   .envelope::before{ content:''; position:absolute; inset:0; background:linear-gradient(135deg,transparent 49.5%,rgba(0,0,0,.15) 50%),linear-gradient(-135deg,transparent 49.5%,rgba(0,0,0,.15) 50%); }
   .envelope .seal{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:44px; height:44px; border-radius:50%; background:#fff; color:var(--gold-deep); font-weight:900; display:flex; align-items:center; justify-content:center; font-size:1.2rem; box-shadow:0 4px 10px rgba(0,0,0,.2); }
   .envelope-wrap .tap{ font-size:.75rem; opacity:.6; margin-top:20px; }
@@ -164,7 +171,7 @@ if ( ! defined( 'ABSPATH' ) ) {
   .copy-btn{ background:var(--peach-soft); color:var(--gold-deep); }
   .prev-btn{ background:none; border:1.5px solid var(--gold-deep) !important; color:var(--gold-deep); }
   .step{ display:none; }
-  .step.active{ display:block; }
+  .step.active{ display:block; animation:stepIn .5s var(--spring); }
   #confettiRain{ position:fixed; inset:0; pointer-events:none; z-index:40; overflow:hidden; }
   .rain-piece{ position:absolute; top:-40px; font-size:1.6rem; animation:fall linear forwards; }
   @keyframes fall{ to{ transform:translateY(110vh) rotate(200deg); opacity:.2; } }

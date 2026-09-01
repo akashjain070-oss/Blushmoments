@@ -66,7 +66,8 @@ $cake_label = $cake_labels[ $cake_key ] ?? 'Strawberry Blush';
   .balloon-pop h2{ text-align:center; font-size:1.3rem; }
   .balloon-pop .sub{ text-align:center; font-size:.82rem; opacity:.7; margin:8px 0 22px; }
   .pop-field{ display:flex; flex-wrap:wrap; gap:22px; justify-content:center; margin-bottom:10px; }
-  .balloon{ width:64px; height:80px; border-radius:50% 50% 50% 50% / 60% 60% 40% 40%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:1.4rem; box-shadow:inset -6px -8px 14px rgba(0,0,0,.15); transition:transform .12s ease; }
+  .balloon{ width:64px; height:80px; border-radius:50% 50% 50% 50% / 60% 60% 40% 40%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:1.4rem; box-shadow:inset -6px -8px 14px rgba(0,0,0,.15); transition:transform .12s ease; animation:balloonBob 3.4s ease-in-out infinite; }
+  @keyframes balloonBob{ 0%,100%{ transform:translateY(0) rotate(-2deg); } 50%{ transform:translateY(-8px) rotate(2deg); } }
   .balloon:active{ transform:scale(.9); }
   .balloon.popped{ visibility:hidden; }
   .reasons{ display:flex; flex-direction:column; gap:10px; margin-top:18px; }
@@ -78,7 +79,8 @@ $cake_label = $cake_labels[ $cake_key ] ?? 'Strawberry Blush';
   .envelope-wrap{ padding:60px 24px; text-align:center; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; }
   .envelope-wrap h3{ font-size:1.2rem; margin-bottom:4px; }
   .envelope-wrap .sub{ font-size:.82rem; opacity:.7; margin-bottom:26px; }
-  .envelope{ width:180px; height:120px; background:linear-gradient(160deg,#ffcf7a,#f2a83c); border-radius:8px; position:relative; cursor:pointer; box-shadow:0 14px 30px rgba(0,0,0,.3); }
+  .envelope{ width:180px; height:120px; background:linear-gradient(160deg,#ffcf7a,#f2a83c); border-radius:8px; position:relative; cursor:pointer; box-shadow:0 14px 30px rgba(0,0,0,.3); animation:float 3s ease-in-out infinite; }
+  @keyframes float{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-6px); } }
   .envelope::before{ content:''; position:absolute; inset:0; background:linear-gradient(135deg,transparent 49.5%,rgba(0,0,0,.15) 50%),linear-gradient(-135deg,transparent 49.5%,rgba(0,0,0,.15) 50%); }
   .envelope .seal{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:44px; height:44px; border-radius:50%; background:#fff; color:var(--gold-deep); font-weight:900; display:flex; align-items:center; justify-content:center; font-size:1.2rem; box-shadow:0 4px 10px rgba(0,0,0,.2); }
   .envelope-wrap .tap{ font-size:.75rem; opacity:.6; margin-top:20px; }
@@ -97,10 +99,11 @@ $cake_label = $cake_labels[ $cake_key ] ?? 'Strawberry Blush';
   .closing-wrap .cake-note{ font-size:.72rem; opacity:.5; margin-bottom:24px; }
   .closing-wrap .made-with{ font-size:.75rem; opacity:.5; margin-top:10px; }
   .step{ display:none; }
-  .step.active{ display:block; }
+  .step.active{ display:block; animation:stepIn .5s cubic-bezier(.34,1.56,.64,1); }
   #confettiRain{ position:fixed; inset:0; pointer-events:none; z-index:40; overflow:hidden; }
   .rain-piece{ position:absolute; top:-40px; font-size:1.6rem; animation:fall linear forwards; }
   @keyframes fall{ to{ transform:translateY(110vh) rotate(200deg); opacity:.2; } }
+  @keyframes stepIn{ 0%{ opacity:0; transform:translateY(14px); } 100%{ opacity:1; transform:translateY(0); } }
 </style>
 </head>
 <body>

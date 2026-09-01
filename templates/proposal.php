@@ -50,11 +50,12 @@ $love_cards = ! empty( $surprise['content']['love_cards'] ) ? $surprise['content
   html,body{ height:100%; }
   body{
     font-family:-apple-system, 'Segoe UI', Roboto, sans-serif;
-    background:linear-gradient(160deg,#faf3ec,#f3ddd6 55%,#f7e6de);
+    background:linear-gradient(160deg,#faf3ec,#e6d6ea 32%,#f0d6d8 62%,#f7e6de);
     min-height:100vh; overflow-x:hidden; color:var(--ink); position:relative;
   }
   h2, .celeb-title, .recip-name, .letter-card .t1{ font-family:var(--font-display); letter-spacing:-.01em; }
   @keyframes shimmer{ 0%{ transform:translateX(-120%) skewX(-15deg); } 100%{ transform:translateX(220%) skewX(-15deg); } }
+  @keyframes heartbeat{ 0%,100%{ transform:scale(1); } 15%{ transform:scale(1.15); } 30%{ transform:scale(1); } 45%{ transform:scale(1.15); } 60%{ transform:scale(1); } }
   .wordmark{ text-align:center; padding:14px 0 0; }
   .wordmark .script{ font-family:var(--font-script); font-size:2.1rem; color:var(--pink-deep); line-height:1; }
   .wordmark .sans{ font-family:var(--font-display); font-size:1rem; font-weight:600; color:var(--muted); letter-spacing:.08em; margin-top:-4px; }
@@ -72,7 +73,7 @@ $love_cards = ! empty( $surprise['content']['love_cards'] ) ? $surprise['content
   }
   .primary-btn::after{ content:''; position:absolute; inset:0; background:linear-gradient(100deg,transparent 40%,rgba(255,255,255,.45) 50%,transparent 60%); transform:translateX(-120%) skewX(-15deg); animation:shimmer 2.8s ease-in-out infinite; animation-delay:1s; }
   .primary-btn:active{ transform:scale(.97); }
-  .recip-heart{ font-size:2.8rem; text-align:center; margin-bottom:8px; filter:drop-shadow(0 4px 10px rgba(255,92,138,.4)); }
+  .recip-heart{ font-size:2.8rem; text-align:center; margin-bottom:8px; filter:drop-shadow(0 4px 10px rgba(255,92,138,.4)); animation:heartbeat 2.5s ease-in-out infinite; }
   .recip-name{ text-align:center; font-size:1.6rem; font-weight:800; color:var(--pink-deep); margin-bottom:4px; }
   .recip-q{ text-align:center; font-size:1.15rem; font-weight:700; margin-bottom:26px; }
   .btnrow{ position:relative; display:flex; flex-direction:column; align-items:center; gap:16px; min-height:110px; }
@@ -128,7 +129,8 @@ $love_cards = ! empty( $surprise['content']['love_cards'] ) ? $surprise['content
   .closing{ text-align:center; font-size:.85rem; color:var(--muted); padding:20px 24px 0; }
   .closing .script{ font-family:var(--font-script); font-size:1.3rem; color:var(--pink-deep); line-height:1; }
   .step{ display:none; }
-  .step.active{ display:block; }
+  .step.active{ display:block; animation:stepIn .5s var(--spring); }
+  @keyframes stepIn{ 0%{ opacity:0; transform:translateY(14px); } 100%{ opacity:1; transform:translateY(0); } }
   #emojiRain{ position:fixed; inset:0; pointer-events:none; z-index:40; overflow:hidden; }
   .rain-piece{ position:absolute; top:-40px; font-size:1.6rem; animation:fall linear forwards; }
   @keyframes fall{ to{ transform:translateY(110vh) rotate(200deg); opacity:.2; } }
