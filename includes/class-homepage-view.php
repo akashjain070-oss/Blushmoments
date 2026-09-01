@@ -208,8 +208,8 @@ class Blush_Moments_Homepage_View {
 <link rel="icon" type="image/png" sizes="512x512" href="<?php echo esc_url( BM_PLUGIN_URL . 'assets/favicon-512.png' ); ?>">
 <style>
   :root{
-    --ink:#2c1c22; --muted:#8a7580; --cream:#fff8f5; --line:#f2e2e6;
-    --grad-a:#ff5c8a; --grad-b:#f2790b;
+    --ink:#322340; --muted:#8a7591; --cream:#f7f1fa; --line:#ebe0ee;
+    --grad-a:#8e4585; --grad-b:#d1476a;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   html{scroll-behavior:smooth;}
@@ -224,12 +224,12 @@ class Blush_Moments_Homepage_View {
     display:inline-flex; align-items:center; gap:8px; font-weight:800; font-size:.95rem;
     padding:14px 26px; border-radius:999px; text-decoration:none; border:none; cursor:pointer;
   }
-  .btn-primary{ background:linear-gradient(135deg,var(--grad-a),var(--grad-b)); color:#fff; box-shadow:0 14px 30px rgba(242,80,120,.3); }
+  .btn-primary{ background:linear-gradient(135deg,var(--grad-a),var(--grad-b)); color:#fff; box-shadow:0 14px 30px rgba(142,69,133,.32); }
   .btn-dark{ background:var(--ink); color:#fff; width:100%; justify-content:center; }
   .btn-ghost{ background:#fff; color:var(--ink); border:1.5px solid var(--line); }
 
   /* header */
-  header{ position:sticky; top:0; z-index:20; background:rgba(255,248,245,.9); backdrop-filter:blur(8px); border-bottom:1px solid var(--line); }
+  header{ position:sticky; top:0; z-index:20; background:rgba(247,241,250,.9); backdrop-filter:blur(8px); border-bottom:1px solid var(--line); }
   header .row{ display:flex; align-items:center; justify-content:space-between; padding:18px 0; }
   header .word{ font-weight:800; font-size:1.2rem; }
   header .word span{ color:var(--grad-a); }
@@ -247,7 +247,7 @@ class Blush_Moments_Homepage_View {
   .pill{ display:inline-flex; align-items:center; gap:6px; font-size:.8rem; font-weight:700; padding:8px 14px; border-radius:999px; }
   .pill-live{ background:#e9f9ee; color:#1c8a4b; }
   .pill-live .dot{ width:7px; height:7px; border-radius:50%; background:#1c8a4b; }
-  .pill-badge{ background:#ffe9ef; color:#c23568; }
+  .pill-badge{ background:#f3e2f4; color:#7a3480; }
   .hero h1{ font-size:clamp(1.9rem,7vw,2.9rem); font-weight:900; line-height:1.16; text-wrap:balance; }
   .hero p.lead{ color:var(--muted); font-size:clamp(.95rem,2.6vw,1.08rem); margin:18px 0 26px; max-width:520px; }
   .hero-ctas{ display:flex; flex-wrap:wrap; gap:14px; }
@@ -256,7 +256,7 @@ class Blush_Moments_Homepage_View {
     background:#1b1420; border-radius:34px; padding:14px; box-shadow:0 30px 60px rgba(60,20,40,.25);
     max-width:300px; margin:0 auto; position:relative;
   }
-  .phone-screen{ background:linear-gradient(160deg,#fff,#fff0f4); border-radius:22px; padding:22px 16px; min-height:360px; }
+  .phone-screen{ background:linear-gradient(160deg,#fff,#f7ecfa); border-radius:22px; padding:22px 16px; min-height:360px; }
   .phone-screen .step-label{ font-size:.7rem; font-weight:800; letter-spacing:.06em; color:var(--grad-a); }
   .phone-screen h3{ margin-top:10px; font-size:1.05rem; }
   .phone-screen .balloon{ display:inline-block; margin:14px 6px 0 0; padding:10px 14px; border-radius:16px; background:#fff; border:1.5px solid var(--line); font-size:.85rem; }
@@ -307,7 +307,7 @@ class Blush_Moments_Homepage_View {
   .step h4{ font-size:1.02rem; margin-bottom:6px; }
   .step p{ color:var(--muted); font-size:.86rem; }
 
-  .stories-section{ background:#fff5f3; }
+  .stories-section{ background:#f9f1fb; }
   .story-stats{ display:flex; justify-content:center; gap:50px; margin-bottom:40px; flex-wrap:wrap; text-align:center; }
   .story-stats .num{ font-size:1.6rem; font-weight:900; }
   .story-stats .label{ font-size:.75rem; color:var(--muted); font-weight:700; }
@@ -334,17 +334,17 @@ class Blush_Moments_Homepage_View {
   .cta-final .btn-primary{ background:#fff; color:var(--grad-a); box-shadow:none; }
   .cta-trust{ margin-top:26px; display:flex; justify-content:center; gap:26px; flex-wrap:wrap; font-size:.82rem; font-weight:700; opacity:.9; }
 
-  footer{ background:#211318; color:#efd9df; padding:60px 0 30px; }
+  footer{ background:#241a2e; color:#ecdcef; padding:60px 0 30px; }
   .footer-grid{ display:grid; grid-template-columns:1.4fr 1fr 1fr; gap:40px; }
   @media (max-width:820px){ .footer-grid{ grid-template-columns:1fr; } }
   footer .word{ font-weight:800; font-size:1.15rem; color:#fff; }
   footer .word span{ color:var(--grad-a); }
-  footer p.tag{ color:#c9a3ad; font-size:.88rem; margin-top:12px; max-width:340px; }
+  footer p.tag{ color:#c7a8cc; font-size:.88rem; margin-top:12px; max-width:340px; }
   footer h5{ font-size:.8rem; letter-spacing:.06em; color:#fff; margin-bottom:14px; }
   footer ul{ list-style:none; display:flex; flex-direction:column; gap:10px; }
-  footer ul a{ text-decoration:none; color:#c9a3ad; font-size:.88rem; }
-  .footer-bottom{ border-top:1px solid rgba(255,255,255,.1); margin-top:44px; padding-top:22px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; font-size:.78rem; color:#a98891; }
-  .footer-bottom a{ text-decoration:none; color:#a98891; margin-left:14px; }
+  footer ul a{ text-decoration:none; color:#c7a8cc; font-size:.88rem; }
+  .footer-bottom{ border-top:1px solid rgba(255,255,255,.1); margin-top:44px; padding-top:22px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; font-size:.78rem; color:#a892ab; }
+  .footer-bottom a{ text-decoration:none; color:#a892ab; margin-left:14px; }
 
   /* logo */
   .logo-img{ height:38px; width:auto; display:block; }
@@ -374,7 +374,7 @@ class Blush_Moments_Homepage_View {
 
   .step{ background:#fff; border:1.5px solid var(--line); border-radius:20px; box-shadow:0 10px 26px rgba(180,60,90,.05); transition:transform .28s ease, box-shadow .28s ease; }
   .step:hover{ transform:translateY(-5px); box-shadow:0 18px 34px rgba(180,60,90,.12); }
-  .step .num{ box-shadow:0 8px 18px rgba(242,80,120,.35); }
+  .step .num{ box-shadow:0 8px 18px rgba(142,69,133,.35); }
   .step .emoji{ font-size:2rem; }
 
   .story-card{ transition:transform .28s ease, box-shadow .28s ease; }
@@ -415,7 +415,7 @@ class Blush_Moments_Homepage_View {
       </div>
     </div>
     <div class="hero-visual">
-      <div class="float-card float-1"><span class="avatar" style="background:#ff5c8a;">A</span> <span id="bm-toast-text">Aditya unlocked Birthday</span></div>
+      <div class="float-card float-1"><span class="avatar" style="background:var(--grad-a);">A</span> <span id="bm-toast-text">Aditya unlocked Birthday</span></div>
       <div class="phone">
         <div class="phone-screen">
           <div class="step-label">STEP 3 OF 5</div>
