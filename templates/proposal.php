@@ -35,6 +35,8 @@ $love_cards = ! empty( $surprise['content']['love_cards'] ) ? $surprise['content
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title><?php echo esc_html( $their_name ); ?>'s Surprise</title>
+<link rel="icon" href="<?php echo esc_url( BM_PLUGIN_URL . 'assets/favicon-32.png' ); ?>" sizes="32x32">
+<link rel="apple-touch-icon" href="<?php echo esc_url( BM_PLUGIN_URL . 'assets/favicon-180.png' ); ?>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;800;900&family=Yellowtail&display=swap" rel="stylesheet">
@@ -57,8 +59,7 @@ $love_cards = ! empty( $surprise['content']['love_cards'] ) ? $surprise['content
   @keyframes shimmer{ 0%{ transform:translateX(-120%) skewX(-15deg); } 100%{ transform:translateX(220%) skewX(-15deg); } }
   @keyframes heartbeat{ 0%,100%{ transform:scale(1); } 15%{ transform:scale(1.15); } 30%{ transform:scale(1); } 45%{ transform:scale(1.15); } 60%{ transform:scale(1); } }
   .wordmark{ text-align:center; padding:14px 0 0; }
-  .wordmark .script{ font-family:var(--font-script); font-size:2.1rem; color:var(--pink-deep); line-height:1; }
-  .wordmark .sans{ font-family:var(--font-display); font-size:1rem; font-weight:600; color:var(--muted); letter-spacing:.08em; margin-top:-4px; }
+  .wordmark img{ height:46px; width:auto; }
   .stage{ max-width:420px; margin:0 auto; min-height:100vh; position:relative; padding-bottom:40px; }
   .card{
     background:#fff; border-radius:22px; margin:14px 20px; padding:28px 24px;
@@ -142,7 +143,7 @@ $love_cards = ! empty( $surprise['content']['love_cards'] ) ? $surprise['content
 
 <div class="stage">
 
-  <div class="wordmark"><div class="script">Blush</div><div class="sans">MOMENTS</div></div>
+  <div class="wordmark"><img src="<?php echo esc_url( BM_PLUGIN_URL . 'assets/logo.png' ); ?>" alt="Blush Moments"></div>
 
   <div class="step active" data-step="question">
     <div class="card">

@@ -20,6 +20,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Create a Love Surprise — Blush Moments</title>
+<link rel="icon" href="<?php echo esc_url( BM_PLUGIN_URL . 'assets/favicon-32.png' ); ?>" sizes="32x32">
+<link rel="apple-touch-icon" href="<?php echo esc_url( BM_PLUGIN_URL . 'assets/favicon-180.png' ); ?>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;800;900&family=Yellowtail&display=swap" rel="stylesheet">
@@ -40,8 +42,7 @@ if ( ! defined( 'ABSPATH' ) ) {
   }
   h2, .celeb-title, .recip-name, .share-title, .letter-card .t1{ font-family:var(--font-display); letter-spacing:-.01em; }
   .wordmark{ text-align:center; padding:14px 0 0; }
-  .wordmark .script{ font-family:var(--font-script); font-size:2.1rem; color:var(--pink-deep); line-height:1; }
-  .wordmark .sans{ font-family:var(--font-display); font-size:1rem; font-weight:600; color:var(--muted); letter-spacing:.08em; margin-top:-4px; }
+  .wordmark img{ height:46px; width:auto; }
   @keyframes float{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-6px); } }
   @keyframes shimmer{ 0%{ transform:translateX(-120%) skewX(-15deg); } 100%{ transform:translateX(220%) skewX(-15deg); } }
   @keyframes stepIn{ 0%{ opacity:0; transform:translateY(14px); } 100%{ opacity:1; transform:translateY(0); } }
@@ -166,7 +167,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 <div class="stage">
 
-  <div class="wordmark"><div class="script">Blush</div><div class="sans">MOMENTS</div></div>
+  <div class="wordmark"><img src="<?php echo esc_url( BM_PLUGIN_URL . 'assets/logo.png' ); ?>" alt="Blush Moments"></div>
 
   <div class="progress" id="progressBar">
     <div class="hearts" id="progressHearts"></div>

@@ -18,6 +18,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Send a Birthday Surprise — Blush Moments</title>
+<link rel="icon" href="<?php echo esc_url( BM_PLUGIN_URL . 'assets/favicon-32.png' ); ?>" sizes="32x32">
+<link rel="apple-touch-icon" href="<?php echo esc_url( BM_PLUGIN_URL . 'assets/favicon-180.png' ); ?>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;800;900&family=Yellowtail&display=swap" rel="stylesheet">
@@ -42,8 +44,7 @@ if ( ! defined( 'ABSPATH' ) ) {
   @keyframes balloonBob{ 0%,100%{ transform:translateY(0) rotate(-2deg); } 50%{ transform:translateY(-8px) rotate(2deg); } }
   @keyframes float{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-6px); } }
   .wordmark{ text-align:center; padding:14px 0 0; }
-  .wordmark .script{ font-family:var(--font-script); font-size:2.1rem; color:var(--gold-deep); line-height:1; }
-  .wordmark .sans{ font-family:var(--font-display); font-size:1rem; font-weight:600; color:var(--muted); letter-spacing:.08em; margin-top:-4px; }
+  .wordmark img{ height:46px; width:auto; }
   .stage{ max-width:420px; margin:0 auto; min-height:100vh; position:relative; padding-bottom:40px; }
   .progress{ display:flex; align-items:center; gap:6px; padding:18px 20px 6px; font-size:.72rem; font-weight:700; color:var(--gold-deep); letter-spacing:.3px; }
   .progress .balloons{ display:flex; gap:3px; margin-right:8px; }
@@ -183,7 +184,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 <div class="stage">
 
-  <div class="wordmark"><div class="script">Blush</div><div class="sans">MOMENTS</div></div>
+  <div class="wordmark"><img src="<?php echo esc_url( BM_PLUGIN_URL . 'assets/logo.png' ); ?>" alt="Blush Moments"></div>
 
   <div class="progress" id="progressBar">
     <div class="balloons" id="progressBalloons"></div>
