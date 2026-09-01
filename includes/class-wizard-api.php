@@ -67,7 +67,10 @@ class Blush_Moments_Wizard_API {
 			'relation'        => sanitize_text_field( $request->get_param( 'relation' ) ),
 			'question'        => sanitize_text_field( $request->get_param( 'question' ) ),
 			'message'         => sanitize_textarea_field( $request->get_param( 'message' ) ),
-			'content'         => wp_json_encode( $request->get_param( 'content' ) ),
+			// JSON_UNESCAPED_UNICODE: store emoji as raw UTF-8 bytes, not \u escapes —
+			// the \u-escape round-trip through WP_REST_Request's param slashing was
+			// silently dropping backslashes and corrupting every emoji in testing.
+			'content'         => wp_json_encode( $request->get_param( 'content' ), JSON_UNESCAPED_UNICODE ),
 			'payment_status'  => 'draft',
 		);
 

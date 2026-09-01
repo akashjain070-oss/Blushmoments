@@ -17,7 +17,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 $their_name = $surprise['their_name'] ?: 'Them';
 $your_name  = $surprise['your_name'] ?: 'Someone';
-$question   = preg_replace( '/^\S+\s/', '', $surprise['question'] ?: 'Will you be mine?' ); // strip leading emoji
+// Strip a leading emoji/symbol if present, but never a real word — the earlier
+// `/^\S+\s/` matched any leading token and wrongly ate "Will " when a question
+// had no emoji prefix (e.g. one typed by hand in the builder).
+$question   = preg_replace( '/^[^\p{L}\p{N}]+\s*/u', '', $surprise['question'] ?: 'Will you be mine?' );
 $message    = $surprise['message'] ?: '';
 $love_cards = ! empty( $surprise['content']['love_cards'] ) ? $surprise['content']['love_cards'] : array(
 	array( 'emoji' => '🐧💕🐧', 'cap' => 'my person' ),
@@ -165,7 +168,7 @@ $love_cards = ! empty( $surprise['content']['love_cards'] ) ? $surprise['content
 </div>
 
 <script>
-  const LOVE_CARDS = <?php echo wp_json_encode( $love_cards ); ?>;
+  const LOVE_CARDS = <?php echo wp_json_encode( $love_cards, JSON_UNESCAPED_UNICODE ); ?>;
   const TAUNTS = ['Are you sure?', 'Wait, think again 😢', "Don't do this to me 💔", 'Please? 🥺', "I'll wait right here..."];
   const YES_EMOJI = ['💕', '🥹', '😭', '😭', '😭'];
   let noClicks = 0;
