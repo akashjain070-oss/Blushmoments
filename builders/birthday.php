@@ -82,6 +82,11 @@ if ( ! defined( 'ABSPATH' ) ) {
   .upload-box .icon{ font-size:1.6rem; margin-bottom:8px; }
   .upload-box .t1{ font-weight:700; font-size:.9rem; }
   .upload-box .t2{ font-size:.72rem; color:var(--muted); margin-top:4px; }
+  .upload-box.full{ opacity:.6; cursor:default; }
+  .photo-grid{ display:flex; flex-wrap:wrap; gap:10px; margin-bottom:16px; }
+  .photo-thumb{ position:relative; width:72px; height:72px; border-radius:12px; overflow:hidden; box-shadow:0 4px 10px rgba(193,122,63,.18); }
+  .photo-thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .photo-thumb .rm{ position:absolute; top:3px; right:3px; width:20px; height:20px; border-radius:50%; background:rgba(30,15,10,.65); color:#fff; display:flex; align-items:center; justify-content:center; font-size:.68rem; cursor:pointer; line-height:1; }
   .skip-link{ display:block; text-align:center; color:var(--gold-deep); font-weight:700; font-size:.85rem; margin-top:14px; cursor:pointer; }
   .charcount{ text-align:right; font-size:.75rem; color:var(--muted); margin:-6px 0 12px; }
   .tmpl-row{ display:flex; align-items:center; gap:10px; margin-bottom:12px; font-size:.8rem; color:var(--muted); flex-wrap:wrap; }
@@ -232,11 +237,13 @@ if ( ! defined( 'ABSPATH' ) ) {
       <button class="back" onclick="toStep(3)">← Back</button>
       <h2>Hang up some memories 📸</h2>
       <div class="sub" id="memoriesSub">Up to 5 photos, strung on fairy lights.</div>
-      <div class="upload-box" onclick="alert('Real photo upload lands once storage is wired in.')">
+      <div class="photo-grid" id="photoGrid"></div>
+      <div class="upload-box" id="uploadBox" onclick="triggerPhotoPick()">
         <div class="icon">🖼️</div>
-        <div class="t1">Tap to add photos</div>
+        <div class="t1" id="uploadT1">Tap to add photos</div>
         <div class="t2">JPG or PNG · under 5MB each</div>
       </div>
+      <input type="file" id="photoInput" accept="image/jpeg,image/png" multiple style="display:none;" onchange="handlePhotoPick(event)">
       <button class="primary-btn" onclick="toStep(5)">Continue</button>
       <div class="skip-link" onclick="toStep(5)">Skip photos for now</div>
     </div>
@@ -393,7 +400,60 @@ if ( ! defined( 'ABSPATH' ) ) {
   };
   const BALLOON_COLORS = ['#ff8fa3','#8f7aff','#3fd6c0','#ffb347','#ff6f91'];
 
-  const state = { theirName:'', yourName:'', age:'', cake:'strawberry', balloons:['','','','',''], tmplLang:'hi' };
+  const state = { theirName:'', yourName:'', age:'', cake:'strawberry', balloons:['','','','',''], tmplLang:'hi', photos:[] };
+  const MAX_PHOTOS = 5;
+  const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
+
+  function triggerPhotoPick(){
+    if(state.photos.length >= MAX_PHOTOS) return;
+    document.getElementById('photoInput').click();
+  }
+
+  function handlePhotoPick(e){
+    const files = Array.from(e.target.files || []);
+    const remaining = MAX_PHOTOS - state.photos.length;
+    files.slice(0, remaining).forEach(file => {
+      if(!['image/jpeg','image/png'].includes(file.type)){
+        alert(file.name + ' is not a JPG or PNG.');
+        return;
+      }
+      if(file.size > MAX_PHOTO_BYTES){
+        alert(file.name + ' is over 5MB.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => { state.photos.push(reader.result); renderPhotoGrid(); };
+      reader.readAsDataURL(file);
+    });
+    e.target.value = '';
+  }
+
+  function removePhoto(i){
+    state.photos.splice(i, 1);
+    renderPhotoGrid();
+  }
+
+  function renderPhotoGrid(){
+    const grid = document.getElementById('photoGrid');
+    grid.innerHTML = '';
+    state.photos.forEach((src, i) => {
+      const d = document.createElement('div');
+      d.className = 'photo-thumb';
+      const img = document.createElement('img');
+      img.src = src;
+      const rm = document.createElement('div');
+      rm.className = 'rm';
+      rm.textContent = '✕';
+      rm.onclick = (ev) => { ev.stopPropagation(); removePhoto(i); };
+      d.appendChild(img);
+      d.appendChild(rm);
+      grid.appendChild(d);
+    });
+    const box = document.getElementById('uploadBox');
+    const full = state.photos.length >= MAX_PHOTOS;
+    box.classList.toggle('full', full);
+    document.getElementById('uploadT1').textContent = full ? 'Photo limit reached' : 'Tap to add photos';
+  }
 
   function toStep(n){
     document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
@@ -595,7 +655,7 @@ if ( ! defined( 'ABSPATH' ) ) {
           your_name: state.yourName || 'You',
           experience_type: 'birthday',
           message: state.message,
-          content: { cake: state.cake, age: state.age, balloons: state.balloons.filter(Boolean) },
+          content: { cake: state.cake, age: state.age, balloons: state.balloons.filter(Boolean), photos: state.photos },
         }),
       });
       if(!res.ok){ throw new Error(`Server returned ${res.status}`); }

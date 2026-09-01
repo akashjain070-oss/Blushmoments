@@ -47,6 +47,11 @@ class Blush_Moments_Wizard_API {
 			return new WP_Error( 'bm_missing_fields', 'their_name, your_name, and experience_type are required.', array( 'status' => 400 ) );
 		}
 
+		$content = $request->get_param( 'content' );
+		if ( is_array( $content ) && ! empty( $content['photos'] ) ) {
+			$content['photos'] = self::save_photos( $content['photos'] );
+		}
+
 		$slug = Blush_Moments_Post_Type::generate_slug( $their_name, $your_name );
 
 		$post_id = wp_insert_post( array(
@@ -70,7 +75,7 @@ class Blush_Moments_Wizard_API {
 			// JSON_UNESCAPED_UNICODE: store emoji as raw UTF-8 bytes, not \u escapes —
 			// the \u-escape round-trip through WP_REST_Request's param slashing was
 			// silently dropping backslashes and corrupting every emoji in testing.
-			'content'         => wp_json_encode( $request->get_param( 'content' ), JSON_UNESCAPED_UNICODE ),
+			'content'         => wp_json_encode( $content, JSON_UNESCAPED_UNICODE ),
 			'payment_status'  => 'draft',
 		);
 
@@ -83,6 +88,39 @@ class Blush_Moments_Wizard_API {
 			'slug' => $slug,
 			'url'  => home_url( '/s/' . $slug ),
 		);
+	}
+
+	/**
+	 * Decodes the wizard's base64 data-URL photos and saves each as a real
+	 * file in the uploads dir, returning their URLs. Anything that isn't a
+	 * valid jpeg/png data URL, or over 5MB once decoded, is silently dropped
+	 * rather than failing the whole submission over one bad photo.
+	 */
+	private static function save_photos( $photos ) {
+		if ( ! is_array( $photos ) ) {
+			return array();
+		}
+
+		$urls = array();
+		foreach ( array_slice( $photos, 0, 5 ) as $data_url ) {
+			if ( ! is_string( $data_url ) || ! preg_match( '/^data:image\/(jpe?g|png);base64,(.+)$/', $data_url, $matches ) ) {
+				continue;
+			}
+
+			$bits = base64_decode( $matches[2], true );
+			if ( false === $bits || strlen( $bits ) > 5 * 1024 * 1024 ) {
+				continue;
+			}
+
+			$ext      = 'jpg' === $matches[1] ? 'jpeg' : $matches[1];
+			$filename = 'bm-photo-' . wp_generate_password( 12, false ) . '.' . $ext;
+			$upload   = wp_upload_bits( $filename, null, $bits );
+
+			if ( empty( $upload['error'] ) ) {
+				$urls[] = $upload['url'];
+			}
+		}
+		return $urls;
 	}
 
 	/**

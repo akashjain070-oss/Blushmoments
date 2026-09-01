@@ -23,6 +23,9 @@ $age        = ! empty( $surprise['content']['age'] ) ? $surprise['content']['age
 $balloons   = ! empty( $surprise['content']['balloons'] ) && is_array( $surprise['content']['balloons'] )
 	? array_values( array_filter( $surprise['content']['balloons'] ) )
 	: array( 'This whole surprise, honestly' );
+$photos     = ! empty( $surprise['content']['photos'] ) && is_array( $surprise['content']['photos'] )
+	? array_values( array_filter( $surprise['content']['photos'] ) )
+	: array();
 
 $cake_labels = array(
 	'chocolate'  => 'Midnight Chocolate',
@@ -78,6 +81,13 @@ $cake_label = $cake_labels[ $cake_key ] ?? 'Strawberry Blush';
   .reason-card .txt{ font-weight:700; font-size:.92rem; }
   .and-more{ text-align:center; font-size:.85rem; opacity:.7; margin:16px 0; font-style:italic; }
   .night-btn{ width:100%; border:none; border-radius:40px; padding:15px; background:linear-gradient(135deg,var(--gold-deep),var(--gold)); color:#fff; font-weight:700; font-size:.95rem; cursor:pointer; margin-top:6px; }
+  .photos-wrap{ padding:50px 22px; min-height:100vh; text-align:center; }
+  .photos-wrap h2{ font-size:1.3rem; }
+  .photos-wrap .sub{ font-size:.82rem; opacity:.7; margin:8px 0 30px; }
+  .fairy-line{ display:flex; flex-wrap:wrap; gap:22px 16px; justify-content:center; margin-bottom:36px; }
+  .fairy-photo{ width:112px; }
+  .fairy-photo .bulb{ width:8px; height:8px; border-radius:50%; background:#ffe9a8; margin:0 auto 6px; box-shadow:0 0 10px 3px rgba(255,233,168,.85); }
+  .fairy-photo img{ width:100%; height:132px; object-fit:cover; display:block; border-radius:6px; border:5px solid #fff; box-shadow:0 10px 20px rgba(0,0,0,.35); transform:rotate(var(--tilt,0deg)); }
   .envelope-wrap{ padding:60px 24px; text-align:center; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; }
   .envelope-wrap h3{ font-size:1.2rem; margin-bottom:4px; }
   .envelope-wrap .sub{ font-size:.82rem; opacity:.7; margin-bottom:26px; }
@@ -130,7 +140,16 @@ $cake_label = $cake_labels[ $cake_key ] ?? 'Strawberry Blush';
       <div class="pop-field" id="popField"></div>
       <div class="reasons" id="reasonsList"></div>
       <div class="and-more" id="andMore" style="display:none;">...and a thousand more reasons 💛</div>
-      <button class="night-btn" id="keepGoingBtn" style="display:none;" onclick="toStep('envelope')">Keep going 💛</button>
+      <button class="night-btn" id="keepGoingBtn" style="display:none;" onclick="goAfterBalloons()">Keep going 💛</button>
+    </div>
+  </div>
+
+  <div class="step" data-step="photos">
+    <div class="photos-wrap">
+      <h2>A few memories 📸</h2>
+      <div class="sub">strung on fairy lights, just for you</div>
+      <div class="fairy-line" id="fairyLine"></div>
+      <button class="night-btn" onclick="toStep('envelope')">Continue 💛</button>
     </div>
   </div>
 
@@ -169,14 +188,33 @@ $cake_label = $cake_labels[ $cake_key ] ?? 'Strawberry Blush';
 <script>
   const BALLOONS = <?php echo wp_json_encode( $balloons, JSON_UNESCAPED_UNICODE ); ?>;
   const MESSAGE = <?php echo wp_json_encode( $message, JSON_UNESCAPED_UNICODE ); ?>;
+  const PHOTOS = <?php echo wp_json_encode( $photos, JSON_UNESCAPED_UNICODE ); ?>;
   const BALLOON_COLORS = ['#ff8fa3','#8f7aff','#3fd6c0','#ffb347','#ff6f91'];
 
   function toStep(n){
     document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
     document.querySelector(`.step[data-step="${n}"]`).classList.add('active');
     if(n === 'balloons') renderPopBalloons();
+    if(n === 'photos') renderPhotos();
     if(n === 'closing') confettiBurst();
     window.scrollTo(0,0);
+  }
+
+  function goAfterBalloons(){
+    toStep(PHOTOS.length ? 'photos' : 'envelope');
+  }
+
+  function renderPhotos(){
+    const line = document.getElementById('fairyLine');
+    if(line.dataset.rendered) return;
+    line.dataset.rendered = '1';
+    PHOTOS.forEach((src,i)=>{
+      const tilt = (i % 2 === 0 ? -1 : 1) * (2 + (i % 3));
+      const d = document.createElement('div');
+      d.className = 'fairy-photo';
+      d.innerHTML = `<div class="bulb"></div><img src="${src}" style="--tilt:${tilt}deg" alt="">`;
+      line.appendChild(d);
+    });
   }
 
   function renderPopBalloons(){
