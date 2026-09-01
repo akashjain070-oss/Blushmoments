@@ -444,7 +444,7 @@ class Blush_Moments_Homepage_View {
   @keyframes heartPump{ 0%,100%{ transform:scale(1); } 14%{ transform:scale(1.22); } 28%{ transform:scale(1); } 42%{ transform:scale(1.14); } 56%{ transform:scale(1); } }
   @media (prefers-reduced-motion: reduce){ .brand-heart{ animation:none; } }
   .brand-name{ font-weight:800; font-size:1.5rem; color:var(--ink); }
-  .brand-name span{ color:var(--grad-a); }
+  .brand-name span{ color:var(--grad-b); }
   footer .brand-name{ color:#fff; font-size:1.4rem; }
 
   /* motion */
