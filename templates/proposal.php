@@ -204,16 +204,28 @@ $love_cards = ! empty( $surprise['content']['love_cards'] ) ? $surprise['content
 
   function dodge(){
     const btn = document.getElementById('noBtn');
-    const row = btn.parentElement.getBoundingClientRect();
-    const maxX = row.width/2 - 60;
-    const x = (Math.random()*2 - 1) * maxX;
-    const y = 30 + Math.random()*55;
-    btn.style.left = `calc(50% + ${x}px)`;
-    btn.style.top = `${y}px`;
-    btn.style.transform = 'translateX(-50%)';
-
+    if (btn.dataset.gone) return;
     noClicks++;
     const idx = Math.min(noClicks, TAUNTS.length - 1);
+    const isLast = idx === TAUNTS.length - 1;
+    const scale = Math.max(0.55, 1 - noClicks * 0.1);
+
+    btn.style.transition = 'top .15s ease, left .15s ease, transform .3s ease, opacity .35s ease';
+    if (isLast) {
+      btn.dataset.gone = '1';
+      btn.style.transform = `translateX(-50%) scale(${scale * 0.4})`;
+      btn.style.opacity = '0';
+      btn.style.pointerEvents = 'none';
+    } else {
+      const row = btn.parentElement.getBoundingClientRect();
+      const maxX = row.width/2 - 60;
+      const x = (Math.random()*2 - 1) * maxX;
+      const y = 30 + Math.random()*55;
+      btn.style.left = `calc(50% + ${x}px)`;
+      btn.style.top = `${y}px`;
+      btn.style.transform = `translateX(-50%) scale(${scale})`;
+    }
+
     const taunt = document.getElementById('taunt');
     taunt.textContent = TAUNTS[idx];
     taunt.classList.add('show');
