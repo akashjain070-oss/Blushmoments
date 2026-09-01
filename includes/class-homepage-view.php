@@ -238,6 +238,31 @@ class Blush_Moments_Homepage_View {
   header nav .navlinks{ display:flex; gap:28px; }
   @media (max-width:820px){ header nav .navlinks{ display:none; } }
 
+  /* header create menu */
+  .createmenu{ position:relative; }
+  .createmenu-panel{
+    position:absolute; top:calc(100% + 10px); right:0; z-index:30;
+    width:260px; max-width:calc(100vw - 32px);
+    background:#fff; border:1.5px solid var(--line); border-radius:16px;
+    box-shadow:0 18px 34px rgba(180,60,90,.18);
+    padding:8px; display:none; flex-direction:column; gap:2px;
+  }
+  .createmenu.open .createmenu-panel{ display:flex; }
+  .createmenu-item{
+    display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:12px;
+    text-decoration:none; color:var(--ink); font-weight:600; font-size:.9rem;
+  }
+  .createmenu-item:hover{ background:var(--cream); }
+  .createmenu-emoji{ font-size:1.15rem; }
+  .createmenu-label{ flex:1; }
+  .createmenu-item.disabled{ color:var(--muted); cursor:default; }
+  .createmenu-item.disabled:hover{ background:none; }
+  .createmenu-soon{
+    font-size:.68rem; font-weight:800; letter-spacing:.02em; color:var(--muted);
+    background:var(--cream); border:1px solid var(--line); border-radius:999px; padding:2px 8px;
+  }
+  @media (max-width:480px){ .createmenu-panel{ right:-6px; } }
+
   /* hero */
   .hero{ padding:64px 0 30px; position:relative; overflow:hidden; }
   @media (max-width:600px){ .hero{ padding:36px 0 12px; } }
@@ -459,7 +484,27 @@ class Blush_Moments_Homepage_View {
         <a class="link" href="#stories">Stories</a>
         <a class="link" href="#faq">FAQ</a>
       </div>
-      <a class="btn btn-primary" href="<?php echo esc_url( home_url( '/create/proposal' ) ); ?>">Create Magic ✨</a>
+      <div class="createmenu" id="bm-createmenu">
+        <button type="button" class="btn btn-primary createmenu-btn" id="bm-createmenu-btn" aria-haspopup="true" aria-expanded="false" onclick="bmToggleCreateMenu(this)">Create Magic ✨</button>
+        <div class="createmenu-panel" role="menu" aria-label="Choose an experience to create">
+          <?php foreach ( $experiences as $key => $info ) :
+						$is_live = file_exists( BM_PLUGIN_DIR . 'builders/' . $key . '.php' );
+						?>
+          <?php if ( $is_live ) : ?>
+          <a class="createmenu-item" role="menuitem" href="<?php echo esc_url( home_url( '/create/' . $key ) ); ?>">
+            <span class="createmenu-emoji"><?php echo esc_html( $info['emoji'] ); ?></span>
+            <span class="createmenu-label"><?php echo esc_html( $info['label'] ); ?></span>
+          </a>
+          <?php else : ?>
+          <a class="createmenu-item disabled" role="menuitem" aria-disabled="true" href="#" onclick="return false;">
+            <span class="createmenu-emoji"><?php echo esc_html( $info['emoji'] ); ?></span>
+            <span class="createmenu-label"><?php echo esc_html( $info['label'] ); ?></span>
+            <span class="createmenu-soon">Soon</span>
+          </a>
+          <?php endif; ?>
+          <?php endforeach; ?>
+        </div>
+      </div>
     </nav>
   </div>
 </header>
@@ -716,6 +761,29 @@ function bmToggleFaq(btn) {
   document.querySelectorAll('.faq-item.open').forEach(function(el){ el.classList.remove('open'); });
   if (!wasOpen) item.classList.add('open');
 }
+
+function bmCloseCreateMenus() {
+  document.querySelectorAll('.createmenu.open').forEach(function(el){
+    el.classList.remove('open');
+    var b = el.querySelector('.createmenu-btn');
+    if (b) b.setAttribute('aria-expanded', 'false');
+  });
+}
+function bmToggleCreateMenu(btn) {
+  var menu = btn.closest('.createmenu');
+  var wasOpen = menu.classList.contains('open');
+  bmCloseCreateMenus();
+  if (!wasOpen) {
+    menu.classList.add('open');
+    btn.setAttribute('aria-expanded', 'true');
+  }
+}
+document.addEventListener('click', function(e){
+  if (!e.target.closest('.createmenu')) bmCloseCreateMenus();
+});
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape') bmCloseCreateMenus();
+});
 
 (function(){
   var targets = document.querySelectorAll('.reveal');
