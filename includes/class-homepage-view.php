@@ -256,11 +256,11 @@ class Blush_Moments_Homepage_View {
   .phone-screen h3{ margin-top:10px; font-size:1.05rem; }
   .phone-screen .balloon{ display:inline-block; margin:14px 6px 0 0; padding:10px 14px; border-radius:16px; background:#fff; border:1.5px solid var(--line); font-size:.85rem; }
   .float-card{
-    position:absolute; background:#fff; border-radius:16px; padding:12px 16px; box-shadow:0 16px 30px rgba(60,20,40,.15);
-    font-size:.82rem; font-weight:700; display:flex; align-items:center; gap:8px;
+    position:absolute; z-index:5; background:#fff; border-radius:16px; padding:12px 16px; box-shadow:0 16px 30px rgba(60,20,40,.15);
+    font-size:.82rem; font-weight:700; display:flex; align-items:center; gap:8px; white-space:nowrap;
   }
-  .float-1{ top:-10px; right:-10px; }
-  .float-2{ bottom:30%; left:-30px; }
+  .float-1{ top:-24px; right:6px; }
+  .float-2{ bottom:16%; left:-36px; }
   @media (max-width:900px){ .float-1, .float-2{ display:none; } }
   .avatar{ width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:.75rem; color:#fff; font-weight:800; }
 
