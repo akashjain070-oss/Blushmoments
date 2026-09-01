@@ -206,15 +206,20 @@ class Blush_Moments_Homepage_View {
 <link rel="icon" type="image/png" sizes="32x32" href="<?php echo esc_url( BM_PLUGIN_URL . 'assets/favicon-32.png' ); ?>">
 <link rel="apple-touch-icon" sizes="180x180" href="<?php echo esc_url( BM_PLUGIN_URL . 'assets/favicon-180.png' ); ?>">
 <link rel="icon" type="image/png" sizes="512x512" href="<?php echo esc_url( BM_PLUGIN_URL . 'assets/favicon-512.png' ); ?>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Yellowtail&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#4a4148; --muted:#948b93; --cream:#fdfbfe; --line:#ece4f0;
-    --grad-a:#a668c4; --grad-b:#d1476a;
+    --ink:#3d2f3f; --muted:#8f8393; --cream:#fdfbfe; --line:#ece4f0;
+    --grad-a:#9b3fc4; --grad-b:#e63e75;
+    --font-display:'Outfit',-apple-system,'Segoe UI',Roboto,sans-serif;
+    --font-script:'Yellowtail',cursive;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   html{scroll-behavior:smooth;}
   body{
-    font-family:-apple-system,'Segoe UI',Roboto,sans-serif;
+    font-family:var(--font-display);
     background:var(--cream); color:var(--ink); line-height:1.55;
   }
   a{color:inherit;}
@@ -293,7 +298,8 @@ class Blush_Moments_Homepage_View {
   }
   @keyframes pillShine{ 0%{ left:-60%; } 55%,100%{ left:130%; } }
   @media (prefers-reduced-motion: reduce){ .pill-badge::after{ animation:none !important; } }
-  .hero h1{ font-size:clamp(1.9rem,7vw,2.9rem); font-weight:900; line-height:1.16; text-wrap:balance; }
+  .hero h1{ font-size:clamp(1.9rem,7vw,2.9rem); font-weight:900; line-height:1.16; letter-spacing:-.02em; text-wrap:balance; }
+  .hero-script{ font-family:var(--font-script); font-weight:400; font-size:1.3em; letter-spacing:0; display:inline-block; }
   .hero p.lead{ color:var(--muted); font-size:clamp(.95rem,2.6vw,1.08rem); margin:18px 0 26px; max-width:520px; }
   .hero-ctas{ display:flex; flex-wrap:wrap; gap:14px; }
   .hero-proof{ display:flex; align-items:center; gap:12px; margin-top:22px; }
@@ -359,7 +365,7 @@ class Blush_Moments_Homepage_View {
   @media (max-width:600px){ .section{ padding:44px 0; } }
   .section-head{ text-align:center; max-width:640px; margin:0 auto 44px; }
   .section-head p.lead{ color:var(--muted); margin-top:14px; font-size:clamp(.92rem,2.4vw,1.05rem); }
-  .section-head h2{ font-size:clamp(1.5rem,5.5vw,2.1rem); font-weight:900; margin-top:12px; text-wrap:balance; }
+  .section-head h2{ font-size:clamp(1.5rem,5.5vw,2.1rem); font-weight:900; letter-spacing:-.015em; margin-top:12px; text-wrap:balance; }
 
   .grid-3{ display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
   @media (max-width:900px){ .grid-3{ grid-template-columns:1fr 1fr; } }
@@ -421,7 +427,7 @@ class Blush_Moments_Homepage_View {
 
   .cta-final{ text-align:center; background:linear-gradient(135deg,var(--grad-a),var(--grad-b)); border-radius:30px; padding:60px 30px; color:#fff; }
   @media (max-width:600px){ .cta-final{ padding:40px 20px; border-radius:22px; } }
-  .cta-final h2{ font-size:clamp(1.5rem,5.5vw,2rem); font-weight:900; margin-bottom:14px; }
+  .cta-final h2{ font-size:clamp(1.5rem,5.5vw,2rem); font-weight:900; letter-spacing:-.015em; margin-bottom:14px; }
   .cta-final p{ opacity:.92; max-width:560px; margin:0 auto 26px; font-size:clamp(.92rem,2.4vw,1rem); }
   .cta-final .btn-primary{ background:#fff; color:var(--grad-a); box-shadow:none; }
   .cta-trust{ margin-top:26px; display:flex; justify-content:center; gap:26px; flex-wrap:wrap; font-size:.82rem; font-weight:700; opacity:.9; }
@@ -471,9 +477,39 @@ class Blush_Moments_Homepage_View {
 
   .story-card{ transition:transform .28s ease, box-shadow .28s ease; }
   .story-card:hover{ transform:translateY(-5px); box-shadow:0 18px 34px rgba(180,60,90,.1); }
+
+  /* signature floating balloons */
+  .bm-balloons{ position:fixed; inset:0; pointer-events:none; z-index:6; overflow:hidden; }
+  .bm-balloon{
+    position:absolute; bottom:-160px; border-radius:50% 50% 46% 46% / 58% 58% 42% 42%;
+    animation:balloonRise linear infinite;
+  }
+  .bm-balloon::before{
+    content:''; position:absolute; left:50%; top:100%; width:1px; height:30px;
+    background:rgba(61,47,63,.18); transform:translateX(-50%);
+  }
+  @keyframes balloonRise{
+    0%{ transform:translateY(0) translateX(0) rotate(-3deg); opacity:0; }
+    8%{ opacity:.55; }
+    50%{ transform:translateY(-55vh) translateX(18px) rotate(3deg); }
+    92%{ opacity:.55; }
+    100%{ transform:translateY(-125vh) translateX(-14px) rotate(-3deg); opacity:0; }
+  }
+  @media (prefers-reduced-motion: reduce){ .bm-balloons{ display:none; } }
+  @media (max-width:640px){ .bm-balloon{ transform:scale(.75); } }
 </style>
 </head>
 <body>
+
+<div class="bm-balloons" aria-hidden="true">
+  <span class="bm-balloon" style="left:6%; width:32px; height:40px; background:var(--grad-a); animation-duration:26s; animation-delay:-2s;"></span>
+  <span class="bm-balloon" style="left:18%; width:24px; height:30px; background:#e0a010; animation-duration:21s; animation-delay:-14s;"></span>
+  <span class="bm-balloon" style="left:34%; width:38px; height:47px; background:var(--grad-b); animation-duration:31s; animation-delay:-6s;"></span>
+  <span class="bm-balloon" style="left:52%; width:26px; height:33px; background:#6a52c9; animation-duration:23s; animation-delay:-18s;"></span>
+  <span class="bm-balloon" style="left:68%; width:30px; height:38px; background:#cb9dde; animation-duration:28s; animation-delay:-9s;"></span>
+  <span class="bm-balloon" style="left:83%; width:22px; height:28px; background:#f2a6c6; animation-duration:19s; animation-delay:-4s;"></span>
+  <span class="bm-balloon" style="left:93%; width:34px; height:42px; background:var(--grad-a); animation-duration:29s; animation-delay:-21s;"></span>
+</div>
 
 <header>
   <div class="wrap row">
@@ -529,7 +565,7 @@ class Blush_Moments_Homepage_View {
         <span class="pill pill-live"><span class="dot"></span> <span id="bm-live-count">42</span> people creating right now</span>
         <span class="pill pill-badge">💝 India's Newest Digital Gifting Platform</span>
       </div>
-      <h1>Personalized digital gifts <span class="grad">for people you love</span></h1>
+      <h1>Personalized digital gifts <span class="grad hero-script">for people you love</span></h1>
       <p class="lead">Create magical, interactive surprises in minutes — proposal pages, birthday celebrations, and more. Share instantly via WhatsApp, Instagram, or any link. No design skills needed.</p>
       <div class="hero-ctas">
         <a class="btn btn-primary" href="<?php echo esc_url( home_url( '/create/proposal' ) ); ?>">Create Your Surprise →</a>
@@ -688,7 +724,7 @@ class Blush_Moments_Homepage_View {
 <section class="section">
   <div class="wrap">
     <div class="cta-final">
-      <h2>Ready to Create Magic?</h2>
+      <h2>Ready to Create <span class="hero-script" style="color:#fff;">Magic</span>?</h2>
       <p>No signup. No design skills. Just pure magic — start creating your first surprise for free.</p>
       <a class="btn btn-primary" href="<?php echo esc_url( home_url( '/create/proposal' ) ); ?>">Create Your Surprise →</a>
       <div class="cta-trust">
