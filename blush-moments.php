@@ -19,12 +19,14 @@ require_once BM_PLUGIN_DIR . 'includes/class-post-type.php';
 require_once BM_PLUGIN_DIR . 'includes/class-wizard-api.php';
 require_once BM_PLUGIN_DIR . 'includes/class-recipient-view.php';
 require_once BM_PLUGIN_DIR . 'includes/class-builder-view.php';
+require_once BM_PLUGIN_DIR . 'includes/class-homepage-view.php';
 
 function bm_init_plugin() {
 	Blush_Moments_Post_Type::init();
 	Blush_Moments_Wizard_API::init();
 	Blush_Moments_Recipient_View::init();
 	Blush_Moments_Builder_View::init();
+	Blush_Moments_Homepage_View::init();
 }
 add_action( 'plugins_loaded', 'bm_init_plugin' );
 
