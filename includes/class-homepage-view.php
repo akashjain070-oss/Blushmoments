@@ -208,8 +208,8 @@ class Blush_Moments_Homepage_View {
 <link rel="icon" type="image/png" sizes="512x512" href="<?php echo esc_url( BM_PLUGIN_URL . 'assets/favicon-512.png' ); ?>">
 <style>
   :root{
-    --ink:#322340; --muted:#8a7591; --cream:#f7f1fa; --line:#ebe0ee;
-    --grad-a:#8e4585; --grad-b:#d1476a;
+    --ink:#4a4148; --muted:#948b93; --cream:#fdfbfe; --line:#ece4f0;
+    --grad-a:#a668c4; --grad-b:#d1476a;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   html{scroll-behavior:smooth;}
@@ -224,12 +224,12 @@ class Blush_Moments_Homepage_View {
     display:inline-flex; align-items:center; gap:8px; font-weight:800; font-size:.95rem;
     padding:14px 26px; border-radius:999px; text-decoration:none; border:none; cursor:pointer;
   }
-  .btn-primary{ background:linear-gradient(135deg,var(--grad-a),var(--grad-b)); color:#fff; box-shadow:0 14px 30px rgba(142,69,133,.32); }
+  .btn-primary{ background:linear-gradient(135deg,var(--grad-a),var(--grad-b)); color:#fff; box-shadow:0 14px 30px rgba(166,104,196,.32); }
   .btn-dark{ background:var(--ink); color:#fff; width:100%; justify-content:center; }
   .btn-ghost{ background:#fff; color:var(--ink); border:1.5px solid var(--line); }
 
   /* header */
-  header{ position:sticky; top:0; z-index:20; background:rgba(247,241,250,.9); backdrop-filter:blur(8px); border-bottom:1px solid var(--line); }
+  header{ position:sticky; top:0; z-index:20; background:rgba(253,251,254,.9); backdrop-filter:blur(8px); border-bottom:1px solid var(--line); }
   header .row{ display:flex; align-items:center; justify-content:space-between; padding:18px 0; }
   header .word{ font-weight:800; font-size:1.2rem; }
   header .word span{ color:var(--grad-a); }
@@ -248,7 +248,7 @@ class Blush_Moments_Homepage_View {
   .hero-blob{ position:absolute; border-radius:50%; filter:blur(40px); opacity:.28; animation:blobDrift 14s ease-in-out infinite; }
   .hero-blob-1{ width:220px; height:220px; background:var(--grad-a); top:-40px; left:6%; animation-duration:16s; }
   .hero-blob-2{ width:180px; height:180px; background:var(--grad-b); top:300px; left:38%; animation-duration:19s; animation-delay:-4s; }
-  .hero-blob-3{ width:160px; height:160px; background:#c77dff; top:10%; right:4%; animation-duration:15s; animation-delay:-8s; }
+  .hero-blob-3{ width:160px; height:160px; background:#cb9dde; top:10%; right:4%; animation-duration:15s; animation-delay:-8s; }
   .hero-spark{ position:absolute; font-size:1rem; opacity:0; animation:sparkTwinkle 5s ease-in-out infinite; }
   @keyframes blobDrift{ 0%,100%{ transform:translate(0,0) scale(1); } 50%{ transform:translate(18px,-22px) scale(1.08); } }
   @keyframes sparkTwinkle{ 0%,100%{ opacity:0; transform:scale(.6) translateY(0); } 50%{ opacity:.8; transform:scale(1) translateY(-8px); } }
@@ -258,8 +258,8 @@ class Blush_Moments_Homepage_View {
   .pill-live{ background:#e9f9ee; color:#1c8a4b; }
   .pill-live .dot{ width:7px; height:7px; border-radius:50%; background:#1c8a4b; }
   .pill-badge{
-    background:#f8f2fa; color:#7a3480; position:relative; overflow:hidden;
-    border:1.5px solid rgba(142,69,133,.3); box-shadow:0 0 0 4px rgba(142,69,133,.07);
+    background:#f7ecfb; color:#7a3f8f; position:relative; overflow:hidden;
+    border:1.5px solid rgba(166,104,196,.32); box-shadow:0 0 0 4px rgba(166,104,196,.07);
   }
   .pill-badge::after{
     content:''; position:absolute; top:0; bottom:0; left:-60%; width:40%;
@@ -296,7 +296,7 @@ class Blush_Moments_Homepage_View {
     background:#1b1420; border-radius:34px; padding:14px; box-shadow:0 30px 60px rgba(60,20,40,.25);
     max-width:300px; margin:0 auto; position:relative;
   }
-  .phone-screen{ background:linear-gradient(160deg,#fff,#f7ecfa); border-radius:22px; padding:22px 16px; min-height:360px; }
+  .phone-screen{ background:linear-gradient(160deg,#fff,#faf3fd); border-radius:22px; padding:22px 16px; min-height:360px; }
   .phone-screen .step-label{ font-size:.7rem; font-weight:800; letter-spacing:.06em; color:var(--grad-a); }
   .phone-screen h3{ margin-top:10px; font-size:1.05rem; }
   .phone-screen .balloon{
@@ -313,7 +313,7 @@ class Blush_Moments_Homepage_View {
     display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--grad-a);
     margin-right:6px; animation:pulseDotOrchid 1.8s ease-in-out infinite;
   }
-  @keyframes pulseDotOrchid{ 0%,100%{ box-shadow:0 0 0 0 rgba(142,69,133,.45); } 50%{ box-shadow:0 0 0 6px rgba(142,69,133,0); } }
+  @keyframes pulseDotOrchid{ 0%,100%{ box-shadow:0 0 0 0 rgba(166,104,196,.45); } 50%{ box-shadow:0 0 0 6px rgba(166,104,196,0); } }
   @media (prefers-reduced-motion: reduce){ .phone-screen .balloon{ animation:balloonIn .01s forwards !important; } .phone-screen .step-label .dot-live{ animation:none !important; } }
   .float-card{
     position:absolute; z-index:5; background:#fff; border-radius:16px; padding:12px 16px; box-shadow:0 16px 30px rgba(60,20,40,.15);
@@ -371,7 +371,7 @@ class Blush_Moments_Homepage_View {
   .step h4{ font-size:1.02rem; margin-bottom:6px; }
   .step p{ color:var(--muted); font-size:.86rem; }
 
-  .stories-section{ background:#f9f1fb; }
+  .stories-section{ background:#fbf6fc; }
   .story-stats{ display:flex; justify-content:center; gap:50px; margin-bottom:40px; flex-wrap:wrap; text-align:center; }
   .story-stats .num{ font-size:1.6rem; font-weight:900; }
   .story-stats .label{ font-size:.75rem; color:var(--muted); font-weight:700; }
