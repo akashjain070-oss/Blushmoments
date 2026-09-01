@@ -235,19 +235,21 @@ class Blush_Moments_Homepage_View {
   header .word span{ color:var(--grad-a); }
   header nav{ display:flex; align-items:center; gap:28px; }
   header nav a.link{ font-weight:600; font-size:.92rem; text-decoration:none; color:var(--ink); }
+  header nav .navlinks{ display:flex; gap:28px; }
   @media (max-width:820px){ header nav .navlinks{ display:none; } }
 
   /* hero */
   .hero{ padding:64px 0 30px; }
+  @media (max-width:600px){ .hero{ padding:36px 0 12px; } }
   .hero-grid{ display:grid; grid-template-columns:1.1fr .9fr; gap:40px; align-items:center; }
-  @media (max-width:900px){ .hero-grid{ grid-template-columns:1fr; } }
+  @media (max-width:900px){ .hero-grid{ grid-template-columns:1fr; gap:34px; } }
   .badges{ display:flex; flex-wrap:wrap; gap:10px; margin-bottom:22px; }
   .pill{ display:inline-flex; align-items:center; gap:6px; font-size:.8rem; font-weight:700; padding:8px 14px; border-radius:999px; }
   .pill-live{ background:#e9f9ee; color:#1c8a4b; }
   .pill-live .dot{ width:7px; height:7px; border-radius:50%; background:#1c8a4b; }
   .pill-badge{ background:#ffe9ef; color:#c23568; }
-  .hero h1{ font-size:2.9rem; font-weight:900; line-height:1.12; text-wrap:balance; }
-  .hero p.lead{ color:var(--muted); font-size:1.08rem; margin:18px 0 26px; max-width:520px; }
+  .hero h1{ font-size:clamp(1.9rem,7vw,2.9rem); font-weight:900; line-height:1.16; text-wrap:balance; }
+  .hero p.lead{ color:var(--muted); font-size:clamp(.95rem,2.6vw,1.08rem); margin:18px 0 26px; max-width:520px; }
   .hero-ctas{ display:flex; flex-wrap:wrap; gap:14px; }
   .hero-visual{ position:relative; }
   .phone{
@@ -268,15 +270,16 @@ class Blush_Moments_Homepage_View {
   .avatar{ width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:.75rem; color:#fff; font-weight:800; }
 
   .stats-bar{ margin:50px 0; background:#fff; border:1.5px solid var(--line); border-radius:26px; padding:30px 20px; display:grid; grid-template-columns:repeat(4,1fr); gap:20px; text-align:center; }
-  @media (max-width:680px){ .stats-bar{ grid-template-columns:1fr 1fr; } }
-  .stats-bar .num{ font-size:1.7rem; font-weight:900; }
+  @media (max-width:680px){ .stats-bar{ grid-template-columns:1fr 1fr; margin:34px 0; padding:22px 14px; gap:22px 14px; } }
+  .stats-bar .num{ font-size:clamp(1.25rem,4.5vw,1.7rem); font-weight:900; }
   .stats-bar .num.grad{ }
   .stats-bar .label{ font-size:.72rem; font-weight:700; color:var(--muted); letter-spacing:.05em; margin-top:4px; }
 
   .section{ padding:70px 0; }
+  @media (max-width:600px){ .section{ padding:44px 0; } }
   .section-head{ text-align:center; max-width:640px; margin:0 auto 44px; }
-  .section-head p.lead{ color:var(--muted); margin-top:14px; }
-  .section-head h2{ font-size:2.1rem; font-weight:900; margin-top:12px; }
+  .section-head p.lead{ color:var(--muted); margin-top:14px; font-size:clamp(.92rem,2.4vw,1.05rem); }
+  .section-head h2{ font-size:clamp(1.5rem,5.5vw,2.1rem); font-weight:900; margin-top:12px; text-wrap:balance; }
 
   .grid-3{ display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
   @media (max-width:900px){ .grid-3{ grid-template-columns:1fr 1fr; } }
@@ -325,8 +328,9 @@ class Blush_Moments_Homepage_View {
   .chev{ transition:transform .2s ease; flex-shrink:0; }
 
   .cta-final{ text-align:center; background:linear-gradient(135deg,var(--grad-a),var(--grad-b)); border-radius:30px; padding:60px 30px; color:#fff; }
-  .cta-final h2{ font-size:2rem; font-weight:900; margin-bottom:14px; }
-  .cta-final p{ opacity:.92; max-width:560px; margin:0 auto 26px; }
+  @media (max-width:600px){ .cta-final{ padding:40px 20px; border-radius:22px; } }
+  .cta-final h2{ font-size:clamp(1.5rem,5.5vw,2rem); font-weight:900; margin-bottom:14px; }
+  .cta-final p{ opacity:.92; max-width:560px; margin:0 auto 26px; font-size:clamp(.92rem,2.4vw,1rem); }
   .cta-final .btn-primary{ background:#fff; color:var(--grad-a); box-shadow:none; }
   .cta-trust{ margin-top:26px; display:flex; justify-content:center; gap:26px; flex-wrap:wrap; font-size:.82rem; font-weight:700; opacity:.9; }
 
@@ -385,7 +389,7 @@ class Blush_Moments_Homepage_View {
       <img class="logo-img" src="<?php echo esc_url( BM_PLUGIN_URL . 'assets/logo.png' ); ?>" alt="Blush Moments">
     </a>
     <nav>
-      <div class="navlinks" style="display:flex; gap:28px;">
+      <div class="navlinks">
         <a class="link" href="#experiences">Experiences</a>
         <a class="link" href="#how-it-works">How It Works</a>
         <a class="link" href="#stories">Stories</a>
