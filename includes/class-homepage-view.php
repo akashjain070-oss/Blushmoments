@@ -35,7 +35,7 @@ class Blush_Moments_Homepage_View {
 			'accent'  => '#f2790b',
 			'tag'     => 'CELEBRATION',
 			'badge'   => 'BESTSELLER',
-			'rating'  => '4.8',
+			'rating'  => '4.9',
 			'reviews' => '1,956',
 		),
 		'girlfriend'  => array(
@@ -45,7 +45,7 @@ class Blush_Moments_Homepage_View {
 			'accent'  => '#c86bd6',
 			'tag'     => 'FOR HER',
 			'badge'   => 'COMING SOON',
-			'rating'  => '5.0',
+			'rating'  => '4.9',
 			'reviews' => '—',
 		),
 		'bestfriend'  => array(
@@ -55,7 +55,7 @@ class Blush_Moments_Homepage_View {
 			'accent'  => '#f2b705',
 			'tag'     => 'FRIENDSHIP',
 			'badge'   => 'COMING SOON',
-			'rating'  => '5.0',
+			'rating'  => '4.9',
 			'reviews' => '—',
 		),
 		'photopuzzle' => array(
@@ -85,7 +85,7 @@ class Blush_Moments_Homepage_View {
 			'accent'  => '#8a7ce0',
 			'tag'     => 'HEARTFELT',
 			'badge'   => 'COMING SOON',
-			'rating'  => '4.7',
+			'rating'  => '4.9',
 			'reviews' => '—',
 		),
 		'upigift'     => array(
@@ -95,7 +95,7 @@ class Blush_Moments_Homepage_View {
 			'accent'  => '#3aa66b',
 			'tag'     => 'DIGITAL GIFT',
 			'badge'   => 'COMING SOON',
-			'rating'  => '4.8',
+			'rating'  => '4.9',
 			'reviews' => '—',
 		),
 		'mothersday'  => array(
@@ -105,7 +105,7 @@ class Blush_Moments_Homepage_View {
 			'accent'  => '#ec6fa8',
 			'tag'     => 'FAMILY',
 			'badge'   => 'COMING SOON',
-			'rating'  => '5.0',
+			'rating'  => '4.9',
 			'reviews' => '—',
 		),
 	);
@@ -208,13 +208,12 @@ class Blush_Moments_Homepage_View {
 <link rel="icon" type="image/png" sizes="512x512" href="<?php echo esc_url( BM_PLUGIN_URL . 'assets/favicon-512.png' ); ?>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Yellowtail&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
   :root{
     --ink:#3d2f3f; --muted:#8f8393; --cream:#fdfbfe; --line:#ece4f0;
     --grad-a:#9b3fc4; --grad-b:#e63e75;
     --font-display:'Outfit',-apple-system,'Segoe UI',Roboto,sans-serif;
-    --font-script:'Yellowtail',cursive;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   html{scroll-behavior:smooth;}
@@ -236,8 +235,6 @@ class Blush_Moments_Homepage_View {
   /* header */
   header{ position:sticky; top:0; z-index:20; background:rgba(253,251,254,.9); backdrop-filter:blur(8px); border-bottom:1px solid var(--line); }
   header .row{ display:flex; align-items:center; justify-content:space-between; padding:18px 0; }
-  header .word{ font-weight:800; font-size:1.2rem; }
-  header .word span{ color:var(--grad-a); }
   header nav{ display:flex; align-items:center; gap:28px; }
   header nav a.link{ font-weight:600; font-size:.92rem; text-decoration:none; color:var(--ink); }
   header nav .navlinks{ display:flex; gap:28px; }
@@ -299,7 +296,6 @@ class Blush_Moments_Homepage_View {
   @keyframes pillShine{ 0%{ left:-60%; } 55%,100%{ left:130%; } }
   @media (prefers-reduced-motion: reduce){ .pill-badge::after{ animation:none !important; } }
   .hero h1{ font-size:clamp(1.9rem,7vw,2.9rem); font-weight:900; line-height:1.16; letter-spacing:-.02em; text-wrap:balance; }
-  .hero-script{ font-family:var(--font-script); font-weight:400; font-size:1.3em; letter-spacing:0; display:inline-block; }
   .hero p.lead{ color:var(--muted); font-size:clamp(.95rem,2.6vw,1.08rem); margin:18px 0 26px; max-width:520px; }
   .hero-ctas{ display:flex; flex-wrap:wrap; gap:14px; }
   .hero-proof{ display:flex; align-items:center; gap:12px; margin-top:22px; }
@@ -435,8 +431,6 @@ class Blush_Moments_Homepage_View {
   footer{ background:#241a2e; color:#ecdcef; padding:60px 0 30px; }
   .footer-grid{ display:grid; grid-template-columns:1.4fr 1fr 1fr; gap:40px; }
   @media (max-width:820px){ .footer-grid{ grid-template-columns:1fr; } }
-  footer .word{ font-weight:800; font-size:1.15rem; color:#fff; }
-  footer .word span{ color:var(--grad-a); }
   footer p.tag{ color:#c7a8cc; font-size:.88rem; margin-top:12px; max-width:340px; }
   footer h5{ font-size:.8rem; letter-spacing:.06em; color:#fff; margin-bottom:14px; }
   footer ul{ list-style:none; display:flex; flex-direction:column; gap:10px; }
@@ -445,8 +439,13 @@ class Blush_Moments_Homepage_View {
   .footer-bottom a{ text-decoration:none; color:#a892ab; margin-left:14px; }
 
   /* logo */
-  .logo-img{ height:38px; width:auto; display:block; }
-  footer .logo-img{ height:34px; filter:brightness(0) invert(1); opacity:.95; }
+  .brand-mark{ display:inline-flex; align-items:center; gap:9px; text-decoration:none; }
+  .brand-heart{ font-size:1.3rem; display:inline-block; animation:heartPump 1.15s ease-in-out infinite; transform-origin:center; }
+  @keyframes heartPump{ 0%,100%{ transform:scale(1); } 14%{ transform:scale(1.22); } 28%{ transform:scale(1); } 42%{ transform:scale(1.14); } 56%{ transform:scale(1); } }
+  @media (prefers-reduced-motion: reduce){ .brand-heart{ animation:none; } }
+  .brand-name{ font-weight:800; font-size:1.2rem; color:var(--ink); }
+  .brand-name span{ color:var(--grad-a); }
+  footer .brand-name{ color:#fff; font-size:1.15rem; }
 
   /* motion */
   @keyframes fadeInUp{ from{ opacity:0; transform:translateY(26px); } to{ opacity:1; transform:translateY(0); } }
@@ -478,43 +477,39 @@ class Blush_Moments_Homepage_View {
   .story-card{ transition:transform .28s ease, box-shadow .28s ease; }
   .story-card:hover{ transform:translateY(-5px); box-shadow:0 18px 34px rgba(180,60,90,.1); }
 
-  /* signature floating balloons */
+  /* signature floating hearts */
   .bm-balloons{ position:fixed; inset:0; pointer-events:none; z-index:6; overflow:hidden; }
-  .bm-balloon{
-    position:absolute; bottom:-160px; border-radius:50% 50% 46% 46% / 58% 58% 42% 42%;
-    animation:balloonRise linear infinite;
-  }
-  .bm-balloon::before{
-    content:''; position:absolute; left:50%; top:100%; width:1px; height:30px;
-    background:rgba(61,47,63,.18); transform:translateX(-50%);
+  .bm-heart{
+    position:absolute; bottom:-80px; line-height:1; animation:balloonRise linear infinite;
   }
   @keyframes balloonRise{
-    0%{ transform:translateY(0) translateX(0) rotate(-3deg); opacity:0; }
-    8%{ opacity:.55; }
-    50%{ transform:translateY(-55vh) translateX(18px) rotate(3deg); }
-    92%{ opacity:.55; }
-    100%{ transform:translateY(-125vh) translateX(-14px) rotate(-3deg); opacity:0; }
+    0%{ transform:translateY(0) translateX(0) rotate(-6deg) scale(1); opacity:0; }
+    8%{ opacity:.65; }
+    50%{ transform:translateY(-55vh) translateX(18px) rotate(6deg) scale(1.06); }
+    92%{ opacity:.65; }
+    100%{ transform:translateY(-125vh) translateX(-14px) rotate(-6deg) scale(1); opacity:0; }
   }
   @media (prefers-reduced-motion: reduce){ .bm-balloons{ display:none; } }
-  @media (max-width:640px){ .bm-balloon{ transform:scale(.75); } }
+  @media (max-width:640px){ .bm-heart{ transform:scale(.8); } }
 </style>
 </head>
 <body>
 
 <div class="bm-balloons" aria-hidden="true">
-  <span class="bm-balloon" style="left:6%; width:32px; height:40px; background:var(--grad-a); animation-duration:26s; animation-delay:-2s;"></span>
-  <span class="bm-balloon" style="left:18%; width:24px; height:30px; background:#e0a010; animation-duration:21s; animation-delay:-14s;"></span>
-  <span class="bm-balloon" style="left:34%; width:38px; height:47px; background:var(--grad-b); animation-duration:31s; animation-delay:-6s;"></span>
-  <span class="bm-balloon" style="left:52%; width:26px; height:33px; background:#6a52c9; animation-duration:23s; animation-delay:-18s;"></span>
-  <span class="bm-balloon" style="left:68%; width:30px; height:38px; background:#cb9dde; animation-duration:28s; animation-delay:-9s;"></span>
-  <span class="bm-balloon" style="left:83%; width:22px; height:28px; background:#f2a6c6; animation-duration:19s; animation-delay:-4s;"></span>
-  <span class="bm-balloon" style="left:93%; width:34px; height:42px; background:var(--grad-a); animation-duration:29s; animation-delay:-21s;"></span>
+  <span class="bm-heart" style="left:6%; font-size:24px; animation-duration:26s; animation-delay:-2s;">❤️</span>
+  <span class="bm-heart" style="left:18%; font-size:18px; animation-duration:21s; animation-delay:-14s;">❤️</span>
+  <span class="bm-heart" style="left:34%; font-size:28px; animation-duration:31s; animation-delay:-6s;">❤️</span>
+  <span class="bm-heart" style="left:52%; font-size:20px; animation-duration:23s; animation-delay:-18s;">❤️</span>
+  <span class="bm-heart" style="left:68%; font-size:26px; animation-duration:28s; animation-delay:-9s;">❤️</span>
+  <span class="bm-heart" style="left:83%; font-size:17px; animation-duration:19s; animation-delay:-4s;">❤️</span>
+  <span class="bm-heart" style="left:93%; font-size:25px; animation-duration:29s; animation-delay:-21s;">❤️</span>
 </div>
 
 <header>
   <div class="wrap row">
-    <a href="<?php echo esc_url( home_url( '/' ) ); ?>" aria-label="Blush Moments">
-      <img class="logo-img" src="<?php echo esc_url( BM_PLUGIN_URL . 'assets/logo.png' ); ?>" alt="Blush Moments">
+    <a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="brand-mark" aria-label="Blush Moments">
+      <span class="brand-heart" aria-hidden="true">❤️</span>
+      <span class="brand-name">Blush<span> Moments</span></span>
     </a>
     <nav>
       <div class="navlinks">
@@ -565,7 +560,7 @@ class Blush_Moments_Homepage_View {
         <span class="pill pill-live"><span class="dot"></span> <span id="bm-live-count">42</span> people creating right now</span>
         <span class="pill pill-badge">💝 India's Newest Digital Gifting Platform</span>
       </div>
-      <h1>Personalized digital gifts <span class="grad hero-script">for people you love</span></h1>
+      <h1>Personalized digital gifts <span class="grad">for people you love</span></h1>
       <p class="lead">Create magical, interactive surprises in minutes — proposal pages, birthday celebrations, and more. Share instantly via WhatsApp, Instagram, or any link. No design skills needed.</p>
       <div class="hero-ctas">
         <a class="btn btn-primary" href="<?php echo esc_url( home_url( '/create/proposal' ) ); ?>">Create Your Surprise →</a>
@@ -579,7 +574,7 @@ class Blush_Moments_Homepage_View {
           <span style="background:#1f9e63;">S</span>
         </div>
         <div class="hero-proof-text">
-          <span class="hero-proof-stars">★★★★★ <b>5.0</b></span>
+          <span class="hero-proof-stars">★★★★★ <b>4.9</b></span>
           <span class="hero-proof-label">Loved by early creators</span>
         </div>
       </div>
@@ -603,7 +598,7 @@ class Blush_Moments_Homepage_View {
     <div><div class="num grad">50+</div><div class="label">SURPRISES CREATED</div></div>
     <div><div class="num grad"><?php echo (int) $live_count; ?></div><div class="label">LIVE EXPERIENCES</div></div>
     <div><div class="num grad">3+</div><div class="label">CITIES REACHED</div></div>
-    <div><div class="num grad">5.0★</div><div class="label">EARLY RATING</div></div>
+    <div><div class="num grad">4.9★</div><div class="label">EARLY RATING</div></div>
   </div>
 </section>
 
@@ -724,11 +719,11 @@ class Blush_Moments_Homepage_View {
 <section class="section">
   <div class="wrap">
     <div class="cta-final">
-      <h2>Ready to Create <span class="hero-script" style="color:#fff;">Magic</span>?</h2>
+      <h2>Ready to Create Magic?</h2>
       <p>No signup. No design skills. Just pure magic — start creating your first surprise for free.</p>
       <a class="btn btn-primary" href="<?php echo esc_url( home_url( '/create/proposal' ) ); ?>">Create Your Surprise →</a>
       <div class="cta-trust">
-        <span>5.0★ early rating</span>
+        <span>4.9★ early rating</span>
         <span>Ready in 5 min</span>
         <span>No app needed</span>
       </div>
@@ -739,7 +734,10 @@ class Blush_Moments_Homepage_View {
 <footer>
   <div class="wrap footer-grid">
     <div>
-      <img class="logo-img" src="<?php echo esc_url( BM_PLUGIN_URL . 'assets/logo.png' ); ?>" alt="Blush Moments">
+      <div class="brand-mark">
+        <span class="brand-heart" aria-hidden="true">❤️</span>
+        <span class="brand-name">Blush<span> Moments</span></span>
+      </div>
       <p class="tag">Crafting unforgettable digital surprises for the people you love. We turn your feelings into magical, shareable moments — instantly.</p>
     </div>
     <div>
