@@ -539,7 +539,7 @@ class Blush_Moments_Homepage_View {
       <h1>Personalized digital gifts <span class="grad">for people you love</span></h1>
       <p class="lead">Create magical, interactive surprises in minutes — proposal pages, birthday celebrations, and more. Share instantly via WhatsApp, Instagram, or any link. No design skills needed.</p>
       <div class="hero-ctas">
-        <a class="btn btn-primary" href="<?php echo esc_url( home_url( '/create/proposal' ) ); ?>">Create Your Surprise →</a>
+        <a class="btn btn-primary" href="#experiences">Create Your Surprise →</a>
         <a class="btn btn-ghost" href="#how-it-works">▶ How It Works</a>
       </div>
       <div class="hero-proof">
