@@ -385,8 +385,11 @@ class Blush_Moments_Homepage_View {
   .step-panel{ position:relative; height:140px; border-radius:20px 20px 0 0; overflow:hidden; display:flex; align-items:center; justify-content:center; }
   .step-num{ font-size:clamp(2.6rem,6vw,3.6rem); font-weight:900; line-height:1; }
   .step-deco{ position:absolute; font-size:1.4rem; opacity:.9; }
-  .step-deco-l{ top:14px; left:16px; transform:rotate(-12deg); }
-  .step-deco-r{ bottom:12px; right:16px; transform:rotate(10deg); }
+  .step-deco-l{ top:14px; left:16px; animation:decoBobL 3.4s ease-in-out infinite; }
+  .step-deco-r{ bottom:12px; right:16px; animation:decoBobR 3.8s ease-in-out infinite; animation-delay:.6s; }
+  @keyframes decoBobL{ 0%,100%{ transform:rotate(-12deg) translateY(0); } 50%{ transform:rotate(-20deg) translateY(-5px); } }
+  @keyframes decoBobR{ 0%,100%{ transform:rotate(10deg) translateY(0); } 50%{ transform:rotate(18deg) translateY(-5px); } }
+  @media (prefers-reduced-motion: reduce){ .step-deco-l, .step-deco-r{ animation:none !important; } }
   .step-1 .step-panel{ background:#fbe1ea; } .step-1 .step-num{ color:#d1476a; }
   .step-2 .step-panel{ background:#fbebd4; } .step-2 .step-num{ color:#c17a24; }
   .step-3 .step-panel{ background:#e8e4fa; } .step-3 .step-num{ color:#6a52c9; }
