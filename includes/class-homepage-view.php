@@ -440,12 +440,12 @@ class Blush_Moments_Homepage_View {
 
   /* logo */
   .brand-mark{ display:inline-flex; align-items:center; gap:9px; text-decoration:none; }
-  .brand-heart{ font-size:1.3rem; display:inline-block; animation:heartPump 1.15s ease-in-out infinite; transform-origin:center; }
+  .brand-heart{ font-size:1.9rem; display:inline-block; animation:heartPump 1.15s ease-in-out infinite; transform-origin:center; }
   @keyframes heartPump{ 0%,100%{ transform:scale(1); } 14%{ transform:scale(1.22); } 28%{ transform:scale(1); } 42%{ transform:scale(1.14); } 56%{ transform:scale(1); } }
   @media (prefers-reduced-motion: reduce){ .brand-heart{ animation:none; } }
-  .brand-name{ font-weight:800; font-size:1.2rem; color:var(--ink); }
+  .brand-name{ font-weight:800; font-size:1.5rem; color:var(--ink); }
   .brand-name span{ color:var(--grad-a); }
-  footer .brand-name{ color:#fff; font-size:1.15rem; }
+  footer .brand-name{ color:#fff; font-size:1.4rem; }
 
   /* motion */
   @keyframes fadeInUp{ from{ opacity:0; transform:translateY(26px); } to{ opacity:1; transform:translateY(0); } }
@@ -477,33 +477,9 @@ class Blush_Moments_Homepage_View {
   .story-card{ transition:transform .28s ease, box-shadow .28s ease; }
   .story-card:hover{ transform:translateY(-5px); box-shadow:0 18px 34px rgba(180,60,90,.1); }
 
-  /* signature floating hearts */
-  .bm-balloons{ position:fixed; inset:0; pointer-events:none; z-index:6; overflow:hidden; }
-  .bm-heart{
-    position:absolute; bottom:-80px; line-height:1; animation:balloonRise linear infinite;
-  }
-  @keyframes balloonRise{
-    0%{ transform:translateY(0) translateX(0) rotate(-6deg) scale(1); opacity:0; }
-    8%{ opacity:.65; }
-    50%{ transform:translateY(-55vh) translateX(18px) rotate(6deg) scale(1.06); }
-    92%{ opacity:.65; }
-    100%{ transform:translateY(-125vh) translateX(-14px) rotate(-6deg) scale(1); opacity:0; }
-  }
-  @media (prefers-reduced-motion: reduce){ .bm-balloons{ display:none; } }
-  @media (max-width:640px){ .bm-heart{ transform:scale(.8); } }
 </style>
 </head>
 <body>
-
-<div class="bm-balloons" aria-hidden="true">
-  <span class="bm-heart" style="left:6%; font-size:24px; animation-duration:26s; animation-delay:-2s;">❤️</span>
-  <span class="bm-heart" style="left:18%; font-size:18px; animation-duration:21s; animation-delay:-14s;">❤️</span>
-  <span class="bm-heart" style="left:34%; font-size:28px; animation-duration:31s; animation-delay:-6s;">❤️</span>
-  <span class="bm-heart" style="left:52%; font-size:20px; animation-duration:23s; animation-delay:-18s;">❤️</span>
-  <span class="bm-heart" style="left:68%; font-size:26px; animation-duration:28s; animation-delay:-9s;">❤️</span>
-  <span class="bm-heart" style="left:83%; font-size:17px; animation-duration:19s; animation-delay:-4s;">❤️</span>
-  <span class="bm-heart" style="left:93%; font-size:25px; animation-duration:29s; animation-delay:-21s;">❤️</span>
-</div>
 
 <header>
   <div class="wrap row">
