@@ -297,7 +297,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     <div class="head">
       <div class="timer">⏳ Offer ends in <span id="countdown">10:00</span></div>
       <h3 id="pwTitle">Sam's surprise is ready 🎉</h3>
-      <p>A private link, made only for Sam</p>
+      <p id="pwSub">A private link, made only for Sam</p>
     </div>
     <div class="body">
       <div class="price-box">
@@ -306,7 +306,7 @@ if ( ! defined( 'ABSPATH' ) ) {
         <div class="sub">ONE-TIME · NO SUBSCRIPTION</div>
       </div>
       <div class="tagline">"The best gifts are made, not bought 💝"</div>
-      <button class="primary-btn" id="unlockBtn" onclick="unlockPay()">🚩 Unlock &amp; Send to Sam →</button>
+      <button class="primary-btn" id="unlockBtn" onclick="unlockPay()">🚩 Unlock &amp; Send →</button>
       <div class="trust">🔒 Secure &nbsp;·&nbsp; ⚡ Instant &nbsp;·&nbsp; 💜 No ads</div>
       <div class="link-note">📅 Your link stays live for 90 days</div>
       <div class="stub-note">Razorpay isn't connected yet — this creates a real draft on the server, but you'll need to mark it paid manually until Phase 3 ships.</div>
@@ -469,6 +469,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     document.getElementById('letterSign').textContent = `— with love, ${state.yourName || 'you'} 💗`;
     document.getElementById('sendBtn').textContent = `Send This to ${their} →`;
     document.getElementById('pwTitle').textContent = `${their}'s surprise is ready 🎉`;
+    document.getElementById('pwSub').textContent = `A private link, made only for ${their}`;
     document.getElementById('letterOpen').style.display='none';
     document.getElementById('letterClosed').style.display='block';
     document.getElementById('toLoveCards').style.display='none';
