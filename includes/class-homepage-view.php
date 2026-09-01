@@ -244,10 +244,10 @@ class Blush_Moments_Homepage_View {
   .hero-grid{ display:grid; grid-template-columns:1.1fr .9fr; gap:40px; align-items:center; position:relative; z-index:1; }
   @media (max-width:900px){ .hero-grid{ grid-template-columns:1fr; gap:34px; } }
 
-  .hero-particles{ position:absolute; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
-  .hero-blob{ position:absolute; border-radius:50%; filter:blur(40px); opacity:.35; animation:blobDrift 14s ease-in-out infinite; }
+  .hero-particles{ position:absolute; top:0; left:0; right:0; height:560px; max-height:100%; z-index:0; pointer-events:none; overflow:hidden; }
+  .hero-blob{ position:absolute; border-radius:50%; filter:blur(40px); opacity:.28; animation:blobDrift 14s ease-in-out infinite; }
   .hero-blob-1{ width:220px; height:220px; background:var(--grad-a); top:-40px; left:6%; animation-duration:16s; }
-  .hero-blob-2{ width:180px; height:180px; background:var(--grad-b); bottom:-30px; left:38%; animation-duration:19s; animation-delay:-4s; }
+  .hero-blob-2{ width:180px; height:180px; background:var(--grad-b); top:300px; left:38%; animation-duration:19s; animation-delay:-4s; }
   .hero-blob-3{ width:160px; height:160px; background:#c77dff; top:10%; right:4%; animation-duration:15s; animation-delay:-8s; }
   .hero-spark{ position:absolute; font-size:1rem; opacity:0; animation:sparkTwinkle 5s ease-in-out infinite; }
   @keyframes blobDrift{ 0%,100%{ transform:translate(0,0) scale(1); } 50%{ transform:translate(18px,-22px) scale(1.08); } }
@@ -257,7 +257,10 @@ class Blush_Moments_Homepage_View {
   .pill{ display:inline-flex; align-items:center; gap:6px; font-size:.8rem; font-weight:700; padding:8px 14px; border-radius:999px; }
   .pill-live{ background:#e9f9ee; color:#1c8a4b; }
   .pill-live .dot{ width:7px; height:7px; border-radius:50%; background:#1c8a4b; }
-  .pill-badge{ background:#f3e2f4; color:#7a3480; position:relative; overflow:hidden; }
+  .pill-badge{
+    background:#f8f2fa; color:#7a3480; position:relative; overflow:hidden;
+    border:1.5px solid rgba(142,69,133,.3); box-shadow:0 0 0 4px rgba(142,69,133,.07);
+  }
   .pill-badge::after{
     content:''; position:absolute; top:0; bottom:0; left:-60%; width:40%;
     background:linear-gradient(100deg, transparent, rgba(255,255,255,.75), transparent);
@@ -268,6 +271,26 @@ class Blush_Moments_Homepage_View {
   .hero h1{ font-size:clamp(1.9rem,7vw,2.9rem); font-weight:900; line-height:1.16; text-wrap:balance; }
   .hero p.lead{ color:var(--muted); font-size:clamp(.95rem,2.6vw,1.08rem); margin:18px 0 26px; max-width:520px; }
   .hero-ctas{ display:flex; flex-wrap:wrap; gap:14px; }
+  .hero-proof{ display:flex; align-items:center; gap:12px; margin-top:22px; }
+  .hero-proof-avatars{ display:flex; }
+  .hero-proof-avatars span{
+    width:34px; height:34px; border-radius:50%; border:2px solid var(--cream);
+    display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:.8rem;
+    margin-left:-10px;
+  }
+  .hero-proof-avatars span:first-child{ margin-left:0; }
+  .hero-proof-text{ display:flex; flex-direction:column; line-height:1.3; }
+  .hero-proof-stars{ color:#e0a010; font-weight:700; font-size:.9rem; }
+  .hero-proof-stars b{ color:var(--ink); margin-left:2px; }
+  .hero-proof-label{ font-size:.78rem; color:var(--muted); font-weight:600; }
+  @media (max-width:640px){
+    .hero-grid > div:first-child{ text-align:center; }
+    .badges{ justify-content:center; }
+    .hero p.lead{ margin-left:auto; margin-right:auto; }
+    .hero-ctas{ justify-content:center; }
+    .hero-proof{ justify-content:center; margin-top:26px; }
+    .hero-visual{ display:none; }
+  }
   .hero-visual{ position:relative; }
   .phone{
     background:#1b1420; border-radius:34px; padding:14px; box-shadow:0 30px 60px rgba(60,20,40,.25);
@@ -276,7 +299,22 @@ class Blush_Moments_Homepage_View {
   .phone-screen{ background:linear-gradient(160deg,#fff,#f7ecfa); border-radius:22px; padding:22px 16px; min-height:360px; }
   .phone-screen .step-label{ font-size:.7rem; font-weight:800; letter-spacing:.06em; color:var(--grad-a); }
   .phone-screen h3{ margin-top:10px; font-size:1.05rem; }
-  .phone-screen .balloon{ display:inline-block; margin:14px 6px 0 0; padding:10px 14px; border-radius:16px; background:#fff; border:1.5px solid var(--line); font-size:.85rem; }
+  .phone-screen .balloon{
+    display:inline-block; margin:14px 6px 0 0; padding:10px 14px; border-radius:16px; background:#fff;
+    border:1.5px solid var(--line); font-size:.85rem; opacity:0;
+    animation:balloonIn .5s ease forwards, balloonBob 3.6s ease-in-out infinite;
+  }
+  .phone-screen .balloon:nth-of-type(2){ animation-delay:.3s, 1.8s; }
+  .phone-screen .balloon:nth-of-type(3){ animation-delay:.55s, .4s; }
+  @keyframes balloonIn{ from{ opacity:0; transform:translateY(10px) scale(.94); } to{ opacity:1; transform:translateY(0) scale(1); } }
+  @keyframes balloonBob{ 0%,100%{ transform:translateY(0) rotate(0deg); } 50%{ transform:translateY(-4px) rotate(-1deg); } }
+  .phone-screen .step-label{ position:relative; }
+  .phone-screen .step-label .dot-live{
+    display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--grad-a);
+    margin-right:6px; animation:pulseDotOrchid 1.8s ease-in-out infinite;
+  }
+  @keyframes pulseDotOrchid{ 0%,100%{ box-shadow:0 0 0 0 rgba(142,69,133,.45); } 50%{ box-shadow:0 0 0 6px rgba(142,69,133,0); } }
+  @media (prefers-reduced-motion: reduce){ .phone-screen .balloon{ animation:balloonIn .01s forwards !important; } .phone-screen .step-label .dot-live{ animation:none !important; } }
   .float-card{
     position:absolute; z-index:5; background:#fff; border-radius:16px; padding:12px 16px; box-shadow:0 16px 30px rgba(60,20,40,.15);
     font-size:.82rem; font-weight:700; display:flex; align-items:center; gap:8px; white-space:nowrap;
@@ -449,12 +487,24 @@ class Blush_Moments_Homepage_View {
         <a class="btn btn-primary" href="<?php echo esc_url( home_url( '/create/proposal' ) ); ?>">Create Your Surprise →</a>
         <a class="btn btn-ghost" href="#how-it-works">▶ How It Works</a>
       </div>
+      <div class="hero-proof">
+        <div class="hero-proof-avatars">
+          <span style="background:#d1476a;">R</span>
+          <span style="background:#c17a24;">A</span>
+          <span style="background:#6a52c9;">K</span>
+          <span style="background:#1f9e63;">S</span>
+        </div>
+        <div class="hero-proof-text">
+          <span class="hero-proof-stars">★★★★★ <b>5.0</b></span>
+          <span class="hero-proof-label">Loved by early creators</span>
+        </div>
+      </div>
     </div>
     <div class="hero-visual">
       <div class="float-card float-1"><span class="avatar" style="background:var(--grad-a);">A</span> <span id="bm-toast-text">Aditya unlocked Birthday</span></div>
       <div class="phone">
         <div class="phone-screen">
-          <div class="step-label">STEP 3 OF 5</div>
+          <div class="step-label"><span class="dot-live"></span>STEP 3 OF 5</div>
           <h3>Fill the balloons 🎈</h3>
           <p style="color:var(--muted); font-size:.85rem; margin-top:6px;">Each balloon hides one reason they're loved.</p>
           <div class="balloon">Your laugh is my favourite sound</div>
