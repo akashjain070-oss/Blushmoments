@@ -239,15 +239,32 @@ class Blush_Moments_Homepage_View {
   @media (max-width:820px){ header nav .navlinks{ display:none; } }
 
   /* hero */
-  .hero{ padding:64px 0 30px; }
+  .hero{ padding:64px 0 30px; position:relative; overflow:hidden; }
   @media (max-width:600px){ .hero{ padding:36px 0 12px; } }
-  .hero-grid{ display:grid; grid-template-columns:1.1fr .9fr; gap:40px; align-items:center; }
+  .hero-grid{ display:grid; grid-template-columns:1.1fr .9fr; gap:40px; align-items:center; position:relative; z-index:1; }
   @media (max-width:900px){ .hero-grid{ grid-template-columns:1fr; gap:34px; } }
+
+  .hero-particles{ position:absolute; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+  .hero-blob{ position:absolute; border-radius:50%; filter:blur(40px); opacity:.35; animation:blobDrift 14s ease-in-out infinite; }
+  .hero-blob-1{ width:220px; height:220px; background:var(--grad-a); top:-40px; left:6%; animation-duration:16s; }
+  .hero-blob-2{ width:180px; height:180px; background:var(--grad-b); bottom:-30px; left:38%; animation-duration:19s; animation-delay:-4s; }
+  .hero-blob-3{ width:160px; height:160px; background:#c77dff; top:10%; right:4%; animation-duration:15s; animation-delay:-8s; }
+  .hero-spark{ position:absolute; font-size:1rem; opacity:0; animation:sparkTwinkle 5s ease-in-out infinite; }
+  @keyframes blobDrift{ 0%,100%{ transform:translate(0,0) scale(1); } 50%{ transform:translate(18px,-22px) scale(1.08); } }
+  @keyframes sparkTwinkle{ 0%,100%{ opacity:0; transform:scale(.6) translateY(0); } 50%{ opacity:.8; transform:scale(1) translateY(-8px); } }
+  @media (prefers-reduced-motion: reduce){ .hero-blob, .hero-spark{ animation:none !important; } }
   .badges{ display:flex; flex-wrap:wrap; gap:10px; margin-bottom:22px; }
   .pill{ display:inline-flex; align-items:center; gap:6px; font-size:.8rem; font-weight:700; padding:8px 14px; border-radius:999px; }
   .pill-live{ background:#e9f9ee; color:#1c8a4b; }
   .pill-live .dot{ width:7px; height:7px; border-radius:50%; background:#1c8a4b; }
-  .pill-badge{ background:#f3e2f4; color:#7a3480; }
+  .pill-badge{ background:#f3e2f4; color:#7a3480; position:relative; overflow:hidden; }
+  .pill-badge::after{
+    content:''; position:absolute; top:0; bottom:0; left:-60%; width:40%;
+    background:linear-gradient(100deg, transparent, rgba(255,255,255,.75), transparent);
+    animation:pillShine 3.2s ease-in-out infinite;
+  }
+  @keyframes pillShine{ 0%{ left:-60%; } 55%,100%{ left:130%; } }
+  @media (prefers-reduced-motion: reduce){ .pill-badge::after{ animation:none !important; } }
   .hero h1{ font-size:clamp(1.9rem,7vw,2.9rem); font-weight:900; line-height:1.16; text-wrap:balance; }
   .hero p.lead{ color:var(--muted); font-size:clamp(.95rem,2.6vw,1.08rem); margin:18px 0 26px; max-width:520px; }
   .hero-ctas{ display:flex; flex-wrap:wrap; gap:14px; }
@@ -301,9 +318,18 @@ class Blush_Moments_Homepage_View {
   .steps-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:24px; }
   @media (max-width:900px){ .steps-grid{ grid-template-columns:1fr 1fr; } }
   @media (max-width:560px){ .steps-grid{ grid-template-columns:1fr; } }
-  .step{ text-align:center; padding:26px 18px; }
-  .step .num{ width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg,var(--grad-a),var(--grad-b)); color:#fff; font-weight:800; display:flex; align-items:center; justify-content:center; margin:0 auto 14px; }
-  .step .emoji{ font-size:1.6rem; margin-bottom:8px; }
+  .step{ text-align:center; }
+  .step-panel{ position:relative; height:140px; border-radius:20px 20px 0 0; overflow:hidden; display:flex; align-items:center; justify-content:center; }
+  .step-num{ font-size:clamp(2.6rem,6vw,3.6rem); font-weight:900; line-height:1; }
+  .step-deco{ position:absolute; font-size:1.4rem; opacity:.9; }
+  .step-deco-l{ top:14px; left:16px; transform:rotate(-12deg); }
+  .step-deco-r{ bottom:12px; right:16px; transform:rotate(10deg); }
+  .step-1 .step-panel{ background:#fbe1ea; } .step-1 .step-num{ color:#d1476a; }
+  .step-2 .step-panel{ background:#fbebd4; } .step-2 .step-num{ color:#c17a24; }
+  .step-3 .step-panel{ background:#e8e4fa; } .step-3 .step-num{ color:#6a52c9; }
+  .step-4 .step-panel{ background:#dff5ea; } .step-4 .step-num{ color:#1f9e63; }
+  .step-body{ padding:22px 18px 26px; }
+  .step .emoji{ font-size:1.7rem; margin-bottom:8px; }
   .step h4{ font-size:1.02rem; margin-bottom:6px; }
   .step p{ color:var(--muted); font-size:.86rem; }
 
@@ -372,10 +398,10 @@ class Blush_Moments_Homepage_View {
   .exp-card{ transition:transform .28s ease, box-shadow .28s ease; }
   .exp-card:hover{ transform:translateY(-6px); box-shadow:0 22px 44px rgba(180,60,90,.14); }
 
-  .step{ background:#fff; border:1.5px solid var(--line); border-radius:20px; box-shadow:0 10px 26px rgba(180,60,90,.05); transition:transform .28s ease, box-shadow .28s ease; }
+  .step{ background:#fff; border:1.5px solid var(--line); border-radius:20px; overflow:hidden; box-shadow:0 10px 26px rgba(180,60,90,.05); transition:transform .28s ease, box-shadow .28s ease; }
   .step:hover{ transform:translateY(-5px); box-shadow:0 18px 34px rgba(180,60,90,.12); }
-  .step .num{ box-shadow:0 8px 18px rgba(142,69,133,.35); }
-  .step .emoji{ font-size:2rem; }
+  .step:hover .step-num{ transform:scale(1.08); }
+  .step-num{ transition:transform .28s ease; }
 
   .story-card{ transition:transform .28s ease, box-shadow .28s ease; }
   .story-card:hover{ transform:translateY(-5px); box-shadow:0 18px 34px rgba(180,60,90,.1); }
@@ -401,6 +427,16 @@ class Blush_Moments_Homepage_View {
 </header>
 
 <section class="hero">
+  <div class="hero-particles" aria-hidden="true">
+    <span class="hero-blob hero-blob-1"></span>
+    <span class="hero-blob hero-blob-2"></span>
+    <span class="hero-blob hero-blob-3"></span>
+    <span class="hero-spark" style="top:18%; left:22%; animation-delay:.2s;">✨</span>
+    <span class="hero-spark" style="top:62%; left:14%; animation-delay:1.6s;">✨</span>
+    <span class="hero-spark" style="top:32%; left:48%; animation-delay:2.8s;">✨</span>
+    <span class="hero-spark" style="top:75%; left:58%; animation-delay:.9s;">✨</span>
+    <span class="hero-spark" style="top:12%; left:78%; animation-delay:3.6s;">✨</span>
+  </div>
   <div class="wrap hero-grid">
     <div>
       <div class="badges">
@@ -478,12 +514,27 @@ class Blush_Moments_Homepage_View {
       <p class="lead">No design skills needed. Build a stunning digital surprise in under five minutes and share it instantly with anyone, anywhere.</p>
     </div>
     <div class="steps-grid">
-      <?php foreach ( self::STEPS as $i => $step ) : ?>
-      <div class="step reveal">
-        <div class="num"><?php echo esc_html( $i + 1 ); ?></div>
-        <div class="emoji"><?php echo esc_html( $step['emoji'] ); ?></div>
-        <h4><?php echo esc_html( $step['title'] ); ?></h4>
-        <p><?php echo esc_html( $step['copy'] ); ?></p>
+      <?php
+			$step_decos = array(
+				array( '🎀', '✨' ),
+				array( '🎨', '💫' ),
+				array( '🔍', '✅' ),
+				array( '📤', '💌' ),
+			);
+			foreach ( self::STEPS as $i => $step ) :
+				$deco = isset( $step_decos[ $i ] ) ? $step_decos[ $i ] : array( '✨', '✨' );
+				?>
+      <div class="step reveal step-<?php echo esc_attr( $i + 1 ); ?>">
+        <div class="step-panel">
+          <span class="step-deco step-deco-l"><?php echo esc_html( $deco[0] ); ?></span>
+          <span class="step-deco step-deco-r"><?php echo esc_html( $deco[1] ); ?></span>
+          <div class="step-num"><?php echo esc_html( sprintf( '%02d', $i + 1 ) ); ?></div>
+        </div>
+        <div class="step-body">
+          <div class="emoji"><?php echo esc_html( $step['emoji'] ); ?></div>
+          <h4><?php echo esc_html( $step['title'] ); ?></h4>
+          <p><?php echo esc_html( $step['copy'] ); ?></p>
+        </div>
       </div>
       <?php endforeach; ?>
     </div>
