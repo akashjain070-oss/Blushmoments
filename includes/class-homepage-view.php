@@ -203,6 +203,9 @@ class Blush_Moments_Homepage_View {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Blush Moments — Personalized Digital Gifts That Feel Real</title>
+<link rel="icon" type="image/png" sizes="32x32" href="<?php echo esc_url( BM_PLUGIN_URL . 'assets/favicon-32.png' ); ?>">
+<link rel="apple-touch-icon" sizes="180x180" href="<?php echo esc_url( BM_PLUGIN_URL . 'assets/favicon-180.png' ); ?>">
+<link rel="icon" type="image/png" sizes="512x512" href="<?php echo esc_url( BM_PLUGIN_URL . 'assets/favicon-512.png' ); ?>">
 <style>
   :root{
     --ink:#2c1c22; --muted:#8a7580; --cream:#fff8f5; --line:#f2e2e6;
@@ -338,13 +341,49 @@ class Blush_Moments_Homepage_View {
   footer ul a{ text-decoration:none; color:#c9a3ad; font-size:.88rem; }
   .footer-bottom{ border-top:1px solid rgba(255,255,255,.1); margin-top:44px; padding-top:22px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; font-size:.78rem; color:#a98891; }
   .footer-bottom a{ text-decoration:none; color:#a98891; margin-left:14px; }
+
+  /* logo */
+  .logo-img{ height:38px; width:auto; display:block; }
+  footer .logo-img{ height:34px; filter:brightness(0) invert(1); opacity:.95; }
+
+  /* motion */
+  @keyframes fadeInUp{ from{ opacity:0; transform:translateY(26px); } to{ opacity:1; transform:translateY(0); } }
+  @keyframes floatY{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-10px); } }
+  @keyframes pulseDot{ 0%,100%{ box-shadow:0 0 0 0 rgba(28,138,75,.4); } 50%{ box-shadow:0 0 0 6px rgba(28,138,75,0); } }
+  @media (prefers-reduced-motion: reduce){
+    .reveal{ opacity:1 !important; transform:none !important; animation:none !important; transition:none !important; }
+    .phone, .float-card{ animation:none !important; }
+  }
+  .reveal{ opacity:0; transform:translateY(26px); transition:opacity .6s ease, transform .6s ease; }
+  .reveal.in-view{ opacity:1; transform:translateY(0); }
+  .grid-3 .reveal:nth-child(2), .steps-grid .reveal:nth-child(2){ transition-delay:.08s; }
+  .grid-3 .reveal:nth-child(3), .steps-grid .reveal:nth-child(3){ transition-delay:.16s; }
+  .steps-grid .reveal:nth-child(4){ transition-delay:.24s; }
+
+  .pill-live .dot{ animation:pulseDot 2s ease-in-out infinite; }
+  .phone{ animation:floatY 5s ease-in-out infinite; }
+  .float-card{ animation:floatY 4.5s ease-in-out infinite; }
+  .float-card.float-2{ animation-delay:.6s; }
+
+  .exp-card{ transition:transform .28s ease, box-shadow .28s ease; }
+  .exp-card:hover{ transform:translateY(-6px); box-shadow:0 22px 44px rgba(180,60,90,.14); }
+
+  .step{ background:#fff; border:1.5px solid var(--line); border-radius:20px; box-shadow:0 10px 26px rgba(180,60,90,.05); transition:transform .28s ease, box-shadow .28s ease; }
+  .step:hover{ transform:translateY(-5px); box-shadow:0 18px 34px rgba(180,60,90,.12); }
+  .step .num{ box-shadow:0 8px 18px rgba(242,80,120,.35); }
+  .step .emoji{ font-size:2rem; }
+
+  .story-card{ transition:transform .28s ease, box-shadow .28s ease; }
+  .story-card:hover{ transform:translateY(-5px); box-shadow:0 18px 34px rgba(180,60,90,.1); }
 </style>
 </head>
 <body>
 
 <header>
   <div class="wrap row">
-    <div class="word">Blush<span> Moments</span></div>
+    <a href="<?php echo esc_url( home_url( '/' ) ); ?>" aria-label="Blush Moments">
+      <img class="logo-img" src="<?php echo esc_url( BM_PLUGIN_URL . 'assets/logo.png' ); ?>" alt="Blush Moments">
+    </a>
     <nav>
       <div class="navlinks" style="display:flex; gap:28px;">
         <a class="link" href="#experiences">Experiences</a>
@@ -405,7 +444,7 @@ class Blush_Moments_Homepage_View {
       <?php foreach ( $experiences as $key => $info ) :
 				$is_live = file_exists( BM_PLUGIN_DIR . 'builders/' . $key . '.php' );
 				?>
-      <div class="exp-card <?php echo $is_live ? '' : 'disabled'; ?>">
+      <div class="exp-card reveal <?php echo $is_live ? '' : 'disabled'; ?>">
         <div class="exp-banner" style="background:<?php echo esc_attr( $info['accent'] ); ?>22;"><?php echo esc_html( $info['emoji'] ); ?></div>
         <div class="exp-body">
           <div class="exp-tags">
@@ -436,7 +475,7 @@ class Blush_Moments_Homepage_View {
     </div>
     <div class="steps-grid">
       <?php foreach ( self::STEPS as $i => $step ) : ?>
-      <div class="step">
+      <div class="step reveal">
         <div class="num"><?php echo esc_html( $i + 1 ); ?></div>
         <div class="emoji"><?php echo esc_html( $step['emoji'] ); ?></div>
         <h4><?php echo esc_html( $step['title'] ); ?></h4>
@@ -456,7 +495,7 @@ class Blush_Moments_Homepage_View {
     </div>
     <div class="grid-3">
       <?php foreach ( self::TESTIMONIALS as $t ) : ?>
-      <div class="story-card">
+      <div class="story-card reveal">
         <div class="stars">★★★★★</div>
         <blockquote>&ldquo;<?php echo esc_html( $t['quote'] ); ?>&rdquo;</blockquote>
         <div class="story-who">
@@ -511,7 +550,7 @@ class Blush_Moments_Homepage_View {
 <footer>
   <div class="wrap footer-grid">
     <div>
-      <div class="word">Blush<span> Moments</span></div>
+      <img class="logo-img" src="<?php echo esc_url( BM_PLUGIN_URL . 'assets/logo.png' ); ?>" alt="Blush Moments">
       <p class="tag">Crafting unforgettable digital surprises for the people you love. We turn your feelings into magical, shareable moments — instantly.</p>
     </div>
     <div>
@@ -572,6 +611,23 @@ function bmToggleFaq(btn) {
   document.querySelectorAll('.faq-item.open').forEach(function(el){ el.classList.remove('open'); });
   if (!wasOpen) item.classList.add('open');
 }
+
+(function(){
+  var targets = document.querySelectorAll('.reveal');
+  if (!('IntersectionObserver' in window)) {
+    targets.forEach(function(el){ el.classList.add('in-view'); });
+    return;
+  }
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in-view');
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+  targets.forEach(function(el){ io.observe(el); });
+})();
 </script>
 
 </body>
