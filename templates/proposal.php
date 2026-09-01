@@ -35,29 +35,43 @@ $love_cards = ! empty( $surprise['content']['love_cards'] ) ? $surprise['content
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title><?php echo esc_html( $their_name ); ?>'s Surprise</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;800;900&family=Yellowtail&display=swap" rel="stylesheet">
 <style>
   :root{
-    --pink-deep:#ff5c8a; --pink:#ff7aa2; --pink-soft:#ffe1ea;
-    --gold:#ffb84d; --ink:#2c1c2e; --muted:#8a7580;
+    --pink-deep:#d1476a; --pink:#e8637d; --pink-soft:#f8e3de;
+    --gold:#b8794f; --ink:#3a2620; --muted:#8a6e63;
+    --font-display:'Outfit', -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --font-script:'Yellowtail', cursive;
+    --spring:cubic-bezier(.34,1.56,.64,1);
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   html,body{ height:100%; }
   body{
     font-family:-apple-system, 'Segoe UI', Roboto, sans-serif;
-    background:linear-gradient(160deg,#ffd6e2,#ffb8cf 55%,#f3c9e0);
+    background:linear-gradient(160deg,#faf3ec,#f3ddd6 55%,#f7e6de);
     min-height:100vh; overflow-x:hidden; color:var(--ink); position:relative;
   }
+  h2, .celeb-title, .recip-name, .letter-card .t1{ font-family:var(--font-display); letter-spacing:-.01em; }
+  @keyframes shimmer{ 0%{ transform:translateX(-120%) skewX(-15deg); } 100%{ transform:translateX(220%) skewX(-15deg); } }
+  .wordmark{ text-align:center; padding:14px 0 0; }
+  .wordmark .script{ font-family:var(--font-script); font-size:2.1rem; color:var(--pink-deep); line-height:1; }
+  .wordmark .sans{ font-family:var(--font-display); font-size:1rem; font-weight:600; color:var(--muted); letter-spacing:.08em; margin-top:-4px; }
   .stage{ max-width:420px; margin:0 auto; min-height:100vh; position:relative; padding-bottom:40px; }
   .card{
     background:#fff; border-radius:22px; margin:14px 20px; padding:28px 24px;
-    box-shadow:0 18px 40px rgba(200,50,110,.18); position:relative;
+    box-shadow:0 18px 40px rgba(160,60,50,.18); position:relative;
   }
   .primary-btn{
     width:100%; border:none; border-radius:40px; padding:15px;
     background:linear-gradient(135deg,var(--pink-deep),var(--gold));
-    color:#fff; font-weight:700; font-size:.95rem; cursor:pointer;
-    box-shadow:0 10px 26px rgba(255,92,138,.35);
+    color:#fff; font-weight:700; font-family:var(--font-display); font-size:.95rem; cursor:pointer;
+    box-shadow:0 10px 26px rgba(209,71,106,.35), 0 0 0 6px rgba(209,71,106,.08);
+    position:relative; overflow:hidden; transition:transform .3s var(--spring);
   }
+  .primary-btn::after{ content:''; position:absolute; inset:0; background:linear-gradient(100deg,transparent 40%,rgba(255,255,255,.45) 50%,transparent 60%); transform:translateX(-120%) skewX(-15deg); animation:shimmer 2.8s ease-in-out infinite; animation-delay:1s; }
+  .primary-btn:active{ transform:scale(.97); }
   .recip-heart{ font-size:2.8rem; text-align:center; margin-bottom:8px; filter:drop-shadow(0 4px 10px rgba(255,92,138,.4)); }
   .recip-name{ text-align:center; font-size:1.6rem; font-weight:800; color:var(--pink-deep); margin-bottom:4px; }
   .recip-q{ text-align:center; font-size:1.15rem; font-weight:700; margin-bottom:26px; }
@@ -65,10 +79,12 @@ $love_cards = ! empty( $surprise['content']['love_cards'] ) ? $surprise['content
   .yes-btn{
     width:80%; border:none; border-radius:40px; padding:16px;
     background:linear-gradient(135deg,var(--pink-deep),var(--gold)); color:#fff;
-    font-weight:800; font-size:1rem; cursor:pointer; box-shadow:0 10px 26px rgba(255,92,138,.35);
-    transition:transform .15s ease;
+    font-weight:800; font-family:var(--font-display); font-size:1rem; cursor:pointer;
+    box-shadow:0 10px 26px rgba(209,71,106,.35), 0 0 0 6px rgba(209,71,106,.08);
+    transition:transform .3s var(--spring); position:relative; overflow:hidden;
   }
-  .yes-btn.grew{ transform:scale(1.05); }
+  .yes-btn::after{ content:''; position:absolute; inset:0; background:linear-gradient(100deg,transparent 40%,rgba(255,255,255,.45) 50%,transparent 60%); transform:translateX(-120%) skewX(-15deg); animation:shimmer 2.8s ease-in-out infinite; }
+  .yes-btn.grew{ transform:scale(1.08); }
   .no-btn{
     border:1.5px solid #e9d3da; background:#fafafa; color:var(--muted);
     border-radius:40px; padding:12px 28px; font-weight:700; cursor:pointer;
@@ -100,7 +116,7 @@ $love_cards = ! empty( $surprise['content']['love_cards'] ) ? $surprise['content
   .lc-track::-webkit-scrollbar{ display:none; }
   .lc-card{
     scroll-snap-align:center; flex:0 0 220px; height:260px; border-radius:16px;
-    background:linear-gradient(150deg,#ffd6e2,#ffb0cd);
+    background:linear-gradient(150deg,var(--pink),var(--gold));
     display:flex; flex-direction:column; align-items:center; justify-content:center;
     font-size:2.6rem; color:#fff; position:relative; overflow:hidden;
   }
@@ -110,6 +126,7 @@ $love_cards = ! empty( $surprise['content']['love_cards'] ) ? $surprise['content
   .lc-dots span.on{ background:var(--pink-deep); width:16px; border-radius:6px; }
   .lc-caption{ text-align:center; font-size:.85rem; color:var(--muted); margin-bottom:8px; }
   .closing{ text-align:center; font-size:.85rem; color:var(--muted); padding:20px 24px 0; }
+  .closing .script{ font-family:var(--font-script); font-size:1.3rem; color:var(--pink-deep); line-height:1; }
   .step{ display:none; }
   .step.active{ display:block; }
   #emojiRain{ position:fixed; inset:0; pointer-events:none; z-index:40; overflow:hidden; }
@@ -122,6 +139,8 @@ $love_cards = ! empty( $surprise['content']['love_cards'] ) ? $surprise['content
 <div id="emojiRain"></div>
 
 <div class="stage">
+
+  <div class="wordmark"><div class="script">Blush</div><div class="sans">MOMENTS</div></div>
 
   <div class="step active" data-step="question">
     <div class="card">
@@ -161,7 +180,7 @@ $love_cards = ! empty( $surprise['content']['love_cards'] ) ? $surprise['content
       <div class="lc-track" id="lcTrack"></div>
       <div class="lc-dots" id="lcDots"></div>
       <div class="lc-caption">👉 Jo abhi tumne feel kiya, woh bhi feel karegi — because of you 💕</div>
-      <div class="closing">Made with Blush Moments, just for you.</div>
+      <div class="closing">Made with <span class="script">Blush Moments</span>, just for you.</div>
     </div>
   </div>
 

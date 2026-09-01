@@ -18,18 +18,29 @@ if ( ! defined( 'ABSPATH' ) ) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Send a Birthday Surprise — Blush Moments</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;800;900&family=Yellowtail&display=swap" rel="stylesheet">
 <style>
   :root{
-    --gold-deep:#f2790b; --gold:#ffb84d; --peach-soft:#fff0e0;
-    --ink:#2c1c17; --muted:#8a7565; --night:#2a1830; --night-card:#3a2440;
+    --gold-deep:#c17a3f; --gold:#e0a868; --peach-soft:#f8ead9;
+    --ink:#3a2620; --muted:#8a6e63; --night:#2a1830; --night-card:#3a2440;
+    --font-display:'Outfit', -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --font-script:'Yellowtail', cursive;
+    --spring:cubic-bezier(.34,1.56,.64,1);
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   html,body{ height:100%; }
   body{
     font-family:-apple-system, 'Segoe UI', Roboto, sans-serif;
-    background:linear-gradient(160deg,#ffe3c4,#ffcf9e 55%,#ffd9b0);
+    background:linear-gradient(160deg,#faf3ec,#f3ddc8 55%,#f7e6d4);
     min-height:100vh; overflow-x:hidden; color:var(--ink); position:relative;
   }
+  h2, .closing-wrap .big, .night .big{ font-family:var(--font-display); letter-spacing:-.01em; }
+  @keyframes shimmer{ 0%{ transform:translateX(-120%) skewX(-15deg); } 100%{ transform:translateX(220%) skewX(-15deg); } }
+  .wordmark{ text-align:center; padding:14px 0 0; }
+  .wordmark .script{ font-family:var(--font-script); font-size:2.1rem; color:var(--gold-deep); line-height:1; }
+  .wordmark .sans{ font-family:var(--font-display); font-size:1rem; font-weight:600; color:var(--muted); letter-spacing:.08em; margin-top:-4px; }
   .stage{ max-width:420px; margin:0 auto; min-height:100vh; position:relative; padding-bottom:40px; }
   .progress{ display:flex; align-items:center; gap:6px; padding:18px 20px 6px; font-size:.72rem; font-weight:700; color:var(--gold-deep); letter-spacing:.3px; }
   .progress .balloons{ display:flex; gap:3px; margin-right:8px; }
@@ -44,14 +55,17 @@ if ( ! defined( 'ABSPATH' ) ) {
   input[type=text]:focus, input[type=number]:focus, textarea:focus, select:focus{ outline:none; border-color:var(--gold); }
   textarea{ resize:none; height:110px; }
   .row2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-  .primary-btn{ width:100%; border:none; border-radius:40px; padding:15px; background:linear-gradient(135deg,var(--gold-deep),var(--gold)); color:#fff; font-weight:700; font-size:.95rem; cursor:pointer; box-shadow:0 10px 26px rgba(242,121,11,.35); }
+  .primary-btn{ width:100%; border:none; border-radius:40px; padding:15px; background:linear-gradient(135deg,var(--gold-deep),var(--gold)); color:#fff; font-weight:700; font-family:var(--font-display); font-size:.95rem; cursor:pointer; box-shadow:0 10px 26px rgba(193,122,63,.35), 0 0 0 6px rgba(193,122,63,.08); position:relative; overflow:hidden; transition:transform .3s var(--spring), box-shadow .3s ease; }
+  .primary-btn::after{ content:''; position:absolute; inset:0; background:linear-gradient(100deg,transparent 40%,rgba(255,255,255,.45) 50%,transparent 60%); transform:translateX(-120%) skewX(-15deg); animation:shimmer 2.8s ease-in-out infinite; animation-delay:1s; }
+  .primary-btn:active{ transform:scale(.97); }
   .primary-btn:disabled{ opacity:.5; cursor:not-allowed; }
+  .primary-btn:disabled::after{ display:none; }
   .grid3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:6px; }
-  .cake-card{ border:1.5px solid #f6e6d0; border-radius:16px; padding:16px 6px; text-align:center; cursor:pointer; background:#fffaf3; transition:.15s; }
+  .cake-card{ border:1.5px solid #f6e6d0; border-radius:16px; padding:16px 6px; text-align:center; cursor:pointer; background:#fffaf3; transition:transform .25s var(--spring), border-color .2s ease, background .2s ease, box-shadow .2s ease; }
   .cake-card .emoji{ font-size:1.6rem; display:block; margin-bottom:8px; }
   .cake-card .name{ font-size:.8rem; font-weight:700; }
   .cake-card .desc{ font-size:.68rem; color:var(--muted); margin-top:2px; }
-  .cake-card.selected{ border-color:var(--gold-deep); background:var(--peach-soft); }
+  .cake-card.selected{ border-color:var(--gold-deep); background:var(--peach-soft); transform:scale(1.04); box-shadow:0 8px 18px rgba(193,122,63,.18); }
   .balloon-field{ display:flex; align-items:center; gap:10px; border:1.5px solid #f2e0c8; border-radius:12px; padding:6px 14px; margin-bottom:10px; background:#fffaf3; }
   .balloon-field .bemoji{ font-size:1.1rem; }
   .balloon-field input{ border:none; background:none; padding:8px 0; margin:0; flex:1; }
@@ -161,6 +175,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 <div id="confettiRain"></div>
 
 <div class="stage">
+
+  <div class="wordmark"><div class="script">Blush</div><div class="sans">MOMENTS</div></div>
 
   <div class="progress" id="progressBar">
     <div class="balloons" id="progressBalloons"></div>

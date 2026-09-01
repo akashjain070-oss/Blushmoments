@@ -37,10 +37,15 @@ $cake_label = $cake_labels[ $cake_key ] ?? 'Strawberry Blush';
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Happy Birthday, <?php echo esc_html( $their_name ); ?>!</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;800;900&family=Yellowtail&display=swap" rel="stylesheet">
 <style>
   :root{
-    --gold-deep:#f2790b; --gold:#ffb84d; --peach-soft:#fff0e0;
-    --ink:#2c1c17; --muted:#8a7565; --night:#2a1830; --night-card:#3a2440;
+    --gold-deep:#c17a3f; --gold:#e0a868; --peach-soft:#f8ead9;
+    --ink:#3a2620; --muted:#8a6e63; --night:#2a1830; --night-card:#3a2440;
+    --font-display:'Outfit', -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --font-script:'Yellowtail', cursive;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   html,body{ height:100%; }
@@ -49,6 +54,8 @@ $cake_label = $cake_labels[ $cake_key ] ?? 'Strawberry Blush';
     background:linear-gradient(180deg,var(--night),#4a2a4d);
     min-height:100vh; overflow-x:hidden; color:#fff; position:relative;
   }
+  h2, .night .big, .closing-wrap .big{ font-family:var(--font-display); letter-spacing:-.01em; }
+  .made-with .script{ font-family:var(--font-script); font-size:1.3rem; color:var(--gold); line-height:1; }
   .stage{ max-width:420px; margin:0 auto; min-height:100vh; position:relative; padding-bottom:40px; }
   .night{ padding:60px 24px 40px; text-align:center; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; }
   .night .wish{ font-style:italic; opacity:.75; font-size:1rem; margin-bottom:10px; }
@@ -148,7 +155,7 @@ $cake_label = $cake_labels[ $cake_key ] ?? 'Strawberry Blush';
       <div class="decor">🎂🎈🎉</div>
       <div class="from">Made with love, just for you — <?php echo esc_html( $your_name ); ?> 💛</div>
       <div class="cake-note"><?php echo esc_html( $cake_label ); ?><?php echo $age ? ' · turning ' . esc_html( $age ) : ''; ?></div>
-      <div class="made-with">Made with Blush Moments, just for you.</div>
+      <div class="made-with">Made with <span class="script">Blush Moments</span>, just for you.</div>
     </div>
   </div>
 

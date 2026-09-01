@@ -20,36 +20,51 @@ if ( ! defined( 'ABSPATH' ) ) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Create a Love Surprise — Blush Moments</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;800;900&family=Yellowtail&display=swap" rel="stylesheet">
 <style>
   :root{
-    --pink-deep:#ff5c8a; --pink:#ff7aa2; --pink-soft:#ffe1ea;
-    --gold:#ffb84d; --ink:#2c1c2e; --muted:#8a7580;
+    --pink-deep:#d1476a; --pink:#e8637d; --pink-soft:#f8e3de;
+    --gold:#b8794f; --ink:#3a2620; --muted:#8a6e63;
+    --font-display:'Outfit', -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --font-script:'Yellowtail', cursive;
+    --spring:cubic-bezier(.34,1.56,.64,1);
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   html,body{ height:100%; }
   body{
     font-family:-apple-system, 'Segoe UI', Roboto, sans-serif;
-    background:linear-gradient(160deg,#ffd6e2,#ffb8cf 55%,#f3c9e0);
+    background:linear-gradient(160deg,#faf3ec,#f3ddd6 55%,#f7e6de);
     min-height:100vh; overflow-x:hidden; color:var(--ink); position:relative;
   }
+  h2, .celeb-title, .recip-name, .share-title, .letter-card .t1{ font-family:var(--font-display); letter-spacing:-.01em; }
+  .wordmark{ text-align:center; padding:14px 0 0; }
+  .wordmark .script{ font-family:var(--font-script); font-size:2.1rem; color:var(--pink-deep); line-height:1; }
+  .wordmark .sans{ font-family:var(--font-display); font-size:1rem; font-weight:600; color:var(--muted); letter-spacing:.08em; margin-top:-4px; }
+  @keyframes float{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-6px); } }
+  @keyframes shimmer{ 0%{ transform:translateX(-120%) skewX(-15deg); } 100%{ transform:translateX(220%) skewX(-15deg); } }
   .stage{ max-width:420px; margin:0 auto; min-height:100vh; position:relative; padding-bottom:40px; }
   .progress{ display:flex; align-items:center; gap:6px; padding:18px 20px 6px; font-size:.72rem; font-weight:700; color:var(--pink-deep); letter-spacing:.3px; }
   .progress .hearts{ display:flex; gap:3px; margin-right:8px; }
   .progress .hearts span{ font-size:.85rem; opacity:.25; }
   .progress .hearts span.on{ opacity:1; }
-  .card{ background:#fff; border-radius:22px; margin:14px 20px; padding:28px 24px; box-shadow:0 18px 40px rgba(200,50,110,.18); position:relative; }
+  .card{ background:#fff; border-radius:22px; margin:14px 20px; padding:28px 24px; box-shadow:0 18px 40px rgba(160,60,50,.18); position:relative; }
   .card .back{ background:none; border:none; color:var(--pink-deep); font-weight:700; font-size:.85rem; cursor:pointer; margin-bottom:6px; padding:0; }
   .card h2{ font-size:1.35rem; text-align:center; margin-top:6px; }
   .card .sub{ text-align:center; color:var(--muted); font-size:.85rem; margin-top:6px; margin-bottom:20px; }
   input[type=text], textarea{ width:100%; border:1.5px solid #f0dbe2; border-radius:12px; padding:14px 16px; font-size:.95rem; margin-bottom:12px; font-family:inherit; background:#fffafb; }
   input[type=text]:focus, textarea:focus{ outline:none; border-color:var(--pink); }
   textarea{ resize:none; height:110px; }
-  .primary-btn{ width:100%; border:none; border-radius:40px; padding:15px; background:linear-gradient(135deg,var(--pink-deep),var(--gold)); color:#fff; font-weight:700; font-size:.95rem; cursor:pointer; box-shadow:0 10px 26px rgba(255,92,138,.35); }
+  .primary-btn{ width:100%; border:none; border-radius:40px; padding:15px; background:linear-gradient(135deg,var(--pink-deep),var(--gold)); color:#fff; font-weight:700; font-family:var(--font-display); font-size:.95rem; cursor:pointer; box-shadow:0 10px 26px rgba(209,71,106,.35), 0 0 0 6px rgba(209,71,106,.08); position:relative; overflow:hidden; transition:transform .3s var(--spring), box-shadow .3s ease; }
+  .primary-btn::after{ content:''; position:absolute; inset:0; background:linear-gradient(100deg,transparent 40%,rgba(255,255,255,.45) 50%,transparent 60%); transform:translateX(-120%) skewX(-15deg); animation:shimmer 2.8s ease-in-out infinite; animation-delay:1s; }
+  .primary-btn:active{ transform:scale(.97); }
   .primary-btn:disabled{ opacity:.5; cursor:not-allowed; }
+  .primary-btn:disabled::after{ display:none; }
   .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:6px; }
-  .opt-card{ border:1.5px solid #f6e2ea; border-radius:16px; padding:20px 8px; text-align:center; cursor:pointer; background:#fffafc; transition:.15s; }
+  .opt-card{ border:1.5px solid #f6e2ea; border-radius:16px; padding:20px 8px; text-align:center; cursor:pointer; background:#fffafc; transition:transform .25s var(--spring), border-color .2s ease, background .2s ease, box-shadow .2s ease; }
   .opt-card .emoji{ font-size:1.6rem; display:block; margin-bottom:8px; }
-  .opt-card.selected{ border-color:var(--pink-deep); background:var(--pink-soft); }
+  .opt-card.selected{ border-color:var(--pink-deep); background:var(--pink-soft); transform:scale(1.03); box-shadow:0 8px 18px rgba(209,71,106,.18); }
   .q-list{ display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
   .q-btn{ text-align:left; border:1.5px solid #f6e2ea; border-radius:14px; padding:14px 16px; cursor:pointer; background:#fffafc; font-size:.92rem; font-weight:600; }
   .q-btn.selected{ border-color:var(--pink-deep); background:var(--pink-soft); color:var(--pink-deep); }
@@ -63,7 +78,7 @@ if ( ! defined( 'ABSPATH' ) ) {
   .love-box{ border:2px solid var(--pink-deep); border-radius:16px; padding:14px; margin-bottom:14px; }
   .love-box .head{ display:flex; justify-content:space-between; align-items:center; font-weight:700; font-size:.9rem; margin-bottom:10px; }
   .badge{ background:var(--pink-deep); color:#fff; font-size:.68rem; padding:4px 10px; border-radius:20px; font-weight:700; }
-  .card-preview{ height:180px; border-radius:12px; background:linear-gradient(135deg,#ffd6e2,#ffb8cf); display:flex; align-items:center; justify-content:center; font-size:2.4rem; }
+  .card-preview{ height:180px; border-radius:12px; background:linear-gradient(135deg,var(--pink),var(--pink-deep)); display:flex; align-items:center; justify-content:center; font-size:2.4rem; }
   .upload-box{ border:1.5px solid #f0dbe2; border-radius:16px; padding:14px; margin-bottom:20px; }
   .upload-box .head{ font-weight:700; font-size:.9rem; margin-bottom:10px; }
   .upload-btn{ width:100%; border:none; border-radius:40px; padding:13px; background:linear-gradient(135deg,var(--pink-deep),var(--gold)); color:#fff; font-weight:700; font-size:.88rem; cursor:pointer; }
@@ -80,18 +95,19 @@ if ( ! defined( 'ABSPATH' ) ) {
   .gen-list .check{ color:var(--pink-deep); font-weight:900; width:16px; }
   .preview-tag{ text-align:center; margin:0 20px 8px; }
   .preview-tag span{ background:#fff3c4; color:#9c7a00; font-weight:700; font-size:.72rem; padding:6px 16px; border-radius:20px; letter-spacing:.5px; }
-  .recip-heart{ font-size:2.8rem; text-align:center; margin-bottom:8px; filter:drop-shadow(0 4px 10px rgba(255,92,138,.4)); }
+  .recip-heart{ font-size:2.8rem; text-align:center; margin-bottom:8px; filter:drop-shadow(0 4px 10px rgba(209,71,106,.4)); }
   .recip-name{ text-align:center; font-size:1.6rem; font-weight:800; color:var(--pink-deep); margin-bottom:4px; }
   .recip-q{ text-align:center; font-size:1.15rem; font-weight:700; margin-bottom:26px; }
   .btnrow{ position:relative; display:flex; flex-direction:column; align-items:center; gap:16px; min-height:110px; }
-  .yes-btn{ width:80%; border:none; border-radius:40px; padding:16px; background:linear-gradient(135deg,var(--pink-deep),var(--gold)); color:#fff; font-weight:800; font-size:1rem; cursor:pointer; box-shadow:0 10px 26px rgba(255,92,138,.35); transition:transform .15s ease; }
-  .yes-btn.grew{ transform:scale(1.05); }
+  .yes-btn{ width:80%; border:none; border-radius:40px; padding:16px; background:linear-gradient(135deg,var(--pink-deep),var(--gold)); color:#fff; font-weight:800; font-family:var(--font-display); font-size:1rem; cursor:pointer; box-shadow:0 10px 26px rgba(209,71,106,.35), 0 0 0 6px rgba(209,71,106,.08); transition:transform .3s var(--spring); position:relative; overflow:hidden; }
+  .yes-btn::after{ content:''; position:absolute; inset:0; background:linear-gradient(100deg,transparent 40%,rgba(255,255,255,.45) 50%,transparent 60%); transform:translateX(-120%) skewX(-15deg); animation:shimmer 2.8s ease-in-out infinite; }
+  .yes-btn.grew{ transform:scale(1.08); }
   .no-btn{ border:1.5px solid #e9d3da; background:#fafafa; color:var(--muted); border-radius:40px; padding:12px 28px; font-weight:700; cursor:pointer; position:absolute; top:76px; transition:top .15s ease, left .15s ease; }
   .taunt{ text-align:center; font-size:.82rem; color:var(--pink-deep); font-weight:700; margin-top:22px; min-height:18px; opacity:0; transition:opacity .25s ease; }
   .taunt.show{ opacity:1; }
   .celeb-title{ text-align:center; font-size:1.4rem; font-weight:800; color:var(--pink-deep); margin:6px 0 4px; }
   .celeb-sub{ text-align:center; color:var(--muted); font-size:.85rem; margin-bottom:18px; }
-  .letter-card{ background:linear-gradient(160deg,#fff,#fff6f0); border-radius:18px; padding:26px 20px; text-align:center; cursor:pointer; box-shadow:0 10px 30px rgba(200,50,110,.15); }
+  .letter-card{ background:linear-gradient(160deg,#fff,#fff6f0); border-radius:18px; padding:26px 20px; text-align:center; cursor:pointer; box-shadow:0 10px 30px rgba(160,60,50,.15); }
   .letter-card .env{ font-size:2rem; margin-bottom:10px; }
   .letter-card .t1{ font-weight:800; color:var(--pink-deep); }
   .letter-card .t2{ font-size:.78rem; color:var(--muted); margin-top:4px; }
@@ -102,7 +118,7 @@ if ( ! defined( 'ABSPATH' ) ) {
   .next-link{ display:block; text-align:center; margin-top:18px; border:1.5px solid var(--pink-deep); color:var(--pink-deep); border-radius:40px; padding:13px; font-weight:700; cursor:pointer; font-size:.9rem; }
   .lc-track{ display:flex; gap:14px; overflow-x:auto; scroll-snap-type:x mandatory; padding:6px 0 12px; }
   .lc-track::-webkit-scrollbar{ display:none; }
-  .lc-card{ scroll-snap-align:center; flex:0 0 220px; height:260px; border-radius:16px; background:linear-gradient(150deg,#ffd6e2,#ffb0cd); display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:2.6rem; color:#fff; position:relative; overflow:hidden; }
+  .lc-card{ scroll-snap-align:center; flex:0 0 220px; height:260px; border-radius:16px; background:linear-gradient(150deg,var(--pink),var(--gold)); display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:2.6rem; color:#fff; position:relative; overflow:hidden; }
   .lc-card .cap{ position:absolute; bottom:14px; font-size:.85rem; font-weight:800; color:#fff; text-shadow:0 2px 6px rgba(0,0,0,.25); }
   .lc-dots{ display:flex; justify-content:center; gap:6px; margin:6px 0 14px; }
   .lc-dots span{ width:6px; height:6px; border-radius:50%; background:#f3cfdb; }
@@ -112,7 +128,7 @@ if ( ! defined( 'ABSPATH' ) ) {
   .overlay.show{ display:flex; }
   .paywall{ background:#fff; border-radius:22px; max-width:380px; width:100%; overflow:hidden; position:relative; margin-top:10px; }
   .paywall .close{ position:absolute; top:14px; right:14px; background:rgba(255,255,255,.85); border:none; border-radius:50%; width:28px; height:28px; cursor:pointer; font-size:.9rem; }
-  .paywall .head{ background:linear-gradient(135deg,var(--pink-deep),#ff9dbb); padding:26px 20px 18px; text-align:center; color:#fff; }
+  .paywall .head{ background:linear-gradient(135deg,var(--pink-deep),var(--gold)); padding:26px 20px 18px; text-align:center; color:#fff; }
   .paywall .timer{ display:inline-block; background:rgba(255,255,255,.25); border-radius:20px; padding:6px 14px; font-size:.78rem; font-weight:700; margin-bottom:10px; }
   .paywall .head h3{ font-size:1.2rem; }
   .paywall .head p{ font-size:.8rem; opacity:.9; margin-top:4px; }
@@ -147,6 +163,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 <div id="emojiRain"></div>
 
 <div class="stage">
+
+  <div class="wordmark"><div class="script">Blush</div><div class="sans">MOMENTS</div></div>
 
   <div class="progress" id="progressBar">
     <div class="hearts" id="progressHearts"></div>
