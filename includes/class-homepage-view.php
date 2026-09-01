@@ -316,8 +316,10 @@ class Blush_Moments_Homepage_View {
     .hero p.lead{ margin-left:auto; margin-right:auto; }
     .hero-ctas{ justify-content:center; }
     .hero-proof{ justify-content:center; margin-top:26px; }
-    .hero-visual{ display:none; }
+    .hero-visual{ margin-top:40px; }
+    .phone{ max-width:240px; }
   }
+  @media (max-width:380px){ .phone{ max-width:210px; } }
   .hero-visual{ position:relative; }
   .phone{
     background:#1b1420; border-radius:34px; padding:14px; box-shadow:0 30px 60px rgba(60,20,40,.25);
