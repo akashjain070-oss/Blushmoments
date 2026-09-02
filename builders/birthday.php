@@ -518,8 +518,15 @@ if ( ! defined( 'ABSPATH' ) ) {
   }
 
   function initAudio(){
-    if(audioCtx) return;
-    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){}
+    if(!audioCtx){
+      try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){}
+    }
+    // Safari/iOS in particular can leave a freshly-created context
+    // 'suspended' even inside a click handler — resume() is safe to call
+    // unconditionally and is a no-op once the context is already running.
+    if(audioCtx && audioCtx.state === 'suspended'){
+      audioCtx.resume().catch(() => {});
+    }
   }
 
   function playTone(freq, duration, type, vol){
@@ -544,43 +551,56 @@ if ( ! defined( 'ABSPATH' ) ) {
     [523, 659, 784].forEach((f, i) => setTimeout(() => playTone(f, .4, 'sine', .12), i * 90));
   }
 
-  // A soft, sustained pad loop — three detuned sine tones through a lowpass
-  // filter, with a slow LFO on the gain for a gentle "breathing" feel
-  // instead of a flat drone. Runs independently of step navigation so it
-  // keeps playing across every screen once the creator reaches the preview.
-  const MUSIC_VOLUME = 0.05;
+  // A soft music-box rendition of "Happy Birthday" looping under the whole
+  // preview — actual melody notes rather than an abstract ambient pad,
+  // since generic drone tones didn't read as "birthday music" at all.
+  // Runs independently of step navigation so it keeps looping across every
+  // screen once the creator reaches the preview, until sound is muted.
+  const MUSIC_VOLUME = 0.09;
+  const BEAT_SEC = 0.42;
+  const HAPPY_BIRTHDAY_MELODY = [
+    [392.00,0.5],[392.00,0.5],[440.00,1],[392.00,1],[523.25,1],[493.88,2],
+    [392.00,0.5],[392.00,0.5],[440.00,1],[392.00,1],[587.33,1],[523.25,2],
+    [392.00,0.5],[392.00,0.5],[783.99,1],[659.25,1],[523.25,1],[493.88,1],[440.00,2],
+    [698.46,0.5],[698.46,0.5],[659.25,1],[523.25,1],[587.33,1],[523.25,2],
+  ];
   let musicGain = null;
   let musicStarted = false;
+
+  function scheduleMelodyNote(freq, startTime, beats){
+    if(!audioCtx || !musicGain) return;
+    const dur = beats * BEAT_SEC;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0, startTime);
+    gain.gain.linearRampToValueAtTime(1, startTime + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, startTime + dur * 0.9);
+    osc.connect(gain).connect(musicGain);
+    osc.start(startTime);
+    osc.stop(startTime + dur);
+  }
+
+  function playMelodyLoop(){
+    if(!audioCtx) return;
+    let t = audioCtx.currentTime + 0.1;
+    let totalBeats = 0;
+    HAPPY_BIRTHDAY_MELODY.forEach(([freq, beats]) => {
+      scheduleMelodyNote(freq, t, beats);
+      t += beats * BEAT_SEC;
+      totalBeats += beats;
+    });
+    setTimeout(playMelodyLoop, (totalBeats * BEAT_SEC + 1.6) * 1000);
+  }
 
   function startBackgroundMusic(){
     if(musicStarted || !audioCtx) return;
     musicStarted = true;
-
     musicGain = audioCtx.createGain();
     musicGain.gain.value = soundOn ? MUSIC_VOLUME : 0;
     musicGain.connect(audioCtx.destination);
-
-    const filter = audioCtx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.value = 900;
-    filter.connect(musicGain);
-
-    [261.63, 329.63, 392.00].forEach((freq, i) => {
-      const osc = audioCtx.createOscillator();
-      osc.type = 'sine';
-      osc.frequency.value = freq;
-      osc.detune.value = (i - 1) * 4;
-      osc.connect(filter);
-      osc.start();
-    });
-
-    const lfo = audioCtx.createOscillator();
-    const lfoGain = audioCtx.createGain();
-    lfo.frequency.value = 0.08;
-    lfoGain.gain.value = 0.02;
-    lfo.connect(lfoGain);
-    lfoGain.connect(musicGain.gain);
-    lfo.start();
+    playMelodyLoop();
   }
 
   // Silently creates or updates the draft on the server as the wizard
