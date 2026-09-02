@@ -442,11 +442,11 @@ class Blush_Moments_Homepage_View {
 
   /* logo */
   .brand-mark{ display:inline-flex; align-items:center; gap:9px; text-decoration:none; }
-  .brand-heart{ font-size:1.9rem; display:inline-block; animation:heartPump 1.15s ease-in-out infinite; transform-origin:center; }
+  .brand-heart{ width:28px; height:28px; display:inline-block; animation:heartPump 1.15s ease-in-out infinite; transform-origin:center; }
   @keyframes heartPump{ 0%,100%{ transform:scale(1); } 14%{ transform:scale(1.22); } 28%{ transform:scale(1); } 42%{ transform:scale(1.14); } 56%{ transform:scale(1); } }
   @media (prefers-reduced-motion: reduce){ .brand-heart{ animation:none; } }
   .brand-name{ font-weight:800; font-size:1.5rem; color:var(--ink); }
-  .brand-name span{ color:var(--grad-b); }
+  .brand-name span{ background:linear-gradient(135deg,var(--grad-a),var(--grad-b)); -webkit-background-clip:text; background-clip:text; color:transparent; }
   footer .brand-name{ color:#fff; font-size:1.4rem; }
 
   /* motion */
@@ -486,7 +486,15 @@ class Blush_Moments_Homepage_View {
 <header>
   <div class="wrap row">
     <a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="brand-mark" aria-label="Blush Moments">
-      <span class="brand-heart" aria-hidden="true">❤️</span>
+      <svg class="brand-heart" viewBox="0 0 32 29" aria-hidden="true">
+        <defs>
+          <linearGradient id="bmHeartGradHeader" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" style="stop-color:var(--grad-a)"></stop>
+            <stop offset="100%" style="stop-color:var(--grad-b)"></stop>
+          </linearGradient>
+        </defs>
+        <path fill="url(#bmHeartGradHeader)" d="M16 28.5c-.5 0-1-.2-1.4-.5C9 23.5 1 17 1 9.8 1 4.9 4.9 1 9.7 1c2.6 0 5 1.2 6.3 3.2C17.3 2.2 19.7 1 22.3 1 27.1 1 31 4.9 31 9.8c0 7.2-8 13.7-13.6 18.2-.4.3-.9.5-1.4.5Z"></path>
+      </svg>
       <span class="brand-name">Blush<span> Moments</span></span>
     </a>
     <nav>
@@ -713,7 +721,15 @@ class Blush_Moments_Homepage_View {
   <div class="wrap footer-grid">
     <div>
       <div class="brand-mark">
-        <span class="brand-heart" aria-hidden="true">❤️</span>
+        <svg class="brand-heart" viewBox="0 0 32 29" aria-hidden="true">
+          <defs>
+            <linearGradient id="bmHeartGradFooter" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" style="stop-color:var(--grad-a)"></stop>
+              <stop offset="100%" style="stop-color:var(--grad-b)"></stop>
+            </linearGradient>
+          </defs>
+          <path fill="url(#bmHeartGradFooter)" d="M16 28.5c-.5 0-1-.2-1.4-.5C9 23.5 1 17 1 9.8 1 4.9 4.9 1 9.7 1c2.6 0 5 1.2 6.3 3.2C17.3 2.2 19.7 1 22.3 1 27.1 1 31 4.9 31 9.8c0 7.2-8 13.7-13.6 18.2-.4.3-.9.5-1.4.5Z"></path>
+        </svg>
         <span class="brand-name">Blush<span> Moments</span></span>
       </div>
       <p class="tag">Crafting unforgettable digital surprises for the people you love. We turn your feelings into magical, shareable moments — instantly.</p>
