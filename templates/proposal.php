@@ -28,6 +28,9 @@ $love_cards = ! empty( $surprise['content']['love_cards'] ) ? $surprise['content
 	array( 'emoji' => '😻', 'cap' => 'jaan' ),
 	array( 'emoji' => '🦋💗', 'cap' => 'us' ),
 );
+$photos     = ! empty( $surprise['content']['photos'] ) && is_array( $surprise['content']['photos'] )
+	? array_values( array_filter( $surprise['content']['photos'] ) )
+	: array();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -127,6 +130,10 @@ $love_cards = ! empty( $surprise['content']['love_cards'] ) ? $surprise['content
   .lc-dots span{ width:6px; height:6px; border-radius:50%; background:#f3cfdb; }
   .lc-dots span.on{ background:var(--pink-deep); width:16px; border-radius:6px; }
   .lc-caption{ text-align:center; font-size:.85rem; color:var(--muted); margin-bottom:8px; }
+  .fairy-line{ display:flex; flex-wrap:wrap; gap:18px 12px; justify-content:center; margin-bottom:22px; }
+  .fairy-photo{ width:92px; }
+  .fairy-photo .bulb{ width:7px; height:7px; border-radius:50%; background:#ffe9a8; margin:0 auto 5px; box-shadow:0 0 8px 3px rgba(255,233,168,.85); }
+  .fairy-photo img{ width:100%; height:108px; object-fit:cover; display:block; border-radius:6px; border:4px solid #fff; box-shadow:0 8px 16px rgba(0,0,0,.25); transform:rotate(var(--tilt,0deg)); }
   .closing{ text-align:center; font-size:.85rem; color:var(--muted); padding:20px 24px 0; }
   .closing .script{ font-family:var(--font-script); font-size:1.3rem; color:var(--pink-deep); line-height:1; }
   .step{ display:none; }
@@ -180,6 +187,18 @@ $love_cards = ! empty( $surprise['content']['love_cards'] ) ? $surprise['content
     <div class="card">
       <div class="celeb-title">Yayy! <?php echo esc_html( $their_name ); ?> said YES! 🎉</div>
       <div class="celeb-sub">Knew you'd say yes 💕</div>
+      <?php if ( ! empty( $photos ) ) : ?>
+      <div class="fairy-line">
+        <?php foreach ( $photos as $i => $src ) :
+          $tilt = ( 0 === $i % 2 ? -1 : 1 ) * ( 2 + ( $i % 3 ) );
+        ?>
+        <div class="fairy-photo">
+          <div class="bulb"></div>
+          <img src="<?php echo esc_url( $src ); ?>" style="--tilt:<?php echo esc_attr( $tilt ); ?>deg" alt="">
+        </div>
+        <?php endforeach; ?>
+      </div>
+      <?php endif; ?>
       <div class="lc-track" id="lcTrack"></div>
       <div class="lc-dots" id="lcDots"></div>
       <div class="lc-caption">👉 Jo abhi tumne feel kiya, woh bhi feel karegi — because of you 💕</div>

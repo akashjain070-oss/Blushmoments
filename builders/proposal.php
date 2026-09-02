@@ -85,6 +85,11 @@ if ( ! defined( 'ABSPATH' ) ) {
   .upload-box{ border:1.5px solid #f0dbe2; border-radius:16px; padding:14px; margin-bottom:20px; }
   .upload-box .head{ font-weight:700; font-size:.9rem; margin-bottom:10px; }
   .upload-btn{ width:100%; border:none; border-radius:40px; padding:13px; background:linear-gradient(135deg,var(--pink-deep),var(--gold)); color:#fff; font-weight:700; font-size:.88rem; cursor:pointer; }
+  .upload-btn:disabled{ opacity:.6; cursor:default; }
+  .photo-grid{ display:flex; flex-wrap:wrap; gap:10px; margin-bottom:12px; }
+  .photo-thumb{ position:relative; width:68px; height:68px; border-radius:12px; overflow:hidden; box-shadow:0 4px 10px rgba(214,60,110,.18); }
+  .photo-thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .photo-thumb .rm{ position:absolute; top:3px; right:3px; width:20px; height:20px; border-radius:50%; background:rgba(60,15,30,.65); color:#fff; display:flex; align-items:center; justify-content:center; font-size:.68rem; cursor:pointer; line-height:1; }
   .gen-wrap{ text-align:center; padding:60px 30px; }
   .gen-wrap .spool{ font-size:3rem; margin-bottom:18px; display:inline-block; animation:spin 2.4s linear infinite; }
   @keyframes spin{ to{ transform:rotate(360deg); } }
@@ -217,7 +222,9 @@ if ( ! defined( 'ABSPATH' ) ) {
       </div>
       <div class="upload-box">
         <div class="head">📸 Your Photos</div>
-        <button class="upload-btn" onclick="alert('Real photo upload lands once storage is wired in — Love Cards work today.')">📷 Tap to upload photos</button>
+        <div class="photo-grid" id="photoGrid"></div>
+        <button class="upload-btn" id="uploadBtn" onclick="triggerPhotoPick()">📷 Tap to upload photos</button>
+        <input type="file" id="photoInput" accept="image/*" multiple style="display:none;" onchange="handlePhotoPick(event)">
       </div>
       <button class="primary-btn" onclick="toStep(5)">Continue →</button>
     </div>
@@ -374,7 +381,92 @@ if ( ! defined( 'ABSPATH' ) ) {
     {emoji:'🦋💗', cap:'us'},
   ];
 
-  const state = { theirName:'', yourName:'', relation:'girlfriend', question:QUESTIONS.girlfriend[0], tmplLang:'hi' };
+  const state = { theirName:'', yourName:'', relation:'girlfriend', question:QUESTIONS.girlfriend[0], tmplLang:'hi', photos:[] };
+  const MAX_PHOTOS = 5;
+  const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
+
+  function triggerPhotoPick(){
+    if(state.photos.length >= MAX_PHOTOS) return;
+    document.getElementById('photoInput').click();
+  }
+
+  function loadImageFile(file){
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('unreadable')); };
+      img.src = url;
+    });
+  }
+
+  // Re-encodes to a resized JPEG client-side regardless of source format —
+  // handles iPhone HEIC photos (which a jpeg/png accept filter silently
+  // drops from the picker) and normal phone camera JPEGs that routinely
+  // blow past a hard size cap on their own.
+  function resizeToJpeg(img, maxDim, quality){
+    let width = img.naturalWidth || img.width;
+    let height = img.naturalHeight || img.height;
+    if(width > maxDim || height > maxDim){
+      if(width >= height){ height = Math.round(height * maxDim / width); width = maxDim; }
+      else { width = Math.round(width * maxDim / height); height = maxDim; }
+    }
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+    return canvas.toDataURL('image/jpeg', quality);
+  }
+
+  async function handlePhotoPick(e){
+    const files = Array.from(e.target.files || []);
+    const remaining = MAX_PHOTOS - state.photos.length;
+    for(const file of files.slice(0, remaining)){
+      if(!file.type.startsWith('image/')){
+        alert(file.name + " doesn't look like a photo.");
+        continue;
+      }
+      try{
+        const img = await loadImageFile(file);
+        let dataUrl = resizeToJpeg(img, 1600, 0.82);
+        if(dataUrl.length > MAX_PHOTO_BYTES){
+          dataUrl = resizeToJpeg(img, 1200, 0.7);
+        }
+        state.photos.push(dataUrl);
+        renderPhotoGrid();
+      } catch(err){
+        alert("Couldn't read " + file.name + " — try a different photo.");
+      }
+    }
+    e.target.value = '';
+  }
+
+  function removePhoto(i){
+    state.photos.splice(i, 1);
+    renderPhotoGrid();
+  }
+
+  function renderPhotoGrid(){
+    const grid = document.getElementById('photoGrid');
+    grid.innerHTML = '';
+    state.photos.forEach((src, i) => {
+      const d = document.createElement('div');
+      d.className = 'photo-thumb';
+      const img = document.createElement('img');
+      img.src = src;
+      const rm = document.createElement('div');
+      rm.className = 'rm';
+      rm.textContent = '✕';
+      rm.onclick = (ev) => { ev.stopPropagation(); removePhoto(i); };
+      d.appendChild(img);
+      d.appendChild(rm);
+      grid.appendChild(d);
+    });
+    const btn = document.getElementById('uploadBtn');
+    const full = state.photos.length >= MAX_PHOTOS;
+    btn.disabled = full;
+    btn.textContent = full ? '📷 Photo limit reached' : '📷 Tap to upload photos';
+  }
 
   function toStep(n){
     document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
@@ -609,7 +701,7 @@ if ( ! defined( 'ABSPATH' ) ) {
           relation: state.relation,
           question: state.question,
           message: state.message,
-          content: { love_cards: LOVE_CARDS },
+          content: { love_cards: LOVE_CARDS, photos: state.photos },
         }),
       });
       if(!res.ok){ throw new Error(`Server returned ${res.status}`); }
