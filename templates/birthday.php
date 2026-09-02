@@ -23,9 +23,19 @@ $age        = ! empty( $surprise['content']['age'] ) ? $surprise['content']['age
 $balloons   = ! empty( $surprise['content']['balloons'] ) && is_array( $surprise['content']['balloons'] )
 	? array_values( array_filter( $surprise['content']['balloons'] ) )
 	: array( 'This whole surprise, honestly' );
-$photos     = ! empty( $surprise['content']['photos'] ) && is_array( $surprise['content']['photos'] )
-	? array_values( array_filter( $surprise['content']['photos'] ) )
+// Each photo is normally {url, caption}; older surprises saved before
+// captions existed stored a bare URL string, so both shapes are accepted.
+$photos_raw = ! empty( $surprise['content']['photos'] ) && is_array( $surprise['content']['photos'] )
+	? $surprise['content']['photos']
 	: array();
+$photos     = array();
+foreach ( $photos_raw as $photo ) {
+	if ( is_array( $photo ) && ! empty( $photo['url'] ) ) {
+		$photos[] = array( 'url' => $photo['url'], 'caption' => $photo['caption'] ?? '' );
+	} elseif ( is_string( $photo ) && '' !== $photo ) {
+		$photos[] = array( 'url' => $photo, 'caption' => '' );
+	}
+}
 
 $cake_labels = array(
 	'chocolate'  => 'Midnight Chocolate',
@@ -88,6 +98,7 @@ $cake_label = $cake_labels[ $cake_key ] ?? 'Strawberry Blush';
   .fairy-photo{ width:112px; }
   .fairy-photo .bulb{ width:8px; height:8px; border-radius:50%; background:#ffe9a8; margin:0 auto 6px; box-shadow:0 0 10px 3px rgba(255,233,168,.85); }
   .fairy-photo img{ width:100%; height:132px; object-fit:cover; display:block; border-radius:6px; border:5px solid #fff; box-shadow:0 10px 20px rgba(0,0,0,.35); transform:rotate(var(--tilt,0deg)); }
+  .fairy-photo .cap{ font-size:.7rem; opacity:.7; margin-top:8px; transform:rotate(var(--tilt,0deg)); }
   .envelope-wrap{ padding:60px 24px; text-align:center; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; }
   .envelope-wrap h3{ font-size:1.2rem; margin-bottom:4px; }
   .envelope-wrap .sub{ font-size:.82rem; opacity:.7; margin-bottom:26px; }
@@ -208,11 +219,12 @@ $cake_label = $cake_labels[ $cake_key ] ?? 'Strawberry Blush';
     const line = document.getElementById('fairyLine');
     if(line.dataset.rendered) return;
     line.dataset.rendered = '1';
-    PHOTOS.forEach((src,i)=>{
+    PHOTOS.forEach((photo,i)=>{
       const tilt = (i % 2 === 0 ? -1 : 1) * (2 + (i % 3));
       const d = document.createElement('div');
       d.className = 'fairy-photo';
-      d.innerHTML = `<div class="bulb"></div><img src="${src}" style="--tilt:${tilt}deg" alt="">`;
+      const capHtml = photo.caption ? `<div class="cap" style="--tilt:${tilt}deg">${photo.caption}</div>` : '';
+      d.innerHTML = `<div class="bulb"></div><img src="${photo.url}" style="--tilt:${tilt}deg" alt="">${capHtml}`;
       line.appendChild(d);
     });
   }

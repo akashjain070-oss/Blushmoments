@@ -66,7 +66,13 @@ if ( ! defined( 'ABSPATH' ) ) {
   .primary-btn:disabled::after{ display:none; }
   .grid3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:6px; }
   .cake-card{ border:1.5px solid #f6e6d0; border-radius:16px; padding:16px 6px; text-align:center; cursor:pointer; background:#fffaf3; transition:transform .25s var(--spring), border-color .2s ease, background .2s ease, box-shadow .2s ease; }
-  .cake-card .emoji{ font-size:1.6rem; display:block; margin-bottom:8px; }
+  .cake-icon{ width:48px; height:46px; margin:0 auto 8px; position:relative; }
+  .cake-icon .flame{ width:6px; height:9px; border-radius:50% 50% 50% 0; background:#ffb238; margin:0 auto; transform:rotate(45deg); box-shadow:0 0 6px rgba(255,178,56,.7); }
+  .cake-icon .candle{ width:3px; height:11px; background:#fff8e0; margin:1px auto 0; }
+  .cake-icon .tier-top{ width:26px; height:14px; border-radius:6px 6px 2px 2px; margin:0 auto; position:relative; }
+  .cake-icon .tier-top::after{ content:''; position:absolute; inset:0 0 auto 0; height:4px; background:rgba(255,255,255,.55); border-radius:6px 6px 0 0; }
+  .cake-icon .tier-bottom{ width:44px; height:18px; border-radius:4px; margin-top:-2px; position:relative; }
+  .cake-icon .tier-bottom::after{ content:''; position:absolute; inset:0 0 auto 0; height:5px; background:rgba(255,255,255,.5); border-radius:4px 4px 0 0; }
   .cake-card .name{ font-size:.8rem; font-weight:700; }
   .cake-card .desc{ font-size:.68rem; color:var(--muted); margin-top:2px; }
   .cake-card.selected{ border-color:var(--gold-deep); background:var(--peach-soft); transform:scale(1.04); box-shadow:0 8px 18px rgba(193,122,63,.18); }
@@ -84,9 +90,12 @@ if ( ! defined( 'ABSPATH' ) ) {
   .upload-box .t2{ font-size:.72rem; color:var(--muted); margin-top:4px; }
   .upload-box.full{ opacity:.6; cursor:default; }
   .photo-grid{ display:flex; flex-wrap:wrap; gap:10px; margin-bottom:16px; }
+  .photo-item{ width:72px; }
   .photo-thumb{ position:relative; width:72px; height:72px; border-radius:12px; overflow:hidden; box-shadow:0 4px 10px rgba(193,122,63,.18); }
   .photo-thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
   .photo-thumb .rm{ position:absolute; top:3px; right:3px; width:20px; height:20px; border-radius:50%; background:rgba(30,15,10,.65); color:#fff; display:flex; align-items:center; justify-content:center; font-size:.68rem; cursor:pointer; line-height:1; }
+  .photo-caption{ width:72px; border:none; border-bottom:1.5px solid #f2e0c8; border-radius:0; background:none; padding:4px 2px; margin:4px 0 0; font-size:.68rem; text-align:center; }
+  .photo-caption:focus{ outline:none; border-color:var(--gold); }
   .skip-link{ display:block; text-align:center; color:var(--gold-deep); font-weight:700; font-size:.85rem; margin-top:14px; cursor:pointer; }
   .charcount{ text-align:right; font-size:.75rem; color:var(--muted); margin:-6px 0 12px; }
   .tmpl-row{ display:flex; align-items:center; gap:10px; margin-bottom:12px; font-size:.8rem; color:var(--muted); flex-wrap:wrap; }
@@ -207,6 +216,12 @@ if ( ! defined( 'ABSPATH' ) ) {
       <input type="text" id="yourName" placeholder="e.g. Rahul">
       <label class="field-label">Turning age (optional)</label>
       <input type="number" id="age" placeholder="e.g. 25" min="1" max="120">
+      <label class="field-label">Their birthday <span style="font-weight:400; color:var(--muted);">(optional — unlocks midnight magic)</span></label>
+      <div class="row2">
+        <select id="birthDay"><option value="">Day —</option></select>
+        <select id="birthMonth"><option value="">Month —</option></select>
+      </div>
+      <input type="text" id="hpField" name="website" autocomplete="off" tabindex="-1" aria-hidden="true" style="position:absolute; left:-9999px; width:1px; height:1px; opacity:0;">
       <button class="primary-btn" onclick="toStep(2)">Let's begin 🎂</button>
     </div>
   </div>
@@ -377,9 +392,9 @@ if ( ! defined( 'ABSPATH' ) ) {
   const REST_URL = <?php echo wp_json_encode( $rest_url ); ?>;
 
   const CAKES = [
-    {key:'chocolate', label:'Midnight Chocolate', desc:'Rich, dark & dreamy', emoji:'🍫'},
-    {key:'strawberry', label:'Strawberry Blush', desc:'Soft, sweet & rosy', emoji:'🍓'},
-    {key:'vanilla', label:'Vanilla Gold', desc:'Classic, warm & glowing', emoji:'🍦'},
+    {key:'chocolate', label:'Midnight Chocolate', desc:'Rich, dark & dreamy', top:'#5c3826', bottom:'#7a4a2f'},
+    {key:'strawberry', label:'Strawberry Blush', desc:'Soft, sweet & rosy', top:'#f2a4bb', bottom:'#f6c2d3'},
+    {key:'vanilla', label:'Vanilla Gold', desc:'Classic, warm & glowing', top:'#f0dfae', bottom:'#f6ecc8'},
   ];
   const SPARKS = [
     'Your laugh is my favourite sound',
@@ -401,9 +416,49 @@ if ( ! defined( 'ABSPATH' ) ) {
   };
   const BALLOON_COLORS = ['#ff8fa3','#8f7aff','#3fd6c0','#ffb347','#ff6f91'];
 
-  const state = { theirName:'', yourName:'', age:'', cake:'strawberry', balloons:['','','','',''], tmplLang:'hi', photos:[] };
+  const state = { id:null, token:null, theirName:'', yourName:'', age:'', birthDay:'', birthMonth:'', cake:'strawberry', balloons:['','','','',''], tmplLang:'hi', photos:[] };
   const MAX_PHOTOS = 5;
   const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
+
+  // Silently creates or updates the draft on the server as the wizard
+  // progresses, so an abandoned attempt — and any photos already
+  // uploaded — still exists in the database instead of only living in
+  // this browser tab. No-ops until step 1's required fields are filled
+  // in. Never surfaces errors to the user — this is a background save,
+  // not the real submit (that's createAndOpenPaywall).
+  let draftSaveInFlight = false;
+  async function saveDraftIfReady(step){
+    if(!state.theirName || !state.yourName) return;
+    if(draftSaveInFlight) return;
+    draftSaveInFlight = true;
+    try{
+      const hp = document.getElementById('hpField');
+      const res = await fetch(REST_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        body: JSON.stringify({
+          id: state.id || undefined,
+          token: state.token || undefined,
+          their_name: state.theirName,
+          your_name: state.yourName,
+          experience_type: 'birthday',
+          message: state.message,
+          content: { cake: state.cake, age: state.age, birth_day: state.birthDay, birth_month: state.birthMonth, balloons: state.balloons.filter(Boolean), photos: state.photos.map(p => ({ data: p.src, caption: p.caption })) },
+          step: step == null ? '' : String(step),
+          website: hp ? hp.value : '',
+        }),
+      });
+      if(res.ok){
+        const data = await res.json();
+        if(data && data.id) state.id = data.id;
+        if(data && data.token) state.token = data.token;
+      }
+    } catch(err){
+      // background autosave — swallow silently, never interrupts the wizard
+    } finally {
+      draftSaveInFlight = false;
+    }
+  }
 
   function triggerPhotoPick(){
     if(state.photos.length >= MAX_PHOTOS) return;
@@ -454,8 +509,9 @@ if ( ! defined( 'ABSPATH' ) ) {
         if(dataUrl.length > MAX_PHOTO_BYTES){
           dataUrl = resizeToJpeg(img, 1200, 0.7); // still too big — shrink further rather than reject
         }
-        state.photos.push(dataUrl);
+        state.photos.push({ src: dataUrl, caption: '' });
         renderPhotoGrid();
+        saveDraftIfReady(4);
       } catch(err){
         alert("Couldn't read " + file.name + " — try a different photo.");
       }
@@ -466,23 +522,36 @@ if ( ! defined( 'ABSPATH' ) ) {
   function removePhoto(i){
     state.photos.splice(i, 1);
     renderPhotoGrid();
+    saveDraftIfReady(4);
   }
 
   function renderPhotoGrid(){
     const grid = document.getElementById('photoGrid');
     grid.innerHTML = '';
-    state.photos.forEach((src, i) => {
+    state.photos.forEach((photo, i) => {
+      const wrap = document.createElement('div');
+      wrap.className = 'photo-item';
       const d = document.createElement('div');
       d.className = 'photo-thumb';
       const img = document.createElement('img');
-      img.src = src;
+      img.src = photo.src;
       const rm = document.createElement('div');
       rm.className = 'rm';
       rm.textContent = '✕';
       rm.onclick = (ev) => { ev.stopPropagation(); removePhoto(i); };
       d.appendChild(img);
       d.appendChild(rm);
-      grid.appendChild(d);
+      const cap = document.createElement('input');
+      cap.type = 'text';
+      cap.className = 'photo-caption';
+      cap.maxLength = 40;
+      cap.placeholder = 'e.g. Goa, 2023';
+      cap.value = photo.caption;
+      cap.addEventListener('click', ev => ev.stopPropagation());
+      cap.addEventListener('input', e => { state.photos[i].caption = e.target.value; });
+      wrap.appendChild(d);
+      wrap.appendChild(cap);
+      grid.appendChild(wrap);
     });
     const box = document.getElementById('uploadBox');
     const full = state.photos.length >= MAX_PHOTOS;
@@ -493,6 +562,7 @@ if ( ! defined( 'ABSPATH' ) ) {
   function toStep(n){
     document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
     document.querySelector(`.step[data-step="${n}"]`).classList.add('active');
+    if(typeof n === 'number') saveDraftIfReady(n);
     const progress = document.getElementById('progressBar');
     if(typeof n === 'number'){
       progress.style.display='flex';
@@ -505,6 +575,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     } else {
       progress.style.display='none';
     }
+    if(typeof n === 'number' && n >= 2) updateSubtitles();
     if(n === 'balloons') renderPopBalloons();
     window.scrollTo(0,0);
   }
@@ -513,20 +584,54 @@ if ( ! defined( 'ABSPATH' ) ) {
   document.getElementById('yourName').addEventListener('input', e=>state.yourName = e.target.value.trim());
   document.getElementById('age').addEventListener('input', e=>state.age = e.target.value.trim());
 
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const daySelect = document.getElementById('birthDay');
+  for(let d=1; d<=31; d++){
+    const opt = document.createElement('option');
+    opt.value = d; opt.textContent = d;
+    daySelect.appendChild(opt);
+  }
+  const monthSelect = document.getElementById('birthMonth');
+  MONTHS.forEach((m,i)=>{
+    const opt = document.createElement('option');
+    opt.value = i+1; opt.textContent = m;
+    monthSelect.appendChild(opt);
+  });
+  daySelect.addEventListener('change', e=>state.birthDay = e.target.value);
+  monthSelect.addEventListener('change', e=>state.birthMonth = e.target.value);
+
+  // Keeps the step 2-5 subtitles in sync with the name typed in step 1 —
+  // they're static markup so without this they'd stay stuck on "they/them"
+  // even once theirName is known, unlike the recipient-preview strings
+  // (showRecipientPreview) which already personalize correctly.
+  function updateSubtitles(){
+    const their = state.theirName || 'They';
+    document.getElementById('cakeSub').textContent = `${their} will light it, wish on it, and cut it.`;
+    document.getElementById('memoriesSub').textContent = `Up to 5 photos of ${state.theirName || 'them'}, strung on fairy lights. A caption like "Goa, 2023" makes hearts melt.`;
+    document.getElementById('letterSub').textContent = `This is the part ${state.theirName || 'they'} will read twice — and remember forever.`;
+  }
+
   const cakeGrid = document.getElementById('cakeGrid');
   CAKES.forEach(c=>{
     const d = document.createElement('div');
     d.className='cake-card' + (c.key===state.cake ? ' selected':'');
-    d.innerHTML = `<span class="emoji">${c.emoji}</span><div class="name">${c.label}</div><div class="desc">${c.desc}</div>`;
+    d.innerHTML = `<div class="cake-icon"><div class="flame"></div><div class="candle"></div><div class="tier-top" style="background:${c.top}"></div><div class="tier-bottom" style="background:${c.bottom}"></div></div><div class="name">${c.label}</div><div class="desc">${c.desc}</div>`;
     d.onclick = () => { state.cake = c.key; cakeGrid.querySelectorAll('.cake-card').forEach(x=>x.classList.remove('selected')); d.classList.add('selected'); };
     cakeGrid.appendChild(d);
   });
 
+  const BALLOON_PLACEHOLDERS = [
+    "e.g. You always know what to say",
+    "e.g. Your hugs fix everything",
+    "e.g. You make everyone feel welcome",
+    "e.g. You never give up on people",
+    "e.g. Being around you feels like home",
+  ];
   const balloonWrap = document.getElementById('balloonFields');
   for(let i=0;i<5;i++){
     const row = document.createElement('div');
     row.className='balloon-field';
-    row.innerHTML = `<span class="bemoji">🎈</span><input type="text" maxlength="50" data-i="${i}" placeholder="e.g. a reason they're loved"><span class="count">0/50</span>`;
+    row.innerHTML = `<span class="bemoji">🎈</span><input type="text" maxlength="50" data-i="${i}" placeholder="${BALLOON_PLACEHOLDERS[i]}"><span class="count">0/50</span>`;
     const input = row.querySelector('input');
     const count = row.querySelector('.count');
     input.addEventListener('input', e=>{ state.balloons[i] = e.target.value; count.textContent = e.target.value.length + '/50'; });
@@ -672,6 +777,9 @@ if ( ! defined( 'ABSPATH' ) ) {
     }, 18);
   }
 
+  // This is the final, must-succeed submit — draft rows already exist from
+  // saveDraftIfReady() as of step 1, so this is an update (via state.id),
+  // not a fresh create.
   let createdSurprise = null;
 
   async function createAndOpenPaywall(){
@@ -682,19 +790,26 @@ if ( ! defined( 'ABSPATH' ) ) {
     sendBtn.textContent = 'Saving...';
 
     try{
+      const hp = document.getElementById('hpField');
       const res = await fetch(REST_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json; charset=utf-8' },
         body: JSON.stringify({
+          id: state.id || undefined,
+          token: state.token || undefined,
           their_name: state.theirName || 'Them',
           your_name: state.yourName || 'You',
           experience_type: 'birthday',
           message: state.message,
-          content: { cake: state.cake, age: state.age, balloons: state.balloons.filter(Boolean), photos: state.photos },
+          content: { cake: state.cake, age: state.age, birth_day: state.birthDay, birth_month: state.birthMonth, balloons: state.balloons.filter(Boolean), photos: state.photos.map(p => ({ data: p.src, caption: p.caption })) },
+          step: 'final',
+          website: hp ? hp.value : '',
         }),
       });
       if(!res.ok){ throw new Error(`Server returned ${res.status}`); }
       createdSurprise = await res.json();
+      state.id = createdSurprise.id;
+      if(createdSurprise.token) state.token = createdSurprise.token;
       document.getElementById('shareLink').textContent = createdSurprise.url;
       openPaywall();
     } catch(err){
