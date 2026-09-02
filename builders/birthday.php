@@ -241,9 +241,9 @@ if ( ! defined( 'ABSPATH' ) ) {
       <div class="upload-box" id="uploadBox" onclick="triggerPhotoPick()">
         <div class="icon">🖼️</div>
         <div class="t1" id="uploadT1">Tap to add photos</div>
-        <div class="t2">JPG or PNG · under 5MB each</div>
+        <div class="t2">Any photo — we'll resize it for you</div>
       </div>
-      <input type="file" id="photoInput" accept="image/jpeg,image/png" multiple style="display:none;" onchange="handlePhotoPick(event)">
+      <input type="file" id="photoInput" accept="image/*" multiple style="display:none;" onchange="handlePhotoPick(event)">
       <button class="primary-btn" onclick="toStep(5)">Continue</button>
       <div class="skip-link" onclick="toStep(5)">Skip photos for now</div>
     </div>
@@ -409,22 +409,56 @@ if ( ! defined( 'ABSPATH' ) ) {
     document.getElementById('photoInput').click();
   }
 
-  function handlePhotoPick(e){
+  function loadImageFile(file){
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('unreadable')); };
+      img.src = url;
+    });
+  }
+
+  // Re-encodes every photo to a resized JPEG client-side, whatever it came in
+  // as (HEIC off an iPhone, a 15MB camera JPEG, a screenshot PNG...). This is
+  // what actually makes upload work in practice: without it, iPhones' default
+  // HEIC format doesn't match a jpeg/png accept filter and gets silently
+  // filtered out of the photo picker, and modern phone camera photos routinely
+  // blow past a hard 5MB cap on their own — resizing sidesteps both.
+  function resizeToJpeg(img, maxDim, quality){
+    let width = img.naturalWidth || img.width;
+    let height = img.naturalHeight || img.height;
+    if(width > maxDim || height > maxDim){
+      if(width >= height){ height = Math.round(height * maxDim / width); width = maxDim; }
+      else { width = Math.round(width * maxDim / height); height = maxDim; }
+    }
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+    return canvas.toDataURL('image/jpeg', quality);
+  }
+
+  async function handlePhotoPick(e){
     const files = Array.from(e.target.files || []);
     const remaining = MAX_PHOTOS - state.photos.length;
-    files.slice(0, remaining).forEach(file => {
-      if(!['image/jpeg','image/png'].includes(file.type)){
-        alert(file.name + ' is not a JPG or PNG.');
-        return;
+    for(const file of files.slice(0, remaining)){
+      if(!file.type.startsWith('image/')){
+        alert(file.name + " doesn't look like a photo.");
+        continue;
       }
-      if(file.size > MAX_PHOTO_BYTES){
-        alert(file.name + ' is over 5MB.');
-        return;
+      try{
+        const img = await loadImageFile(file);
+        let dataUrl = resizeToJpeg(img, 1600, 0.82);
+        if(dataUrl.length > MAX_PHOTO_BYTES){
+          dataUrl = resizeToJpeg(img, 1200, 0.7); // still too big — shrink further rather than reject
+        }
+        state.photos.push(dataUrl);
+        renderPhotoGrid();
+      } catch(err){
+        alert("Couldn't read " + file.name + " — try a different photo.");
       }
-      const reader = new FileReader();
-      reader.onload = () => { state.photos.push(reader.result); renderPhotoGrid(); };
-      reader.readAsDataURL(file);
-    });
+    }
     e.target.value = '';
   }
 
