@@ -370,7 +370,13 @@ class Blush_Moments_Homepage_View {
   @media (max-width:620px){ .grid-3{ grid-template-columns:1fr; } }
 
   .exp-card{ background:#fff; border:1.5px solid var(--line); border-radius:22px; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 14px 34px rgba(180,60,90,.06); }
-  .exp-banner{ height:120px; display:flex; align-items:center; justify-content:center; font-size:2.6rem; }
+  .exp-banner{ height:120px; display:flex; align-items:center; justify-content:center; font-size:2.6rem; position:relative; overflow:hidden; }
+  .exp-emoji{ position:relative; z-index:1; display:inline-block; animation:expEmojiFloat 3.4s ease-in-out infinite; }
+  .exp-deco{ position:absolute; font-size:.95rem; opacity:.4; animation:expDecoFloat 4s ease-in-out infinite; pointer-events:none; }
+  @keyframes expEmojiFloat{ 0%,100%{ transform:translateY(0) scale(1); } 50%{ transform:translateY(-6px) scale(1.06); } }
+  @keyframes expDecoFloat{ 0%,100%{ transform:translateY(0) rotate(0deg); opacity:.25; } 50%{ transform:translateY(-9px) rotate(10deg); opacity:.6; } }
+  @media (prefers-reduced-motion: reduce){ .exp-emoji, .exp-deco{ animation:none !important; } }
+  .exp-card:hover .exp-emoji{ animation-duration:1.6s; }
   .exp-body{ padding:22px; display:flex; flex-direction:column; gap:10px; flex:1; }
   .exp-tags{ display:flex; justify-content:space-between; align-items:center; }
   .exp-tag{ font-size:.68rem; font-weight:800; letter-spacing:.04em; color:var(--muted); }
@@ -441,10 +447,8 @@ class Blush_Moments_Homepage_View {
   .footer-bottom a{ text-decoration:none; color:#a892ab; margin-left:14px; }
 
   /* logo */
-  .brand-mark{ display:inline-flex; align-items:center; gap:9px; text-decoration:none; }
-  .brand-heart{ width:28px; height:28px; display:inline-block; animation:heartPump 1.15s ease-in-out infinite; transform-origin:center; }
-  @keyframes heartPump{ 0%,100%{ transform:scale(1); } 14%{ transform:scale(1.22); } 28%{ transform:scale(1); } 42%{ transform:scale(1.14); } 56%{ transform:scale(1); } }
-  @media (prefers-reduced-motion: reduce){ .brand-heart{ animation:none; } }
+  .brand-mark{ display:inline-flex; align-items:center; text-decoration:none; }
+  .brand-logo{ height:38px; width:auto; display:block; }
   .brand-name{ font-weight:800; font-size:1.5rem; color:var(--ink); }
   .brand-name span{ background:linear-gradient(135deg,var(--grad-a),var(--grad-b)); -webkit-background-clip:text; background-clip:text; color:transparent; }
   footer .brand-name{ color:#fff; font-size:1.4rem; }
@@ -486,16 +490,7 @@ class Blush_Moments_Homepage_View {
 <header>
   <div class="wrap row">
     <a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="brand-mark" aria-label="Blush Moments">
-      <svg class="brand-heart" viewBox="0 0 32 29" aria-hidden="true">
-        <defs>
-          <linearGradient id="bmHeartGradHeader" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" style="stop-color:var(--grad-a)"></stop>
-            <stop offset="100%" style="stop-color:var(--grad-b)"></stop>
-          </linearGradient>
-        </defs>
-        <path fill="url(#bmHeartGradHeader)" d="M16 28.5c-.5 0-1-.2-1.4-.5C9 23.5 1 17 1 9.8 1 4.9 4.9 1 9.7 1c2.6 0 5 1.2 6.3 3.2C17.3 2.2 19.7 1 22.3 1 27.1 1 31 4.9 31 9.8c0 7.2-8 13.7-13.6 18.2-.4.3-.9.5-1.4.5Z"></path>
-      </svg>
-      <span class="brand-name">Blush<span> Moments</span></span>
+      <img class="brand-logo" src="<?php echo esc_url( BM_PLUGIN_URL . 'assets/logo.png' ); ?>" alt="Blush Moments">
     </a>
     <nav>
       <div class="navlinks">
@@ -596,11 +591,26 @@ class Blush_Moments_Homepage_View {
       <p class="lead">From heartfelt surprises to fun puzzles — create unforgettable digital moments for every occasion. All gifts are shareable via link and work beautifully on any device.</p>
     </div>
     <div class="grid-3">
-      <?php foreach ( $experiences as $key => $info ) :
+      <?php
+			$deco_positions = array(
+				array( '10%', '14%' ),
+				array( '68%', '78%' ),
+				array( '78%', '20%' ),
+			);
+			$deco_sparks = array( '✨', '💫', '⭐' );
+			$i           = 0;
+			foreach ( $experiences as $key => $info ) :
 				$is_live = file_exists( BM_PLUGIN_DIR . 'builders/' . $key . '.php' );
+				$pos     = $deco_positions[ $i % count( $deco_positions ) ];
+				$spark   = $deco_sparks[ $i % count( $deco_sparks ) ];
+				$delay   = ( $i % 4 ) * 0.35;
+				$i++;
 				?>
       <div class="exp-card reveal <?php echo $is_live ? '' : 'disabled'; ?>">
-        <div class="exp-banner" style="background:<?php echo esc_attr( $info['accent'] ); ?>22;"><?php echo esc_html( $info['emoji'] ); ?></div>
+        <div class="exp-banner" style="background:linear-gradient(160deg,<?php echo esc_attr( $info['accent'] ); ?>33,<?php echo esc_attr( $info['accent'] ); ?>0d);">
+          <span class="exp-deco" style="top:<?php echo esc_attr( $pos[0] ); ?>; left:<?php echo esc_attr( $pos[1] ); ?>; animation-delay:<?php echo esc_attr( $delay ); ?>s;"><?php echo esc_html( $spark ); ?></span>
+          <span class="exp-emoji" style="animation-delay:<?php echo esc_attr( $delay ); ?>s;"><?php echo esc_html( $info['emoji'] ); ?></span>
+        </div>
         <div class="exp-body">
           <div class="exp-tags">
             <span class="exp-tag"><?php echo esc_html( $info['tag'] ); ?></span>

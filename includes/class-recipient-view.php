@@ -87,11 +87,57 @@ class Blush_Moments_Recipient_View {
 	/** not-found | not-unlocked | expired — simple states, no template file needed yet. */
 	private static function render_state( $state ) {
 		status_header( 'not-found' === $state ? 404 : 200 );
-		$messages = array(
-			'not-found'    => "This link doesn't lead anywhere — double check it was copied in full.",
-			'not-unlocked' => 'This surprise is still being finished by its creator.',
-			'expired'      => 'This surprise link has expired.',
+		$copy = array(
+			'not-found'    => array(
+				'emoji' => '🔗',
+				'title' => "This link doesn't lead anywhere",
+				'text'  => 'Double check it was copied in full — links are long and easy to clip by accident.',
+			),
+			'not-unlocked' => array(
+				'emoji' => '🎁',
+				'title' => 'Almost ready...',
+				'text'  => 'This surprise is still being finished by its creator. Check back with them soon.',
+			),
+			'expired'      => array(
+				'emoji' => '🕯️',
+				'title' => 'This surprise has floated away',
+				'text'  => 'Surprise links stay live for 90 days — this one has expired. The love behind it hasn’t, though.',
+			),
 		);
-		echo '<p>' . esc_html( $messages[ $state ] ?? $messages['not-found'] ) . '</p>';
+		$c = $copy[ $state ] ?? $copy['not-found'];
+		?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title><?php echo esc_html( $c['title'] ); ?> — Blush Moments</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:'Outfit',-apple-system,'Segoe UI',Roboto,sans-serif;
+    background:linear-gradient(160deg,#faf3ec,#e6d6e0 30%,#f3ddc8 65%,#f7e6d4);
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;
+  }
+  .card{ background:#fff; border-radius:22px; padding:40px 28px; max-width:380px; width:100%; text-align:center; box-shadow:0 18px 40px rgba(200,120,20,.18); }
+  .emoji{ font-size:2.6rem; margin-bottom:14px; }
+  h1{ font-size:1.3rem; color:#3a2620; margin-bottom:10px; }
+  p{ font-size:.9rem; color:#8a6e63; line-height:1.6; margin-bottom:22px; }
+  a.cta{ display:inline-block; background:linear-gradient(135deg,#c17a3f,#e0a868); color:#fff; font-weight:700; font-size:.9rem; padding:14px 26px; border-radius:40px; text-decoration:none; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="emoji"><?php echo esc_html( $c['emoji'] ); ?></div>
+    <h1><?php echo esc_html( $c['title'] ); ?></h1>
+    <p><?php echo esc_html( $c['text'] ); ?></p>
+    <a class="cta" href="<?php echo esc_url( home_url( '/' ) ); ?>">Make Your Own 🎂</a>
+  </div>
+</body>
+</html>
+		<?php
 	}
 }

@@ -122,6 +122,10 @@ if ( ! defined( 'ABSPATH' ) ) {
   .night .big{ font-size:2.4rem; font-weight:900; line-height:1.15; margin-bottom:6px; }
   .night .name{ font-size:1.8rem; font-weight:800; color:var(--gold); margin-bottom:18px; }
   .night .tap{ font-size:.75rem; opacity:.55; margin-top:20px; letter-spacing:.4px; }
+  .teaser-wrap{ background:linear-gradient(180deg,var(--night),#4a2a4d); border-radius:22px; margin:14px 20px; padding:40px 24px; color:#fff; text-align:center; min-height:60vh; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; }
+  .teaser-wrap .big{ font-family:var(--font-display); font-size:2.4rem; font-weight:900; line-height:1.15; letter-spacing:-.01em; }
+  .teaser-wrap .sub2{ font-size:.9rem; opacity:.7; margin-top:14px; }
+  .teaser-wrap .tap{ font-size:.75rem; opacity:.55; margin-top:20px; letter-spacing:.4px; }
   .balloon-pop{ background:linear-gradient(180deg,var(--night),#4a2a4d); border-radius:22px; margin:14px 20px; padding:30px 22px; color:#fff; min-height:60vh; }
   .balloon-pop h2{ text-align:center; font-size:1.3rem; }
   .balloon-pop .sub{ text-align:center; font-size:.82rem; opacity:.7; margin:8px 0 22px; }
@@ -136,11 +140,14 @@ if ( ! defined( 'ABSPATH' ) ) {
   .photos-wrap{ background:linear-gradient(180deg,var(--night),#4a2a4d); border-radius:22px; margin:14px 20px; padding:40px 22px; color:#fff; text-align:center; min-height:55vh; }
   .photos-wrap h2{ font-size:1.3rem; }
   .photos-wrap .sub{ font-size:.82rem; opacity:.7; margin:8px 0 30px; }
-  .fairy-line{ display:flex; flex-wrap:wrap; gap:22px 16px; justify-content:center; margin-bottom:26px; }
-  .fairy-photo{ width:100px; }
-  .fairy-photo .bulb{ width:8px; height:8px; border-radius:50%; background:#ffe9a8; margin:0 auto 6px; box-shadow:0 0 10px 3px rgba(255,233,168,.85); }
-  .fairy-photo img{ width:100%; height:118px; object-fit:cover; display:block; border-radius:6px; border:5px solid #fff; box-shadow:0 10px 20px rgba(0,0,0,.35); transform:rotate(var(--tilt,0deg)); }
-  .fairy-photo .cap{ font-size:.7rem; opacity:.7; margin-top:8px; transform:rotate(var(--tilt,0deg)); }
+  .photo-carousel{ display:flex; gap:16px; overflow-x:auto; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; padding:10px 22px 20px; margin:0 -22px 10px; }
+  .photo-carousel::-webkit-scrollbar{ display:none; }
+  .photo-carousel-item{ scroll-snap-align:center; flex:0 0 auto; width:180px; }
+  .photo-carousel-item img{ width:180px; height:216px; object-fit:cover; border-radius:14px; border:5px solid #fff; box-shadow:0 12px 26px rgba(0,0,0,.35); display:block; }
+  .photo-carousel-item .cap{ text-align:center; font-size:.75rem; opacity:.7; margin-top:8px; }
+  .photo-dots{ display:flex; justify-content:center; gap:6px; margin-bottom:6px; }
+  .photo-dots span{ width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,.25); }
+  .photo-dots span.on{ background:var(--gold); }
   .reasons{ display:flex; flex-direction:column; gap:10px; margin-top:18px; }
   .reason-card{ border:1.5px solid; border-radius:14px; padding:12px 14px; background:rgba(255,255,255,.06); }
   .reason-card .tag{ display:inline-block; font-size:.65rem; font-weight:800; letter-spacing:.4px; padding:3px 10px; border-radius:12px; margin-bottom:6px; background:rgba(255,255,255,.12); }
@@ -176,6 +183,11 @@ if ( ! defined( 'ABSPATH' ) ) {
   .paywall .head h3{ font-size:1.2rem; }
   .paywall .head p{ font-size:.8rem; opacity:.9; margin-top:4px; }
   .paywall .body{ padding:20px; }
+  .tstm-label{ text-align:center; font-size:.7rem; font-weight:700; color:var(--muted); letter-spacing:.3px; margin-bottom:8px; }
+  .tstm-track{ display:flex; gap:10px; overflow-x:auto; padding-bottom:14px; margin-bottom:6px; -webkit-overflow-scrolling:touch; }
+  .tstm-track::-webkit-scrollbar{ display:none; }
+  .tstm-card{ flex:0 0 auto; width:220px; background:#fffaf3; border:1px solid #f2e0c8; border-radius:12px; padding:12px 14px; font-size:.78rem; line-height:1.5; color:var(--ink); }
+  .tstm-card b{ display:block; margin-top:6px; color:var(--gold-deep); font-size:.72rem; }
   .price-box{ text-align:center; border:1.5px solid var(--peach-soft); border-radius:16px; padding:16px; margin-bottom:16px; }
   .price-box .old{ text-decoration:line-through; color:var(--muted); font-size:.95rem; margin-right:8px; }
   .price-box .new{ font-size:1.8rem; font-weight:900; color:var(--gold-deep); }
@@ -185,17 +197,24 @@ if ( ! defined( 'ABSPATH' ) ) {
   .trust{ display:flex; justify-content:center; gap:10px; font-size:.72rem; color:var(--muted); margin-top:14px; flex-wrap:wrap; }
   .link-note{ text-align:center; font-size:.72rem; color:var(--muted); margin-top:10px; }
   .stub-note{ text-align:center; font-size:.72rem; color:#a06a00; background:#fff3c4; border-radius:10px; padding:10px; margin-top:14px; line-height:1.5; }
+  .nudge{ padding:32px 26px 26px; text-align:center; }
+  .nudge .emoji{ font-size:2.4rem; margin-bottom:10px; }
+  .nudge h3{ font-size:1.25rem; margin-bottom:10px; }
+  .nudge p{ color:var(--muted); font-size:.88rem; line-height:1.6; margin-bottom:22px; }
+  .nudge .prev-btn{ margin-top:10px; width:100%; }
   .share-icon{ font-size:2.4rem; text-align:center; margin-bottom:6px; }
   .share-title{ text-align:center; font-weight:800; font-size:1.2rem; margin-bottom:4px; }
   .share-sub{ text-align:center; color:var(--muted); font-size:.85rem; margin-bottom:20px; }
   .share-link{ background:#fff3e2; border:1px dashed var(--gold); border-radius:12px; padding:12px 14px; font-size:.8rem; color:var(--gold-deep); word-break:break-all; margin-bottom:16px; }
   .share-actions{ display:flex; flex-direction:column; gap:10px; }
   .share-actions button{ border:none; border-radius:40px; padding:14px; font-weight:700; font-size:.9rem; cursor:pointer; }
+  .wa-btn{ background:#25d366; color:#fff; }
   .copy-btn{ background:var(--peach-soft); color:var(--gold-deep); }
   .prev-btn{ background:none; border:1.5px solid var(--gold-deep) !important; color:var(--gold-deep); }
   .step{ display:none; }
   .step.active{ display:block; animation:stepIn .5s var(--spring); }
   #confettiRain{ position:fixed; inset:0; pointer-events:none; z-index:40; overflow:hidden; }
+  .sound-toggle{ position:fixed; top:16px; right:16px; z-index:45; width:38px; height:38px; border-radius:50%; border:none; background:rgba(0,0,0,.12); color:var(--ink); font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; }
   .rain-piece{ position:absolute; top:-40px; font-size:1.6rem; animation:fall linear forwards; }
   @keyframes fall{ to{ transform:translateY(110vh) rotate(200deg); opacity:.2; } }
 </style>
@@ -204,6 +223,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 <body>
 
 <div id="confettiRain"></div>
+<button class="sound-toggle" id="soundToggle" onclick="toggleSound()" aria-label="Toggle sound">🔊</button>
 
 <div class="stage">
 
@@ -302,6 +322,15 @@ if ( ! defined( 'ABSPATH' ) ) {
     </div>
   </div>
 
+  <div class="step" data-step="teaser">
+    <div class="preview-tag"><span>PREVIEW MODE</span></div>
+    <div class="teaser-wrap" onclick="toStep('title')">
+      <div class="big">Happy<br>Birthday</div>
+      <div class="sub2">to someone worth celebrating</div>
+      <div class="tap">tap anywhere to continue</div>
+    </div>
+  </div>
+
   <div class="step" data-step="title">
     <div class="preview-tag"><span>PREVIEW MODE</span></div>
     <div class="night" onclick="toStep('balloons')">
@@ -327,10 +356,11 @@ if ( ! defined( 'ABSPATH' ) ) {
   <div class="step" data-step="photos">
     <div class="preview-tag"><span>PREVIEW MODE</span></div>
     <div class="photos-wrap">
-      <h2>A few memories 📸</h2>
-      <div class="sub">strung on fairy lights, just for you</div>
-      <div class="fairy-line" id="fairyLine"></div>
-      <button class="night-btn" onclick="toStep('envelope')">Continue 💛</button>
+      <h2>A walk down memory lane 📸</h2>
+      <div class="sub">swipe through</div>
+      <div class="photo-carousel" id="photoCarousel"></div>
+      <div class="photo-dots" id="photoDots"></div>
+      <button class="night-btn" onclick="toStep('envelope')">Keep going 💛</button>
     </div>
   </div>
 
@@ -372,12 +402,14 @@ if ( ! defined( 'ABSPATH' ) ) {
     <div class="card">
       <div class="share-icon">🎉</div>
       <div class="share-title">You're all set!</div>
-      <div class="share-sub">Payment received — this link is live and ready to share.</div>
+      <div class="share-sub" id="shareSub">Payment received — this link is live and ready to share.</div>
       <div class="share-link" id="shareLink"></div>
       <div class="share-actions">
-        <button class="copy-btn" onclick="copyLink()">🔗 Copy Link</button>
-        <button class="prev-btn" onclick="toStep('title')">👁 Preview the recipient view</button>
+        <button class="wa-btn" onclick="shareOnWhatsApp()">Send on WhatsApp 💬</button>
+        <button class="copy-btn" onclick="copyLink()">📋 Copy the link</button>
+        <button class="prev-btn" onclick="toStep('teaser')">👁️ See what they'll see</button>
       </div>
+      <div class="link-note">📅 Your link and its photos stay live for 90 days</div>
     </div>
   </div>
 
@@ -392,6 +424,12 @@ if ( ! defined( 'ABSPATH' ) ) {
       <p id="pwSub">A private link, made only for Ananya</p>
     </div>
     <div class="body">
+      <div class="tstm-label">💬 Our happy customers</div>
+      <div class="tstm-track">
+        <div class="tstm-card">"Put it together on my lunch break and sent it that evening. He read it twice before he replied." <b>— Ananya</b></div>
+        <div class="tstm-card">"Used our trip photos for the birthday page. She screenshotted the whole thing." <b>— Meera</b></div>
+        <div class="tstm-card">"The balloon reasons made him tear up. Worth every rupee." <b>— Karan</b></div>
+      </div>
       <div class="price-box">
         <div><span class="old">₹399</span><span class="new">₹149</span></div>
         <div class="off">60% OFF 🎉</div>
@@ -402,6 +440,18 @@ if ( ! defined( 'ABSPATH' ) ) {
       <button class="primary-btn" id="unlockBtn" onclick="unlockPay()">🎁 Pay ₹149 &amp; Send →</button>
       <div class="trust">🔒 Secure &nbsp;·&nbsp; ⚡ Instant &nbsp;·&nbsp; 💛 No ads</div>
       <div class="link-note">📅 Your link stays live for 90 days</div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="nudgeOverlay">
+  <div class="paywall">
+    <div class="nudge">
+      <div class="emoji">🥺</div>
+      <h3>Wait — it isn't saved yet</h3>
+      <p>The cake, the balloons, your letter — everything you just made lives only on this screen right now. One step secures it forever.</p>
+      <button class="primary-btn" onclick="nudgeStay()">Finish the surprise 💛</button>
+      <button class="prev-btn" onclick="nudgeLeave()">I'll let it go</button>
     </div>
   </div>
 </div>
@@ -437,6 +487,52 @@ if ( ! defined( 'ABSPATH' ) ) {
   const state = { id:null, token:null, theirName:'', yourName:'', age:'', birthDay:'', birthMonth:'', cake:'strawberry', balloons:['','','','',''], tmplLang:'hi', photos:[] };
   const MAX_PHOTOS = 5;
   const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
+
+  // Synthesized with the Web Audio API rather than shipped audio files —
+  // the plugin has no audio assets, and a couple of tasteful oscillator
+  // tones cover the preview's interaction sounds without adding binary
+  // asset management or licensing questions. Mirrors templates/birthday.php.
+  let audioCtx = null;
+  let soundOn = true;
+  try { soundOn = localStorage.getItem('bm_sound_off') !== '1'; } catch(e){}
+
+  function updateSoundIcon(){
+    document.getElementById('soundToggle').textContent = soundOn ? '🔊' : '🔇';
+  }
+  updateSoundIcon();
+
+  function toggleSound(){
+    soundOn = !soundOn;
+    try { localStorage.setItem('bm_sound_off', soundOn ? '0' : '1'); } catch(e){}
+    updateSoundIcon();
+  }
+
+  function initAudio(){
+    if(audioCtx) return;
+    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){}
+  }
+
+  function playTone(freq, duration, type, vol){
+    if(!soundOn || !audioCtx) return;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+  }
+
+  function playPop(){
+    playTone(600, .15, 'triangle', .2);
+    setTimeout(() => playTone(900, .1, 'triangle', .15), 40);
+  }
+
+  function playChime(){
+    [523, 659, 784].forEach((f, i) => setTimeout(() => playTone(f, .4, 'sine', .12), i * 90));
+  }
 
   // Silently creates or updates the draft on the server as the wizard
   // progresses, so an abandoned attempt — and any photos already
@@ -604,6 +700,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     if(typeof n === 'number' && n >= 2) updateSubtitles();
     if(n === 'balloons') renderPopBalloons();
     if(n === 'photos') renderFairyPhotos();
+    if(n === 'closing') confettiBurst();
     window.scrollTo(0,0);
   }
 
@@ -616,16 +713,26 @@ if ( ! defined( 'ABSPATH' ) ) {
   }
 
   function renderFairyPhotos(){
-    const line = document.getElementById('fairyLine');
-    line.innerHTML = '';
+    const track = document.getElementById('photoCarousel');
+    const dots = document.getElementById('photoDots');
+    track.innerHTML = '';
+    dots.innerHTML = '';
     state.photos.forEach((photo,i)=>{
-      const tilt = (i % 2 === 0 ? -1 : 1) * (2 + (i % 3));
-      const d = document.createElement('div');
-      d.className = 'fairy-photo';
-      const capHtml = photo.caption ? `<div class="cap" style="--tilt:${tilt}deg">${photo.caption}</div>` : '';
-      d.innerHTML = `<div class="bulb"></div><img src="${photo.src}" style="--tilt:${tilt}deg" alt="">${capHtml}`;
-      line.appendChild(d);
+      const item = document.createElement('div');
+      item.className = 'photo-carousel-item';
+      const capHtml = photo.caption ? `<div class="cap">${photo.caption}</div>` : '';
+      item.innerHTML = `<img src="${photo.src}" alt="">${capHtml}`;
+      track.appendChild(item);
+      const dot = document.createElement('span');
+      if(i === 0) dot.classList.add('on');
+      dots.appendChild(dot);
     });
+    if(state.photos.length <= 1) return;
+    const dotEls = dots.children;
+    track.onscroll = () => {
+      const idx = Math.round(track.scrollLeft / (track.firstElementChild.offsetWidth + 16));
+      Array.from(dotEls).forEach((d,i)=>d.classList.toggle('on', i === idx));
+    };
   }
 
   document.getElementById('theirName').addEventListener('input', e=>state.theirName = e.target.value.trim());
@@ -768,7 +875,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     document.getElementById('letterMsgOut').textContent='';
     document.getElementById('letterSign').style.display='none';
     document.getElementById('letterContinueBtn').style.display='none';
-    toStep('title');
+    toStep('teaser');
   }
 
   function renderPopBalloons(){
@@ -791,6 +898,8 @@ if ( ! defined( 'ABSPATH' ) ) {
   function popBalloon(el, text, idx){
     if(el.classList.contains('popped')) return;
     el.classList.add('popped');
+    initAudio();
+    playPop();
     const reasons = document.getElementById('reasonsList');
     const card = document.createElement('div');
     card.className='reason-card';
@@ -806,6 +915,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
   function openLetter(){
     toStep('letter');
+    initAudio();
+    playChime();
     const out = document.getElementById('letterMsgOut');
     const sign = document.getElementById('letterSign');
     const cont = document.getElementById('letterContinueBtn');
@@ -885,10 +996,37 @@ if ( ! defined( 'ABSPATH' ) ) {
       if(secs<=0) clearInterval(countdownTimer);
     }, 1000);
   }
+  // First close attempt shows a loss-aversion nudge instead of actually
+  // closing — mirrors ourmoments.live's paywall exit-intent behavior
+  // (intercepting the × button / Escape, not a mouse-leave detector).
+  let nudgeShown = false;
   function closePaywall(){
+    if(!nudgeShown){
+      nudgeShown = true;
+      document.getElementById('nudgeOverlay').classList.add('show');
+      return;
+    }
+    actuallyClosePaywall();
+  }
+  function actuallyClosePaywall(){
     document.getElementById('paywallOverlay').classList.remove('show');
+    document.getElementById('nudgeOverlay').classList.remove('show');
     clearInterval(countdownTimer);
   }
+  function nudgeStay(){
+    document.getElementById('nudgeOverlay').classList.remove('show');
+  }
+  function nudgeLeave(){
+    actuallyClosePaywall();
+  }
+  document.addEventListener('keydown', function(e){
+    if(e.key !== 'Escape') return;
+    if(document.getElementById('nudgeOverlay').classList.contains('show')){
+      nudgeStay();
+    } else if(document.getElementById('paywallOverlay').classList.contains('show')){
+      closePaywall();
+    }
+  });
   async function unlockPay(){
     const payErr = document.getElementById('payErr');
     payErr.style.display = 'none';
@@ -967,8 +1105,16 @@ if ( ! defined( 'ABSPATH' ) ) {
     const link = document.getElementById('shareLink').textContent;
     navigator.clipboard.writeText(link).then(()=>alert('Link copied.'));
   }
+  function shareOnWhatsApp(){
+    const link = document.getElementById('shareLink').textContent;
+    const their = state.theirName || 'them';
+    const text = `A birthday surprise for ${their} 🎂 ${link}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  }
 
   function confettiBurst(){
+    initAudio();
+    playChime();
     const wrap = document.getElementById('confettiRain');
     const symbols = ['🎉','🎈','🎂','✨','🎁','⭐'];
     for(let i=0;i<40;i++){

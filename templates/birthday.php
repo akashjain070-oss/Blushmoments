@@ -37,6 +37,24 @@ foreach ( $photos_raw as $photo ) {
 	}
 }
 
+// Only lock if the birthday is within the next 26 hours — this is a
+// last-day suspense touch, not a months-ahead calendar feature, so a
+// birthday set far in the future (or already past) never locks anyone out.
+$birth_day    = ! empty( $surprise['content']['birth_day'] ) ? (int) $surprise['content']['birth_day'] : 0;
+$birth_month  = ! empty( $surprise['content']['birth_month'] ) ? (int) $surprise['content']['birth_month'] : 0;
+$lock_seconds = 0;
+if ( $birth_day && $birth_month ) {
+	$tz     = wp_timezone();
+	$now    = new DateTime( 'now', $tz );
+	$target = new DateTime( 'now', $tz );
+	$target->setDate( (int) $now->format( 'Y' ), $birth_month, $birth_day );
+	$target->setTime( 0, 0, 0 );
+	$diff = $target->getTimestamp() - $now->getTimestamp();
+	if ( $diff > 0 && $diff <= 26 * HOUR_IN_SECONDS ) {
+		$lock_seconds = $diff;
+	}
+}
+
 $cake_labels = array(
 	'chocolate'  => 'Midnight Chocolate',
 	'strawberry' => 'Strawberry Blush',
@@ -94,11 +112,6 @@ $cake_label = $cake_labels[ $cake_key ] ?? 'Strawberry Blush';
   .photos-wrap{ padding:50px 22px; min-height:100vh; text-align:center; }
   .photos-wrap h2{ font-size:1.3rem; }
   .photos-wrap .sub{ font-size:.82rem; opacity:.7; margin:8px 0 30px; }
-  .fairy-line{ display:flex; flex-wrap:wrap; gap:22px 16px; justify-content:center; margin-bottom:36px; }
-  .fairy-photo{ width:112px; }
-  .fairy-photo .bulb{ width:8px; height:8px; border-radius:50%; background:#ffe9a8; margin:0 auto 6px; box-shadow:0 0 10px 3px rgba(255,233,168,.85); }
-  .fairy-photo img{ width:100%; height:132px; object-fit:cover; display:block; border-radius:6px; border:5px solid #fff; box-shadow:0 10px 20px rgba(0,0,0,.35); transform:rotate(var(--tilt,0deg)); }
-  .fairy-photo .cap{ font-size:.7rem; opacity:.7; margin-top:8px; transform:rotate(var(--tilt,0deg)); }
   .envelope-wrap{ padding:60px 24px; text-align:center; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; }
   .envelope-wrap h3{ font-size:1.2rem; margin-bottom:4px; }
   .envelope-wrap .sub{ font-size:.82rem; opacity:.7; margin-bottom:26px; }
@@ -121,6 +134,31 @@ $cake_label = $cake_labels[ $cake_key ] ?? 'Strawberry Blush';
   .closing-wrap .from{ font-size:.85rem; opacity:.75; margin-bottom:8px; }
   .closing-wrap .cake-note{ font-size:.72rem; opacity:.5; margin-bottom:24px; }
   .closing-wrap .made-with{ font-size:.75rem; opacity:.5; margin-top:10px; }
+  .unwrap-wrap{ padding:60px 24px; text-align:center; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .unwrap-wrap .kicker{ font-size:.78rem; font-weight:800; letter-spacing:.08em; opacity:.7; margin-bottom:8px; }
+  .unwrap-wrap .name{ font-size:2rem; font-weight:900; color:var(--gold); margin-bottom:14px; }
+  .unwrap-wrap .from{ font-size:.9rem; opacity:.75; margin-bottom:32px; }
+  .unwrap-btn{ border:none; border-radius:40px; padding:16px 34px; background:linear-gradient(135deg,var(--gold-deep),var(--gold)); color:#fff; font-weight:800; font-size:1rem; cursor:pointer; box-shadow:0 14px 30px rgba(193,122,63,.35); }
+  .unwrap-wrap .sound-hint{ font-size:.75rem; opacity:.5; margin-top:16px; }
+  .sound-toggle{ position:fixed; top:16px; right:16px; z-index:45; width:38px; height:38px; border-radius:50%; border:none; background:rgba(255,255,255,.15); color:#fff; font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .locked-wrap{ padding:60px 24px; text-align:center; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .locked-wrap .emoji{ font-size:2.6rem; margin-bottom:14px; }
+  .locked-wrap h3{ font-size:1.25rem; margin-bottom:8px; }
+  .locked-wrap .sub{ font-size:.85rem; opacity:.7; margin-bottom:26px; }
+  .count-digits{ display:flex; gap:14px; }
+  .count-cell{ background:rgba(255,255,255,.08); border-radius:14px; padding:14px 18px; min-width:64px; }
+  .count-num{ font-size:1.8rem; font-weight:900; }
+  .count-label{ font-size:.65rem; opacity:.6; letter-spacing:.06em; margin-top:4px; }
+  .teaser-wrap{ padding:60px 24px; text-align:center; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; }
+  .teaser-wrap .sub2{ font-size:.9rem; opacity:.7; margin-top:14px; }
+  .photo-carousel{ display:flex; gap:16px; overflow-x:auto; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; padding:10px 24px 20px; margin:0 -22px 10px; }
+  .photo-carousel::-webkit-scrollbar{ display:none; }
+  .photo-carousel-item{ scroll-snap-align:center; flex:0 0 auto; width:200px; }
+  .photo-carousel-item img{ width:200px; height:240px; object-fit:cover; border-radius:14px; border:5px solid #fff; box-shadow:0 12px 26px rgba(0,0,0,.35); display:block; }
+  .photo-carousel-item .cap{ text-align:center; font-size:.75rem; opacity:.7; margin-top:8px; }
+  .photo-dots{ display:flex; justify-content:center; gap:6px; margin-bottom:6px; }
+  .photo-dots span{ width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,.25); }
+  .photo-dots span.on{ background:var(--gold); }
   .step{ display:none; }
   .step.active{ display:block; animation:stepIn .5s cubic-bezier(.34,1.56,.64,1); }
   #confettiRain{ position:fixed; inset:0; pointer-events:none; z-index:40; overflow:hidden; }
@@ -132,10 +170,42 @@ $cake_label = $cake_labels[ $cake_key ] ?? 'Strawberry Blush';
 <body>
 
 <div id="confettiRain"></div>
+<button class="sound-toggle" id="soundToggle" onclick="toggleSound()" aria-label="Toggle sound">🔊</button>
 
 <div class="stage">
 
-  <div class="step active" data-step="title">
+  <div class="step active" data-step="unwrap">
+    <div class="unwrap-wrap">
+      <div class="kicker">A SURPRISE FOR</div>
+      <div class="name"><?php echo esc_html( $their_name ); ?></div>
+      <div class="from"><?php echo esc_html( $your_name ); ?> made this — just for you.</div>
+      <button class="unwrap-btn" onclick="handleUnwrap()">Unwrap it 🎁</button>
+      <div class="sound-hint">🔊 Sound on for the full magic</div>
+    </div>
+  </div>
+
+  <div class="step" data-step="locked">
+    <div class="locked-wrap">
+      <div class="emoji">🎈</div>
+      <h3>The surprise unlocks at midnight</h3>
+      <div class="sub">Some things are worth the wait. This is one of them.</div>
+      <div class="count-digits">
+        <div class="count-cell"><div class="count-num" id="countH">00</div><div class="count-label">HOURS</div></div>
+        <div class="count-cell"><div class="count-num" id="countM">00</div><div class="count-label">MINUTES</div></div>
+        <div class="count-cell"><div class="count-num" id="countS">00</div><div class="count-label">SECONDS</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step" data-step="teaser">
+    <div class="teaser-wrap" onclick="toStep('title')">
+      <div class="big">Happy<br>Birthday</div>
+      <div class="sub2">to someone worth celebrating</div>
+      <div class="tap">tap anywhere to continue</div>
+    </div>
+  </div>
+
+  <div class="step" data-step="title">
     <div class="night" onclick="toStep('balloons')">
       <div class="wish">make a wish...</div>
       <div class="big">Happy<br>Birthday</div>
@@ -157,10 +227,11 @@ $cake_label = $cake_labels[ $cake_key ] ?? 'Strawberry Blush';
 
   <div class="step" data-step="photos">
     <div class="photos-wrap">
-      <h2>A few memories 📸</h2>
-      <div class="sub">strung on fairy lights, just for you</div>
-      <div class="fairy-line" id="fairyLine"></div>
-      <button class="night-btn" onclick="toStep('envelope')">Continue 💛</button>
+      <h2>A walk down memory lane 📸</h2>
+      <div class="sub">swipe through</div>
+      <div class="photo-carousel" id="photoCarousel"></div>
+      <div class="photo-dots" id="photoDots"></div>
+      <button class="night-btn" onclick="toStep('envelope')">Keep going 💛</button>
     </div>
   </div>
 
@@ -200,6 +271,7 @@ $cake_label = $cake_labels[ $cake_key ] ?? 'Strawberry Blush';
   const BALLOONS = <?php echo wp_json_encode( $balloons, JSON_UNESCAPED_UNICODE ); ?>;
   const MESSAGE = <?php echo wp_json_encode( $message, JSON_UNESCAPED_UNICODE ); ?>;
   const PHOTOS = <?php echo wp_json_encode( $photos, JSON_UNESCAPED_UNICODE ); ?>;
+  const LOCK_SECONDS = <?php echo (int) $lock_seconds; ?>;
   const BALLOON_COLORS = ['#ff8fa3','#8f7aff','#3fd6c0','#ffb347','#ff6f91'];
 
   function toStep(n){
@@ -211,22 +283,110 @@ $cake_label = $cake_labels[ $cake_key ] ?? 'Strawberry Blush';
     window.scrollTo(0,0);
   }
 
+  // Synthesized with the Web Audio API rather than shipped audio files —
+  // the plugin has no audio assets, and a couple of tasteful oscillator
+  // tones cover the interaction sounds without adding binary asset
+  // management or licensing questions.
+  let audioCtx = null;
+  let soundOn = true;
+  try { soundOn = localStorage.getItem('bm_sound_off') !== '1'; } catch(e){}
+
+  function updateSoundIcon(){
+    document.getElementById('soundToggle').textContent = soundOn ? '🔊' : '🔇';
+  }
+  updateSoundIcon();
+
+  function toggleSound(){
+    soundOn = !soundOn;
+    try { localStorage.setItem('bm_sound_off', soundOn ? '0' : '1'); } catch(e){}
+    updateSoundIcon();
+  }
+
+  function initAudio(){
+    if(audioCtx) return;
+    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){}
+  }
+
+  function playTone(freq, duration, type, vol){
+    if(!soundOn || !audioCtx) return;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+  }
+
+  function playPop(){
+    playTone(600, .15, 'triangle', .2);
+    setTimeout(() => playTone(900, .1, 'triangle', .15), 40);
+  }
+
+  function playChime(){
+    [523, 659, 784].forEach((f, i) => setTimeout(() => playTone(f, .4, 'sine', .12), i * 90));
+  }
+
+  function handleUnwrap(){
+    initAudio();
+    playChime();
+    if(LOCK_SECONDS > 0){
+      toStep('locked');
+      startLockCountdown();
+    } else {
+      toStep('teaser');
+    }
+  }
+
+  function startLockCountdown(){
+    let remaining = LOCK_SECONDS;
+    const paint = () => {
+      const h = Math.floor(remaining / 3600);
+      const m = Math.floor((remaining % 3600) / 60);
+      const s = remaining % 60;
+      document.getElementById('countH').textContent = String(h).padStart(2,'0');
+      document.getElementById('countM').textContent = String(m).padStart(2,'0');
+      document.getElementById('countS').textContent = String(s).padStart(2,'0');
+    };
+    paint();
+    const timer = setInterval(() => {
+      remaining--;
+      if(remaining <= 0){
+        clearInterval(timer);
+        toStep('teaser');
+        return;
+      }
+      paint();
+    }, 1000);
+  }
+
   function goAfterBalloons(){
     toStep(PHOTOS.length ? 'photos' : 'envelope');
   }
 
   function renderPhotos(){
-    const line = document.getElementById('fairyLine');
-    if(line.dataset.rendered) return;
-    line.dataset.rendered = '1';
+    const track = document.getElementById('photoCarousel');
+    const dots = document.getElementById('photoDots');
+    if(track.dataset.rendered) return;
+    track.dataset.rendered = '1';
     PHOTOS.forEach((photo,i)=>{
-      const tilt = (i % 2 === 0 ? -1 : 1) * (2 + (i % 3));
-      const d = document.createElement('div');
-      d.className = 'fairy-photo';
-      const capHtml = photo.caption ? `<div class="cap" style="--tilt:${tilt}deg">${photo.caption}</div>` : '';
-      d.innerHTML = `<div class="bulb"></div><img src="${photo.url}" style="--tilt:${tilt}deg" alt="">${capHtml}`;
-      line.appendChild(d);
+      const item = document.createElement('div');
+      item.className = 'photo-carousel-item';
+      const capHtml = photo.caption ? `<div class="cap">${photo.caption}</div>` : '';
+      item.innerHTML = `<img src="${photo.url}" alt="">${capHtml}`;
+      track.appendChild(item);
+      const dot = document.createElement('span');
+      if(i === 0) dot.classList.add('on');
+      dots.appendChild(dot);
     });
+    if(PHOTOS.length <= 1) return;
+    const dotEls = dots.children;
+    track.addEventListener('scroll', () => {
+      const idx = Math.round(track.scrollLeft / (track.firstElementChild.offsetWidth + 16));
+      Array.from(dotEls).forEach((d,i)=>d.classList.toggle('on', i === idx));
+    }, { passive: true });
   }
 
   function renderPopBalloons(){
@@ -246,6 +406,8 @@ $cake_label = $cake_labels[ $cake_key ] ?? 'Strawberry Blush';
   function popBalloon(el, text, idx){
     if(el.classList.contains('popped')) return;
     el.classList.add('popped');
+    initAudio();
+    playPop();
     const reasons = document.getElementById('reasonsList');
     const card = document.createElement('div');
     card.className='reason-card';
@@ -260,6 +422,8 @@ $cake_label = $cake_labels[ $cake_key ] ?? 'Strawberry Blush';
 
   function openLetter(){
     toStep('letter');
+    initAudio();
+    playChime();
     const out = document.getElementById('letterMsgOut');
     const sign = document.getElementById('letterSign');
     const cont = document.getElementById('letterContinueBtn');
@@ -279,6 +443,8 @@ $cake_label = $cake_labels[ $cake_key ] ?? 'Strawberry Blush';
   }
 
   function confettiBurst(){
+    initAudio();
+    playChime();
     const wrap = document.getElementById('confettiRain');
     const symbols = ['🎉','🎈','🎂','✨','🎁','⭐'];
     for(let i=0;i<40;i++){

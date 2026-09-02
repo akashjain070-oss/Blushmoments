@@ -2,3 +2,12 @@
 .env
 .env.*
 !.env.example
+
+# Build output — regenerated, not source
+*.zip
+
+# Raw scraped reference-site dumps — research scratch, not ours to redistribute.
+# Keep FINDINGS.md (our own notes), ignore everything else fetched from it.
+reference/**
+!reference/**/
+!reference/**/FINDINGS.md
