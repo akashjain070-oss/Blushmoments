@@ -115,6 +115,10 @@ if ( ! defined( 'ABSPATH' ) ) {
   .taunt.show{ opacity:1; }
   .celeb-title{ text-align:center; font-size:1.4rem; font-weight:800; color:var(--pink-deep); margin:6px 0 4px; }
   .celeb-sub{ text-align:center; color:var(--muted); font-size:.85rem; margin-bottom:18px; }
+  .fairy-line{ display:flex; flex-wrap:wrap; gap:18px 12px; justify-content:center; margin-bottom:22px; }
+  .fairy-photo{ width:92px; }
+  .fairy-photo .bulb{ width:7px; height:7px; border-radius:50%; background:#ffe9a8; margin:0 auto 5px; box-shadow:0 0 8px 3px rgba(255,233,168,.85); }
+  .fairy-photo img{ width:100%; height:108px; object-fit:cover; display:block; border-radius:6px; border:4px solid #fff; box-shadow:0 8px 16px rgba(0,0,0,.25); transform:rotate(var(--tilt,0deg)); }
   .letter-card{ background:linear-gradient(160deg,#fff,#fff6f0); border-radius:18px; padding:26px 20px; text-align:center; cursor:pointer; box-shadow:0 10px 30px rgba(160,60,50,.15); }
   .letter-card .env{ font-size:2rem; margin-bottom:10px; }
   .letter-card .t1{ font-weight:800; color:var(--pink-deep); }
@@ -186,6 +190,7 @@ if ( ! defined( 'ABSPATH' ) ) {
       <div class="sub">You're about to make someone's day unforgettable 🎀</div>
       <input type="text" id="theirName" placeholder="Their name...">
       <input type="text" id="yourName" placeholder="Your name...">
+      <input type="text" id="hpField" name="website" autocomplete="off" tabindex="-1" aria-hidden="true" style="position:absolute; left:-9999px; width:1px; height:1px; opacity:0;">
       <button class="primary-btn" onclick="toStep(2)">Continue →</button>
     </div>
   </div>
@@ -297,6 +302,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     <div class="card">
       <div class="celeb-title" id="celebTitle2">Yayy! Sam said YES! 🎉</div>
       <div class="celeb-sub">Knew you'd say yes 💕</div>
+      <div class="fairy-line" id="fairyLine"></div>
       <div class="lc-track" id="lcTrack"></div>
       <div class="lc-dots" id="lcDots"></div>
       <div class="lc-caption">👉 Jo abhi tumne feel kiya, woh bhi feel karegi — because of you 💕</div>
@@ -381,9 +387,56 @@ if ( ! defined( 'ABSPATH' ) ) {
     {emoji:'🦋💗', cap:'us'},
   ];
 
-  const state = { theirName:'', yourName:'', relation:'girlfriend', question:QUESTIONS.girlfriend[0], tmplLang:'hi', photos:[] };
+  const state = { id:null, token:null, theirName:'', yourName:'', relation:'girlfriend', question:QUESTIONS.girlfriend[0], tmplLang:'hi', photos:[] };
   const MAX_PHOTOS = 5;
   const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
+
+  // Silently creates or updates the draft on the server as the wizard
+  // progresses, so an abandoned attempt — and any photos already
+  // uploaded — still exists in the database instead of only living in
+  // this browser tab. No-ops until the minimum required fields (from
+  // step 1) are filled in. Never surfaces errors to the user — this is
+  // a background save, not the real submit (that's createAndOpenPaywall).
+  let draftSaveInFlight = false;
+  async function saveDraftIfReady(step){
+    if(!state.theirName || !state.yourName) return;
+    if(draftSaveInFlight) return;
+    draftSaveInFlight = true;
+    try{
+      const hp = document.getElementById('hpField');
+      const res = await fetch(REST_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        body: JSON.stringify({
+          id: state.id || undefined,
+          token: state.token || undefined,
+          their_name: state.theirName,
+          your_name: state.yourName,
+          experience_type: 'proposal',
+          relation: state.relation,
+          question: state.question,
+          message: state.message,
+          content: { love_cards: LOVE_CARDS, photos: state.photos },
+          step: step == null ? '' : String(step),
+          website: hp ? hp.value : '',
+        }),
+      });
+      if(res.ok){
+        const data = await res.json();
+        if(data && data.id) state.id = data.id;
+        if(data && data.token) state.token = data.token;
+        // Swap in the real uploaded URLs so the next autosave doesn't
+        // re-upload the same photos as brand new files.
+        if(data && Array.isArray(data.photos) && data.photos.length === state.photos.length){
+          state.photos = data.photos;
+        }
+      }
+    } catch(err){
+      // background autosave — swallow silently, never interrupts the wizard
+    } finally {
+      draftSaveInFlight = false;
+    }
+  }
 
   function triggerPhotoPick(){
     if(state.photos.length >= MAX_PHOTOS) return;
@@ -434,6 +487,7 @@ if ( ! defined( 'ABSPATH' ) ) {
         }
         state.photos.push(dataUrl);
         renderPhotoGrid();
+        saveDraftIfReady(4);
       } catch(err){
         alert("Couldn't read " + file.name + " — try a different photo.");
       }
@@ -444,6 +498,7 @@ if ( ! defined( 'ABSPATH' ) ) {
   function removePhoto(i){
     state.photos.splice(i, 1);
     renderPhotoGrid();
+    saveDraftIfReady(4);
   }
 
   function renderPhotoGrid(){
@@ -471,6 +526,7 @@ if ( ! defined( 'ABSPATH' ) ) {
   function toStep(n){
     document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
     document.querySelector(`.step[data-step="${n}"]`).classList.add('active');
+    if(typeof n === 'number') saveDraftIfReady(n);
     const progress = document.getElementById('progressBar');
     if(typeof n === 'number'){
       progress.style.display='flex';
@@ -600,7 +656,26 @@ if ( ! defined( 'ABSPATH' ) ) {
     toStep('recip-q');
   }
 
+  // Mirrors templates/proposal.php's lovecards step, which shows uploaded
+  // photos as a fairy-light gallery above the memory cards. state.photos
+  // here is a flat array of image src strings (no captions), unlike
+  // birthday's {src, caption} objects.
+  function renderFairyPhotos(){
+    const line = document.getElementById('fairyLine');
+    line.innerHTML = '';
+    if(!state.photos.length){ line.style.display = 'none'; return; }
+    line.style.display = 'flex';
+    state.photos.forEach((src,i)=>{
+      const tilt = (i % 2 === 0 ? -1 : 1) * (2 + (i % 3));
+      const d = document.createElement('div');
+      d.className = 'fairy-photo';
+      d.innerHTML = `<div class="bulb"></div><img src="${src}" style="--tilt:${tilt}deg" alt="">`;
+      line.appendChild(d);
+    });
+  }
+
   function renderLoveCards(){
+    renderFairyPhotos();
     const track = document.getElementById('lcTrack');
     const dots = document.getElementById('lcDots');
     track.innerHTML=''; dots.innerHTML='';
@@ -680,7 +755,9 @@ if ( ! defined( 'ABSPATH' ) ) {
     }
   }
 
-  // --- real server call happens here, not before ---
+  // This is the final, must-succeed submit — draft rows already exist from
+  // saveDraftIfReady() as of step 1, so this is an update (via state.id),
+  // not a fresh create, unlike the old one-shot-at-the-end version.
   let createdSurprise = null;
 
   async function createAndOpenPaywall(){
@@ -691,10 +768,13 @@ if ( ! defined( 'ABSPATH' ) ) {
     sendBtn.textContent = 'Saving...';
 
     try{
+      const hp = document.getElementById('hpField');
       const res = await fetch(REST_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json; charset=utf-8' },
         body: JSON.stringify({
+          id: state.id || undefined,
+          token: state.token || undefined,
           their_name: state.theirName || 'Them',
           your_name: state.yourName || 'You',
           experience_type: 'proposal',
@@ -702,10 +782,17 @@ if ( ! defined( 'ABSPATH' ) ) {
           question: state.question,
           message: state.message,
           content: { love_cards: LOVE_CARDS, photos: state.photos },
+          step: 'final',
+          website: hp ? hp.value : '',
         }),
       });
       if(!res.ok){ throw new Error(`Server returned ${res.status}`); }
       createdSurprise = await res.json();
+      state.id = createdSurprise.id;
+      if(createdSurprise.token) state.token = createdSurprise.token;
+      if(Array.isArray(createdSurprise.photos) && createdSurprise.photos.length === state.photos.length){
+        state.photos = createdSurprise.photos;
+      }
       document.getElementById('shareLink').textContent = createdSurprise.url;
       openPaywall();
     } catch(err){

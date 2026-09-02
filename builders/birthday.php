@@ -133,6 +133,14 @@ if ( ! defined( 'ABSPATH' ) ) {
   .balloon:nth-child(5){ animation-delay:1.2s; }
   .balloon:active{ transform:scale(.9); }
   .balloon.popped{ visibility:hidden; }
+  .photos-wrap{ background:linear-gradient(180deg,var(--night),#4a2a4d); border-radius:22px; margin:14px 20px; padding:40px 22px; color:#fff; text-align:center; min-height:55vh; }
+  .photos-wrap h2{ font-size:1.3rem; }
+  .photos-wrap .sub{ font-size:.82rem; opacity:.7; margin:8px 0 30px; }
+  .fairy-line{ display:flex; flex-wrap:wrap; gap:22px 16px; justify-content:center; margin-bottom:26px; }
+  .fairy-photo{ width:100px; }
+  .fairy-photo .bulb{ width:8px; height:8px; border-radius:50%; background:#ffe9a8; margin:0 auto 6px; box-shadow:0 0 10px 3px rgba(255,233,168,.85); }
+  .fairy-photo img{ width:100%; height:118px; object-fit:cover; display:block; border-radius:6px; border:5px solid #fff; box-shadow:0 10px 20px rgba(0,0,0,.35); transform:rotate(var(--tilt,0deg)); }
+  .fairy-photo .cap{ font-size:.7rem; opacity:.7; margin-top:8px; transform:rotate(var(--tilt,0deg)); }
   .reasons{ display:flex; flex-direction:column; gap:10px; margin-top:18px; }
   .reason-card{ border:1.5px solid; border-radius:14px; padding:12px 14px; background:rgba(255,255,255,.06); }
   .reason-card .tag{ display:inline-block; font-size:.65rem; font-weight:800; letter-spacing:.4px; padding:3px 10px; border-radius:12px; margin-bottom:6px; background:rgba(255,255,255,.12); }
@@ -312,7 +320,17 @@ if ( ! defined( 'ABSPATH' ) ) {
       <div class="pop-field" id="popField"></div>
       <div class="reasons" id="reasonsList"></div>
       <div class="and-more" id="andMore" style="display:none;">...and a thousand more reasons 💛</div>
-      <button class="night-btn" id="keepGoingBtn" style="display:none;" onclick="toStep('envelope')">Keep going 💛</button>
+      <button class="night-btn" id="keepGoingBtn" style="display:none;" onclick="goAfterBalloons()">Keep going 💛</button>
+    </div>
+  </div>
+
+  <div class="step" data-step="photos">
+    <div class="preview-tag"><span>PREVIEW MODE</span></div>
+    <div class="photos-wrap">
+      <h2>A few memories 📸</h2>
+      <div class="sub">strung on fairy lights, just for you</div>
+      <div class="fairy-line" id="fairyLine"></div>
+      <button class="night-btn" onclick="toStep('envelope')">Continue 💛</button>
     </div>
   </div>
 
@@ -452,6 +470,14 @@ if ( ! defined( 'ABSPATH' ) ) {
         const data = await res.json();
         if(data && data.id) state.id = data.id;
         if(data && data.token) state.token = data.token;
+        // Swap in the real uploaded URLs (in memory only — no re-render,
+        // so this never disrupts someone actively typing a caption) so the
+        // next autosave doesn't re-upload the same photos as brand new
+        // files. Captions are preserved from local state, not overwritten,
+        // since the user may have edited one after this request was sent.
+        if(data && Array.isArray(data.photos) && data.photos.length === state.photos.length){
+          data.photos.forEach((p, i) => { if(state.photos[i]) state.photos[i].src = p.url; });
+        }
       }
     } catch(err){
       // background autosave — swallow silently, never interrupts the wizard
@@ -577,7 +603,29 @@ if ( ! defined( 'ABSPATH' ) ) {
     }
     if(typeof n === 'number' && n >= 2) updateSubtitles();
     if(n === 'balloons') renderPopBalloons();
+    if(n === 'photos') renderFairyPhotos();
     window.scrollTo(0,0);
+  }
+
+  // Mirrors templates/birthday.php's goAfterBalloons(): the recipient-facing
+  // link skips straight to the envelope when no photos were added, and this
+  // in-builder preview needs to match that exactly, or a photo-less draft
+  // would still show a preview step the real link never shows.
+  function goAfterBalloons(){
+    toStep(state.photos.length ? 'photos' : 'envelope');
+  }
+
+  function renderFairyPhotos(){
+    const line = document.getElementById('fairyLine');
+    line.innerHTML = '';
+    state.photos.forEach((photo,i)=>{
+      const tilt = (i % 2 === 0 ? -1 : 1) * (2 + (i % 3));
+      const d = document.createElement('div');
+      d.className = 'fairy-photo';
+      const capHtml = photo.caption ? `<div class="cap" style="--tilt:${tilt}deg">${photo.caption}</div>` : '';
+      d.innerHTML = `<div class="bulb"></div><img src="${photo.src}" style="--tilt:${tilt}deg" alt="">${capHtml}`;
+      line.appendChild(d);
+    });
   }
 
   document.getElementById('theirName').addEventListener('input', e=>state.theirName = e.target.value.trim());
@@ -810,6 +858,9 @@ if ( ! defined( 'ABSPATH' ) ) {
       createdSurprise = await res.json();
       state.id = createdSurprise.id;
       if(createdSurprise.token) state.token = createdSurprise.token;
+      if(Array.isArray(createdSurprise.photos) && createdSurprise.photos.length === state.photos.length){
+        createdSurprise.photos.forEach((p, i) => { if(state.photos[i]) state.photos[i].src = p.url; });
+      }
       document.getElementById('shareLink').textContent = createdSurprise.url;
       openPaywall();
     } catch(err){
