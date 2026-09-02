@@ -160,6 +160,7 @@ if ( ! defined( 'ABSPATH' ) ) {
   .rain-piece{ position:absolute; top:-40px; font-size:1.6rem; animation:fall linear forwards; }
   @keyframes fall{ to{ transform:translateY(110vh) rotate(200deg); opacity:.2; } }
 </style>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </head>
 <body>
 
@@ -300,8 +301,8 @@ if ( ! defined( 'ABSPATH' ) ) {
   <div class="step" data-step="share">
     <div class="card">
       <div class="share-icon">🎉</div>
-      <div class="share-title">Your draft is saved!</div>
-      <div class="share-sub">Payment isn't wired in yet, so this link won't open for the recipient until it's marked paid.</div>
+      <div class="share-title">You're all set!</div>
+      <div class="share-sub">Payment received — this link is live and ready to share.</div>
       <div class="share-link" id="shareLink"></div>
       <div class="share-actions">
         <button class="copy-btn" onclick="copyLink()">🔗 Copy Link</button>
@@ -327,10 +328,10 @@ if ( ! defined( 'ABSPATH' ) ) {
         <div class="sub">ONE-TIME · NO SUBSCRIPTION</div>
       </div>
       <div class="tagline">"The best gifts are made, not bought 💝"</div>
-      <button class="primary-btn" id="unlockBtn" onclick="unlockPay()">🚩 Unlock &amp; Send →</button>
+      <div class="err-box" id="payErr"></div>
+      <button class="primary-btn" id="unlockBtn" onclick="unlockPay()">🚩 Pay ₹199 &amp; Send →</button>
       <div class="trust">🔒 Secure &nbsp;·&nbsp; ⚡ Instant &nbsp;·&nbsp; 💜 No ads</div>
       <div class="link-note">📅 Your link stays live for 90 days</div>
-      <div class="stub-note">Razorpay isn't connected yet — this creates a real draft on the server, but you'll need to mark it paid manually until Phase 3 ships.</div>
     </div>
   </div>
 </div>
@@ -641,11 +642,79 @@ if ( ! defined( 'ABSPATH' ) ) {
     document.getElementById('paywallOverlay').classList.remove('show');
     clearInterval(countdownTimer);
   }
-  function unlockPay(){
-    // Real Razorpay checkout lands here in Phase 3. For now, be honest about
-    // the current state instead of faking a successful payment.
-    closePaywall();
-    toStep('share');
+  async function unlockPay(){
+    const payErr = document.getElementById('payErr');
+    payErr.style.display = 'none';
+    const btn = document.getElementById('unlockBtn');
+    const originalLabel = btn.textContent;
+
+    if(!createdSurprise || !createdSurprise.id){
+      payErr.textContent = "Something went wrong — please close this and try sending again.";
+      payErr.style.display = 'block';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Preparing payment...';
+
+    try{
+      const orderRes = await fetch(`${REST_URL}/${createdSurprise.id}/order`, { method: 'POST' });
+      const order = await orderRes.json();
+      if(!orderRes.ok){ throw new Error(order.message || `Server returned ${orderRes.status}`); }
+
+      const rzp = new Razorpay({
+        key: order.key_id,
+        amount: order.amount,
+        currency: order.currency,
+        order_id: order.order_id,
+        name: 'Blush Moments',
+        description: `Surprise for ${state.theirName || 'them'}`,
+        prefill: { name: state.yourName || '' },
+        theme: { color: '#d1476a' },
+        handler: async function(response){
+          try{
+            const verifyRes = await fetch(`${REST_URL}/${createdSurprise.id}/verify`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json; charset=utf-8' },
+              body: JSON.stringify({
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature,
+              }),
+            });
+            const verify = await verifyRes.json();
+            if(!verifyRes.ok){ throw new Error(verify.message || 'Payment could not be verified.'); }
+            closePaywall();
+            toStep('share');
+          } catch(err){
+            payErr.textContent = "Payment went through but couldn't be verified — " + err.message + ' Please try again or contact support.';
+            payErr.style.display = 'block';
+            btn.disabled = false;
+            btn.textContent = originalLabel;
+          }
+        },
+        modal: {
+          ondismiss: function(){
+            btn.disabled = false;
+            btn.textContent = originalLabel;
+          }
+        }
+      });
+
+      rzp.on('payment.failed', function(response){
+        payErr.textContent = 'Payment failed — ' + (response.error && response.error.description ? response.error.description : 'please try again.');
+        payErr.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = originalLabel;
+      });
+
+      rzp.open();
+    } catch(err){
+      payErr.textContent = "Couldn't start payment — " + err.message + '. Try again in a moment.';
+      payErr.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = originalLabel;
+    }
   }
   function copyLink(){
     const link = document.getElementById('shareLink').textContent;
