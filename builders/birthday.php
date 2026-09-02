@@ -40,7 +40,11 @@ if ( ! defined( 'ABSPATH' ) ) {
   }
   h2, .closing-wrap .big, .night .big{ font-family:var(--font-display); letter-spacing:-.01em; }
   @keyframes shimmer{ 0%{ transform:translateX(-120%) skewX(-15deg); } 100%{ transform:translateX(220%) skewX(-15deg); } }
-  @keyframes stepIn{ 0%{ opacity:0; transform:translateY(14px); } 100%{ opacity:1; transform:translateY(0); } }
+  @keyframes stepIn{
+    0%{ opacity:0; transform:translate3d(0,16px,0) scale(.96); }
+    60%{ opacity:1; transform:translate3d(0,-2px,0) scale(1.015); }
+    100%{ opacity:1; transform:translate3d(0,0,0) scale(1); }
+  }
   @keyframes balloonBob{ 0%,100%{ transform:translateY(0) rotate(-2deg); } 50%{ transform:translateY(-8px) rotate(2deg); } }
   @keyframes float{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-6px); } }
   .wordmark{ position:relative; z-index:4; text-align:center; padding:14px 0 0; }
@@ -148,6 +152,15 @@ if ( ! defined( 'ABSPATH' ) ) {
   .photo-dots{ display:flex; justify-content:center; gap:6px; margin-bottom:6px; }
   .photo-dots span{ width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,.25); }
   .photo-dots span.on{ background:var(--gold); }
+  .swipe-hint{ position:relative; height:0; }
+  .swipe-hint-icon{ position:absolute; top:-160px; left:50%; margin-left:-14px; font-size:1.6rem; animation:gSwipe 2.2s ease-in-out infinite; pointer-events:none; transition:opacity .3s ease; }
+  @keyframes gSwipe{
+    0%{ transform:translateX(-46px) rotate(-8deg) scale(1); opacity:0; }
+    16%{ opacity:1; transform:translateX(-46px) rotate(-8deg) scale(.86); }
+    80%{ opacity:1; transform:translateX(46px) rotate(-8deg) scale(.86); }
+    100%{ transform:translateX(46px) rotate(-8deg) scale(1); opacity:0; }
+  }
+  @media (prefers-reduced-motion: reduce){ .swipe-hint-icon{ animation:none; display:none; } }
   .reasons{ display:flex; flex-direction:column; gap:10px; margin-top:18px; }
   .reason-card{ border:1.5px solid; border-radius:14px; padding:12px 14px; background:rgba(255,255,255,.06); }
   .reason-card .tag{ display:inline-block; font-size:.65rem; font-weight:800; letter-spacing:.4px; padding:3px 10px; border-radius:12px; margin-bottom:6px; background:rgba(255,255,255,.12); }
@@ -212,7 +225,7 @@ if ( ! defined( 'ABSPATH' ) ) {
   .copy-btn{ background:var(--peach-soft); color:var(--gold-deep); }
   .prev-btn{ background:none; border:1.5px solid var(--gold-deep) !important; color:var(--gold-deep); }
   .step{ display:none; }
-  .step.active{ display:block; animation:stepIn .5s var(--spring); }
+  .step.active{ display:block; animation:stepIn .5s cubic-bezier(.2,.82,.3,1) both; }
   #confettiRain{ position:fixed; inset:0; pointer-events:none; z-index:40; overflow:hidden; }
   .sound-toggle{ position:fixed; top:16px; right:16px; z-index:45; width:38px; height:38px; border-radius:50%; border:none; background:rgba(0,0,0,.12); color:var(--ink); font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; }
   .bg-balloons{ position:fixed; inset:0; z-index:3; overflow:hidden; pointer-events:none; }
@@ -367,6 +380,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     <div class="photos-wrap">
       <h2>A walk down memory lane 📸</h2>
       <div class="sub">swipe through</div>
+      <div class="swipe-hint"><div class="swipe-hint-icon" id="swipeHint">👉</div></div>
       <div class="photo-carousel" id="photoCarousel"></div>
       <div class="photo-dots" id="photoDots"></div>
       <button class="night-btn" onclick="toStep('envelope')">Keep going 💛</button>
@@ -784,8 +798,10 @@ if ( ! defined( 'ABSPATH' ) ) {
   function renderFairyPhotos(){
     const track = document.getElementById('photoCarousel');
     const dots = document.getElementById('photoDots');
+    const hint = document.getElementById('swipeHint');
     track.innerHTML = '';
     dots.innerHTML = '';
+    if(hint){ hint.style.display = ''; hint.style.opacity = ''; }
     state.photos.forEach((photo,i)=>{
       const item = document.createElement('div');
       item.className = 'photo-carousel-item';
@@ -796,11 +812,19 @@ if ( ! defined( 'ABSPATH' ) ) {
       if(i === 0) dot.classList.add('on');
       dots.appendChild(dot);
     });
-    if(state.photos.length <= 1) return;
+    if(state.photos.length <= 1){
+      if(hint) hint.style.display = 'none';
+      return;
+    }
     const dotEls = dots.children;
+    let hintDismissed = false;
     track.onscroll = () => {
       const idx = Math.round(track.scrollLeft / (track.firstElementChild.offsetWidth + 16));
       Array.from(dotEls).forEach((d,i)=>d.classList.toggle('on', i === idx));
+      if(!hintDismissed){
+        hintDismissed = true;
+        if(hint) hint.style.opacity = '0';
+      }
     };
   }
 

@@ -170,12 +170,25 @@ $cake_label = $cake_labels[ $cake_key ] ?? 'Strawberry Blush';
   .photo-dots{ display:flex; justify-content:center; gap:6px; margin-bottom:6px; }
   .photo-dots span{ width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,.25); }
   .photo-dots span.on{ background:var(--gold); }
+  .swipe-hint{ position:relative; height:0; }
+  .swipe-hint-icon{ position:absolute; top:-160px; left:50%; margin-left:-14px; font-size:1.6rem; animation:gSwipe 2.2s ease-in-out infinite; pointer-events:none; transition:opacity .3s ease; }
+  @keyframes gSwipe{
+    0%{ transform:translateX(-46px) rotate(-8deg) scale(1); opacity:0; }
+    16%{ opacity:1; transform:translateX(-46px) rotate(-8deg) scale(.86); }
+    80%{ opacity:1; transform:translateX(46px) rotate(-8deg) scale(.86); }
+    100%{ transform:translateX(46px) rotate(-8deg) scale(1); opacity:0; }
+  }
+  @media (prefers-reduced-motion: reduce){ .swipe-hint-icon{ animation:none; display:none; } }
   .step{ display:none; }
-  .step.active{ display:block; animation:stepIn .5s cubic-bezier(.34,1.56,.64,1); }
+  .step.active{ display:block; animation:stepIn .5s cubic-bezier(.2,.82,.3,1) both; }
   #confettiRain{ position:fixed; inset:0; pointer-events:none; z-index:40; overflow:hidden; }
   .rain-piece{ position:absolute; top:-40px; font-size:1.6rem; animation:fall linear forwards; }
   @keyframes fall{ to{ transform:translateY(110vh) rotate(200deg); opacity:.2; } }
-  @keyframes stepIn{ 0%{ opacity:0; transform:translateY(14px); } 100%{ opacity:1; transform:translateY(0); } }
+  @keyframes stepIn{
+    0%{ opacity:0; transform:translate3d(0,16px,0) scale(.96); }
+    60%{ opacity:1; transform:translate3d(0,-2px,0) scale(1.015); }
+    100%{ opacity:1; transform:translate3d(0,0,0) scale(1); }
+  }
 </style>
 </head>
 <body>
@@ -242,6 +255,7 @@ $cake_label = $cake_labels[ $cake_key ] ?? 'Strawberry Blush';
     <div class="photos-wrap">
       <h2>A walk down memory lane 📸</h2>
       <div class="sub">swipe through</div>
+      <div class="swipe-hint"><div class="swipe-hint-icon" id="swipeHint">👉</div></div>
       <div class="photo-carousel" id="photoCarousel"></div>
       <div class="photo-dots" id="photoDots"></div>
       <button class="night-btn" onclick="toStep('envelope')">Keep going 💛</button>
@@ -455,11 +469,23 @@ $cake_label = $cake_labels[ $cake_key ] ?? 'Strawberry Blush';
       if(i === 0) dot.classList.add('on');
       dots.appendChild(dot);
     });
-    if(PHOTOS.length <= 1) return;
+    if(PHOTOS.length <= 1){
+      const hint = document.getElementById('swipeHint');
+      if(hint) hint.style.display = 'none';
+      return;
+    }
     const dotEls = dots.children;
+    let hintDismissed = false;
     track.addEventListener('scroll', () => {
       const idx = Math.round(track.scrollLeft / (track.firstElementChild.offsetWidth + 16));
       Array.from(dotEls).forEach((d,i)=>d.classList.toggle('on', i === idx));
+      // The hint has done its job once they've actually swiped once —
+      // leaving it animating forever would be more distracting than helpful.
+      if(!hintDismissed){
+        hintDismissed = true;
+        const hint = document.getElementById('swipeHint');
+        if(hint) hint.style.opacity = '0';
+      }
     }, { passive: true });
   }
 
