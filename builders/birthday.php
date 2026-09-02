@@ -45,7 +45,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     60%{ opacity:1; transform:translate3d(0,-2px,0) scale(1.015); }
     100%{ opacity:1; transform:translate3d(0,0,0) scale(1); }
   }
-  @keyframes balloonBob{ 0%,100%{ transform:translateY(0) rotate(-2deg); } 50%{ transform:translateY(-8px) rotate(2deg); } }
+  @keyframes balloonBob{ 0%,100%{ transform:translate3d(0,0,0) rotate(-3deg); } 50%{ transform:translate3d(0,-14px,0) rotate(3deg); } }
   @keyframes float{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-6px); } }
   .wordmark{ position:relative; z-index:4; text-align:center; padding:14px 0 0; }
   .wordmark img{ height:46px; width:auto; }
@@ -134,20 +134,28 @@ if ( ! defined( 'ABSPATH' ) ) {
   .balloon-pop h2{ text-align:center; font-size:1.3rem; }
   .balloon-pop .sub{ text-align:center; font-size:.82rem; opacity:.7; margin:8px 0 22px; }
   .pop-field{ display:flex; flex-wrap:wrap; gap:22px; justify-content:center; margin-bottom:10px; }
-  .balloon{ width:64px; height:80px; border-radius:50% 50% 50% 50% / 60% 60% 40% 40%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:1.4rem; box-shadow:inset -6px -8px 14px rgba(0,0,0,.15); transition:transform .12s ease; animation:balloonBob 3.4s ease-in-out infinite; }
+  .balloon{ width:64px; height:80px; border-radius:50% 50% 50% 50% / 60% 60% 40% 40%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:1.4rem; box-shadow:inset -6px -8px 14px rgba(0,0,0,.15); animation:balloonBob 3.6s ease-in-out infinite; will-change:transform; -webkit-tap-highlight-color:transparent; }
   .balloon:nth-child(2){ animation-delay:.3s; }
   .balloon:nth-child(3){ animation-delay:.6s; }
   .balloon:nth-child(4){ animation-delay:.9s; }
   .balloon:nth-child(5){ animation-delay:1.2s; }
   .balloon:active{ transform:scale(.9); }
-  .balloon.popped{ visibility:hidden; }
+  /* Real pop: overshoot then collapse, instead of an instant disappear. */
+  .balloon.popped{ animation:balloonPop .42s cubic-bezier(.2,.9,.3,1.2) forwards; pointer-events:none; }
+  @keyframes balloonPop{ 0%{ transform:scale(1); opacity:1; } 28%{ transform:scale(1.28); opacity:.9; } 100%{ transform:scale(.28); opacity:0; } }
   .photos-wrap{ background:linear-gradient(180deg,var(--night),#4a2a4d); border-radius:22px; margin:14px 20px; padding:40px 22px; color:#fff; text-align:center; min-height:55vh; }
   .photos-wrap h2{ font-size:1.3rem; }
   .photos-wrap .sub{ font-size:.82rem; opacity:.7; margin:8px 0 30px; }
   .photo-carousel{ display:flex; gap:16px; overflow-x:auto; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; padding:10px 22px 20px; margin:0 -22px 10px; }
   .photo-carousel::-webkit-scrollbar{ display:none; }
-  .photo-carousel-item{ scroll-snap-align:center; flex:0 0 auto; width:180px; }
-  .photo-carousel-item img{ width:180px; height:216px; object-fit:cover; border-radius:14px; border:5px solid #fff; box-shadow:0 12px 26px rgba(0,0,0,.35); display:block; }
+  .photo-carousel-item{ scroll-snap-align:center; flex:0 0 auto; width:180px; transform-origin:top center; animation:swayPhoto 4.6s ease-in-out infinite; will-change:transform; }
+  .photo-carousel-item:nth-child(2n){ animation-name:swayPhotoAlt; animation-delay:-2.3s; }
+  /* Transform-based with the tilt folded in — animating margin-top here would
+     reflow the whole flex row every frame, once per photo. */
+  @keyframes swayPhoto{ 0%,100%{ transform:translate3d(0,0,0) rotate(-2.4deg); } 50%{ transform:translate3d(0,6px,0) rotate(-2.4deg); } }
+  @keyframes swayPhotoAlt{ 0%,100%{ transform:translate3d(0,0,0) rotate(2.2deg); } 50%{ transform:translate3d(0,6px,0) rotate(2.2deg); } }
+  .photo-carousel-item img{ width:180px; height:216px; object-fit:cover; border-radius:14px; border:5px solid #fff; box-shadow:0 12px 26px rgba(0,0,0,.35); display:block; animation:kenburns 9s ease-in-out infinite alternate; }
+  @keyframes kenburns{ from{ transform:scale(1); } to{ transform:scale(1.09); } }
   .photo-carousel-item .cap{ text-align:center; font-size:.75rem; opacity:.7; margin-top:8px; }
   .photo-dots{ display:flex; justify-content:center; gap:6px; margin-bottom:6px; }
   .photo-dots span{ width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,.25); }
@@ -160,22 +168,49 @@ if ( ! defined( 'ABSPATH' ) ) {
     80%{ opacity:1; transform:translateX(46px) rotate(-8deg) scale(.86); }
     100%{ transform:translateX(46px) rotate(-8deg) scale(1); opacity:0; }
   }
-  @media (prefers-reduced-motion: reduce){ .swipe-hint-icon{ animation:none; display:none; } }
+  /* Reduced motion: for anything that CARRIES STATE, force the correct END state
+     rather than just switching the animation off. */
+  @media (prefers-reduced-motion: reduce){
+    .swipe-hint-icon, .bg-balloon{ animation:none; display:none; }
+    .balloon{ animation:none; }
+    .balloon.popped{ animation:none; opacity:0; visibility:hidden; }
+    .closing-wrap .decor,
+    .closing-wrap .decor.is-pop{ animation:none; opacity:1; transform:none; }
+    .letter-paper{ animation:none; opacity:1; }
+    .reason-card{ animation:none; }
+    .reason-card::before{ animation:none; opacity:0; }
+    .night-btn::after, .primary-btn::after{ animation:none; opacity:0; }
+    .photo-carousel-item, .photo-carousel-item img,
+    .envelope-wrap .tap, .envelope, .spool{ animation:none; }
+  }
+  @media (max-width:768px){
+    .bg-balloon{ animation-duration:26s; }
+    .photo-carousel-item{ animation:none; }
+  }
   .reasons{ display:flex; flex-direction:column; gap:10px; margin-top:18px; }
-  .reason-card{ border:1.5px solid; border-radius:14px; padding:12px 14px; background:rgba(255,255,255,.06); }
+  .reason-card{ position:relative; overflow:hidden; border:1.5px solid; border-radius:14px; padding:12px 14px; background:rgba(255,255,255,.06); animation:stepIn .5s cubic-bezier(.2,.82,.3,1) both; }
+  /* One-shot light sweep as each reason lands. translateX rather than left, so it
+     does not invalidate layout every frame; base skew folded into both stops. */
+  .reason-card::before{ content:''; position:absolute; top:0; left:-100%; width:60%; height:100%; background:linear-gradient(90deg,transparent,rgba(255,255,255,.28),transparent); animation:cardSheen 1s ease .25s 1; pointer-events:none; }
+  @keyframes cardSheen{ 0%{ transform:translateX(0) skewX(-20deg); } 100%{ transform:translateX(500%) skewX(-20deg); } }
   .reason-card .tag{ display:inline-block; font-size:.65rem; font-weight:800; letter-spacing:.4px; padding:3px 10px; border-radius:12px; margin-bottom:6px; background:rgba(255,255,255,.12); }
   .reason-card .txt{ font-weight:700; font-size:.92rem; }
   .and-more{ text-align:center; font-size:.85rem; opacity:.7; margin:16px 0; font-style:italic; }
-  .night-btn{ width:100%; border:none; border-radius:40px; padding:15px; background:linear-gradient(135deg,var(--gold-deep),var(--gold)); color:#fff; font-weight:700; font-size:.95rem; cursor:pointer; margin-top:6px; }
+  .night-btn{ position:relative; overflow:hidden; width:100%; border:none; border-radius:40px; padding:15px; background:linear-gradient(135deg,var(--gold-deep),var(--gold)); color:#fff; font-weight:700; font-size:.95rem; cursor:pointer; margin-top:6px; }
+  /* The 0%-58% dead zone is the whole trick: one glint every ~3.4s, not a strobe. */
+  .night-btn::after, .primary-btn::after{ content:''; position:absolute; top:0; bottom:0; left:-120%; width:45%; background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent); transform:skewX(-18deg); animation:btnShine 3.4s ease-in-out infinite; pointer-events:none; }
+  @keyframes btnShine{ 0%,58%{ left:-120%; opacity:0; } 64%{ opacity:1; } 90%{ left:160%; opacity:0; } 100%{ left:160%; opacity:0; } }
   .envelope-wrap{ background:linear-gradient(180deg,var(--night),#4a2a4d); border-radius:22px; margin:14px 20px; padding:40px 24px; color:#fff; text-align:center; min-height:55vh; display:flex; flex-direction:column; align-items:center; justify-content:center; }
   .envelope-wrap h3{ font-size:1.2rem; margin-bottom:4px; }
   .envelope-wrap .sub{ font-size:.82rem; opacity:.7; margin-bottom:26px; }
   .envelope{ width:180px; height:120px; background:linear-gradient(160deg,#ffcf7a,#f2a83c); border-radius:8px; position:relative; cursor:pointer; box-shadow:0 14px 30px rgba(0,0,0,.3); animation:float 3s ease-in-out infinite; }
   .envelope::before{ content:''; position:absolute; inset:0; background:linear-gradient(135deg,transparent 49.5%,rgba(0,0,0,.15) 50%),linear-gradient(-135deg,transparent 49.5%,rgba(0,0,0,.15) 50%); }
   .envelope .seal{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:44px; height:44px; border-radius:50%; background:#fff; color:var(--gold-deep); font-weight:900; display:flex; align-items:center; justify-content:center; font-size:1.2rem; box-shadow:0 4px 10px rgba(0,0,0,.2); }
-  .envelope-wrap .tap{ font-size:.75rem; opacity:.6; margin-top:20px; }
+  .envelope-wrap .tap{ font-size:.75rem; opacity:.6; margin-top:20px; animation:hintBounce 1.8s ease-in-out infinite; }
+  @keyframes hintBounce{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-9px); } }
   .letter-page{ background:linear-gradient(180deg,var(--night),#4a2a4d); border-radius:22px; margin:14px 20px; padding:26px 22px; min-height:55vh; }
-  .letter-paper{ background:#fff8e8; border-radius:14px; padding:22px 20px; min-height:260px; }
+  .letter-paper{ background:#fff8e8; border-radius:14px; padding:22px 20px; min-height:260px; opacity:0; animation:letterAppear .7s cubic-bezier(.34,1.56,.64,1) .12s forwards; }
+  @keyframes letterAppear{ 0%{ opacity:0; transform:scale(.92); } 100%{ opacity:1; transform:scale(1); } }
   .letter-paper .dear{ font-weight:800; color:var(--gold-deep); margin-bottom:14px; font-size:1.05rem; }
   .letter-paper .msg{ line-height:1.7; font-size:.95rem; color:#3a2a10; white-space:pre-wrap; }
   .letter-paper .sign{ text-align:right; margin-top:18px; font-weight:700; color:var(--gold-deep); }
@@ -183,7 +218,12 @@ if ( ! defined( 'ABSPATH' ) ) {
   .closing-wrap{ background:linear-gradient(180deg,var(--night),#4a2a4d); border-radius:22px; margin:14px 20px; padding:40px 24px; color:#fff; text-align:center; min-height:55vh; display:flex; flex-direction:column; align-items:center; justify-content:center; }
   .closing-wrap .big{ font-size:1.7rem; font-weight:900; line-height:1.25; }
   .closing-wrap .big .name{ color:var(--gold); }
-  .closing-wrap .decor{ font-size:2.4rem; margin:18px 0; }
+  .closing-wrap .decor{ font-size:2.4rem; margin:18px 0; opacity:0; transform:translateY(18px) scale(.5) rotate(-10deg); will-change:transform,opacity; }
+  /* Pop, then hand off to an idle float. One shorthand — the .8s delay is the pop
+     duration plus 100ms, so the two must be tuned together. */
+  .closing-wrap .decor.is-pop{ animation:stickerPop .7s cubic-bezier(.2,.9,.3,1.4) forwards, stickerFloat 4.6s ease-in-out .8s infinite; }
+  @keyframes stickerPop{ 0%{ opacity:0; transform:translateY(18px) scale(.5) rotate(-10deg); } 60%{ opacity:1; transform:translateY(-4px) scale(1.06) rotate(3deg); } 100%{ opacity:1; transform:translateY(0) scale(1) rotate(0); } }
+  @keyframes stickerFloat{ 0%,100%{ transform:translateY(0) rotate(-1.5deg); } 50%{ transform:translateY(-8px) rotate(1.5deg); } }
   .closing-wrap .from{ font-size:.85rem; opacity:.75; margin-bottom:24px; }
   .err-box{ background:#fdeaea; color:#b3261e; border-radius:10px; padding:10px 14px; font-size:.82rem; margin-bottom:12px; display:none; text-align:left; }
   .link-note-dark{ text-align:center; font-size:.72rem; opacity:.6; margin-top:10px; }
@@ -226,7 +266,9 @@ if ( ! defined( 'ABSPATH' ) ) {
   .prev-btn{ background:none; border:1.5px solid var(--gold-deep) !important; color:var(--gold-deep); }
   .step{ display:none; }
   .step.active{ display:block; animation:stepIn .5s cubic-bezier(.2,.82,.3,1) both; }
-  #confettiRain{ position:fixed; inset:0; pointer-events:none; z-index:40; overflow:hidden; }
+  /* z-index 40 deliberately: below .sound-toggle (45) and below the paywall
+     .overlay (50), so a firework never paints over the payment modal. */
+  #bmFx{ position:fixed; inset:0; width:100%; height:100%; pointer-events:none; z-index:40; }
   .sound-toggle{ position:fixed; top:16px; right:16px; z-index:45; width:38px; height:38px; border-radius:50%; border:none; background:rgba(0,0,0,.12); color:var(--ink); font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; }
   .bg-balloons{ position:fixed; inset:0; z-index:3; overflow:hidden; pointer-events:none; }
   .bg-balloon{ position:absolute; bottom:-10vh; will-change:transform; animation:bgBalloonFloat linear infinite; }
@@ -236,15 +278,14 @@ if ( ! defined( 'ABSPATH' ) ) {
     100%{ transform:translateY(-115vh) translateX(-12px) rotate(-4deg); }
   }
   @media (prefers-reduced-motion: reduce){ .bg-balloon{ animation:none; display:none; } }
-  .rain-piece{ position:absolute; top:-40px; font-size:1.6rem; animation:fall linear forwards; }
-  @keyframes fall{ to{ transform:translateY(110vh) rotate(200deg); opacity:.2; } }
+
 </style>
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </head>
 <body>
 
 <div class="bg-balloons" id="bgBalloons" aria-hidden="true"></div>
-<div id="confettiRain"></div>
+<canvas id="bmFx" aria-hidden="true"></canvas>
 <button class="sound-toggle" id="soundToggle" onclick="toggleSound()" aria-label="Toggle sound">🔊</button>
 
 <div class="stage">
@@ -764,7 +805,194 @@ if ( ! defined( 'ABSPATH' ) ) {
     document.getElementById('uploadT1').textContent = full ? 'Photo limit reached' : 'Tap to add photos';
   }
 
+  // ── Particle FX canvas ──────────────────────────────────────────
+  // Ported from the reference build's #om-bday-fx layer. Replaces the
+  // old DOM-based confetti (40 emoji divs) with a real 2D particle
+  // system: rect flakes + dots, gravity, drift, spin, and rockets that
+  // shed embers and detonate at apex. The rAF loop parks itself when
+  // no particles are alive, so it costs nothing between celebrations.
+  const FX = { cv:null, ctx:null, parts:[], raf:0, w:0, h:0, dpr:1 };
+  const FX_PALETTE = ['#F6C453','#FF7A59','#39D0C4','#FF8FB1','#A78BFA','#F3E3C3','#FFB74D'];
+  const fxTimers = [];
+
+  function fxReduced(){
+    try { return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; }
+    catch(e){ return false; }
+  }
+  function fxNarrow(){ return (window.innerWidth || 999) <= 768; }
+
+  function fxInit(){
+    if(FX.ctx) return;
+    FX.cv = document.getElementById('bmFx');
+    if(!FX.cv) return;
+    try { FX.ctx = FX.cv.getContext('2d'); } catch(e){ FX.ctx = null; }
+    if(!FX.ctx) return;
+    fxResize();
+  }
+
+  function fxResize(){
+    if(!FX.cv || !FX.ctx) return;
+    FX.dpr = Math.min(window.devicePixelRatio || 1, 2);
+    FX.w = window.innerWidth;
+    FX.h = window.innerHeight;
+    FX.cv.width  = Math.max(1, Math.round(FX.w * FX.dpr));
+    FX.cv.height = Math.max(1, Math.round(FX.h * FX.dpr));
+    try { FX.ctx.setTransform(FX.dpr, 0, 0, FX.dpr, 0, 0); } catch(e){}
+  }
+
+  function fxAdd(p){
+    if(!FX.ctx) return;
+    if(FX.parts.length > 320) FX.parts.splice(0, FX.parts.length - 290);
+    FX.parts.push(p);
+    if(!FX.raf) FX.raf = requestAnimationFrame(fxTick);
+  }
+
+  // A firework's detonation: low sine thump under two filtered noise bursts.
+  function boomSfx(){
+    if(!soundOn || !audioCtx) return;
+    playTone(70, .35, 'sine', .18);
+    for(let i = 0; i < 2; i++){
+      setTimeout(() => playTone(120 + Math.random()*80, .12, 'triangle', .05), i * 60);
+    }
+  }
+
+  function fxTick(){
+    FX.raf = 0;
+    if(!FX.ctx) return;
+    const c = FX.ctx;
+    c.clearRect(0, 0, FX.w, FX.h);
+    const prev = FX.parts;
+    FX.parts = [];
+    for(let i = 0; i < prev.length; i++){
+      const p = prev[i];
+      p.vx *= p.decay;
+      p.vy *= p.decay;
+      p.vy += p.g;
+      p.x  += p.vx + (p.drift || 0);
+      p.y  += p.vy;
+      p.rot += p.vr || 0;
+      p.life--;
+
+      if(p.kind === 'rocket'){
+        if(Math.random() < 0.5) FX.parts.push({
+          kind:'dot', x:p.x, y:p.y,
+          vx:(Math.random()-0.5)*0.4, vy:0.4,
+          g:0.01, decay:0.96, rot:0, size:1.6,
+          color:'#F3E3C3', life:18, alpha:1
+        });
+        if(p.vy >= -0.8 || p.y < p.targetY){
+          fxBurst(p.x, p.y, p.burstN, p.color);
+          boomSfx();
+          continue;
+        }
+      }
+
+      if(p.life <= 0 || p.y > FX.h + 30) continue;
+
+      p.alpha = Math.min(1, p.life / 26);
+      c.globalAlpha = Math.max(0, p.alpha);
+      c.fillStyle = p.color;
+      if(p.kind === 'rect'){
+        c.save();
+        c.translate(p.x, p.y);
+        c.rotate(p.rot);
+        c.fillRect(-p.size/2, -p.size/4, p.size, p.size/2);
+        c.restore();
+      } else {
+        c.beginPath();
+        c.arc(p.x, p.y, p.size, 0, 6.2832);
+        c.fill();
+      }
+      FX.parts.push(p);
+    }
+    c.globalAlpha = 1;
+    if(FX.parts.length && !document.hidden){
+      if(!FX.raf) FX.raf = requestAnimationFrame(fxTick);
+    } else {
+      c.clearRect(0, 0, FX.w, FX.h);
+    }
+  }
+
+  function fxBurst(x, y, n, color){
+    const count = fxReduced() ? 8 : (fxNarrow() ? Math.round(n * 0.6) : n);
+    for(let i = 0; i < count; i++){
+      const a = Math.random() * 6.2832;
+      const sp = 2 + Math.random() * 5;
+      fxAdd({
+        kind: Math.random() < 0.45 ? 'rect' : 'dot',
+        x:x, y:y,
+        vx: Math.cos(a) * sp,
+        vy: Math.sin(a) * sp - 1.5,
+        g:0.11, decay:0.955,
+        drift:(Math.random()-0.5)*0.3,
+        rot: Math.random()*6.28,
+        vr:(Math.random()-0.5)*0.25,
+        size: 4 + Math.random()*5,
+        color: (color && Math.random() < 0.55) ? color : FX_PALETTE[Math.random()*FX_PALETTE.length|0],
+        life: 60 + Math.random()*40,
+        alpha:1
+      });
+    }
+  }
+
+  function fxBurstMid(x, y){ fxBurst(x, y, 46); }
+
+  function fxConfettiRain(durationMs){
+    if(!FX.ctx || fxReduced()) return;
+    const end = Date.now() + durationMs;
+    const iv = setInterval(() => {
+      if(Date.now() > end || document.hidden){ clearInterval(iv); return; }
+      for(let i = 0; i < (fxNarrow() ? 3 : 6); i++) fxAdd({
+        kind:'rect',
+        x: Math.random()*FX.w, y:-12,
+        vx:(Math.random()-0.5)*1.4,
+        vy: 1.4 + Math.random()*2,
+        g:0.045, decay:0.995,
+        drift:(Math.random()-0.5)*0.7,
+        rot: Math.random()*6.28,
+        vr:(Math.random()-0.5)*0.22,
+        size: 5 + Math.random()*5,
+        color: FX_PALETTE[Math.random()*FX_PALETTE.length|0],
+        life:240, alpha:1
+      });
+    }, 130);
+    fxTimers.push(setTimeout(() => clearInterval(iv), durationMs + 400));
+  }
+
+  function fxFirework(){
+    if(!FX.ctx) return;
+    if(fxReduced()){
+      fxBurst(FX.w*(0.25+Math.random()*0.5), FX.h*(0.2+Math.random()*0.25), 12);
+      return;
+    }
+    fxAdd({
+      kind:'rocket',
+      x: FX.w*(0.18+Math.random()*0.64),
+      y: FX.h + 8,
+      vx:(Math.random()-0.5)*1.1,
+      vy:-(9.5+Math.random()*3.2),
+      g:0.14, decay:0.992, rot:0, size:2.4,
+      color: FX_PALETTE[Math.random()*FX_PALETTE.length|0],
+      targetY: FX.h*(0.16+Math.random()*0.22),
+      burstN: fxNarrow() ? 44 : 78,
+      life:300, alpha:1
+    });
+  }
+
+  let fxResizeT = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(fxResizeT);
+    fxResizeT = setTimeout(fxResize, 160);
+  });
+
+  // Scene-scoped timers, flushed on every transition so a finale that is left
+  // early cannot keep emitting into the next scene.
+  const sceneTimers = [];
+
+  let advancing = false;
   function toStep(n){
+    sceneTimers.forEach(t => { clearTimeout(t); clearInterval(t); });
+    sceneTimers.length = 0;
     document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
     document.querySelector(`.step[data-step="${n}"]`).classList.add('active');
     if(typeof n === 'number') saveDraftIfReady(n);
@@ -781,6 +1009,13 @@ if ( ! defined( 'ABSPATH' ) ) {
       progress.style.display='none';
     }
     if(typeof n === 'number' && n >= 2) updateSubtitles();
+    if(n === 'title'){
+      // lands as the card settles out of its .5s stepIn
+      sceneTimers.push(setTimeout(() => {
+        fxBurstMid(FX.w / 2, FX.h * 0.40);
+        try { navigator.vibrate && navigator.vibrate([16, 60, 24]); } catch(e){}
+      }, 500));
+    }
     if(n === 'balloons') renderPopBalloons();
     if(n === 'photos') renderFairyPhotos();
     if(n === 'closing') confettiBurst();
@@ -995,6 +1230,8 @@ if ( ! defined( 'ABSPATH' ) ) {
     el.classList.add('popped');
     initAudio();
     playPop();
+    const r = el.getBoundingClientRect();
+    fxBurst(r.left + r.width / 2, r.top + r.height / 2, fxNarrow() ? 12 : 22);
     const reasons = document.getElementById('reasonsList');
     const card = document.createElement('div');
     card.className='reason-card';
@@ -1210,24 +1447,22 @@ if ( ! defined( 'ABSPATH' ) ) {
   function confettiBurst(){
     initAudio();
     playChime();
-    const wrap = document.getElementById('confettiRain');
-    const symbols = ['🎉','🎈','🎂','✨','🎁','⭐'];
-    for(let i=0;i<40;i++){
-      const s = document.createElement('div');
-      s.className='rain-piece';
-      s.textContent = symbols[Math.floor(Math.random()*symbols.length)];
-      s.style.left = Math.random()*100 + 'vw';
-      s.style.animationDuration = (2.5 + Math.random()*2) + 's';
-      s.style.animationDelay = (Math.random()*0.6) + 's';
-      wrap.appendChild(s);
-      setTimeout(()=>s.remove(), 5000);
+    const decor = document.querySelector('.closing-wrap .decor');
+    if(decor) decor.classList.add('is-pop');
+    fxConfettiRain(4200);
+    const bursts = fxReduced() ? 3 : 6;
+    for(let i = 0; i < bursts; i++){
+      sceneTimers.push(setTimeout(fxFirework, 300 + i * 800));
     }
+    sceneTimers.push(setInterval(fxFirework, 2600));
   }
+
 
   // Ambient background decoration, independent of step navigation — sits
   // fixed over the whole page so it drifts continuously no matter which
   // .step is active, rather than being rebuilt per-screen.
   (function(){
+    fxInit();
     const wrap = document.getElementById('bgBalloons');
     const count = 9;
     for(let i=0;i<count;i++){
