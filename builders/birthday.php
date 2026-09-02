@@ -43,7 +43,7 @@ if ( ! defined( 'ABSPATH' ) ) {
   @keyframes stepIn{ 0%{ opacity:0; transform:translateY(14px); } 100%{ opacity:1; transform:translateY(0); } }
   @keyframes balloonBob{ 0%,100%{ transform:translateY(0) rotate(-2deg); } 50%{ transform:translateY(-8px) rotate(2deg); } }
   @keyframes float{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-6px); } }
-  .wordmark{ text-align:center; padding:14px 0 0; }
+  .wordmark{ position:relative; z-index:4; text-align:center; padding:14px 0 0; }
   .wordmark img{ height:46px; width:auto; }
   .stage{ max-width:420px; margin:0 auto; min-height:100vh; position:relative; padding-bottom:40px; }
   .progress{ display:flex; align-items:center; gap:6px; padding:18px 20px 6px; font-size:.72rem; font-weight:700; color:var(--gold-deep); letter-spacing:.3px; }
@@ -215,6 +215,14 @@ if ( ! defined( 'ABSPATH' ) ) {
   .step.active{ display:block; animation:stepIn .5s var(--spring); }
   #confettiRain{ position:fixed; inset:0; pointer-events:none; z-index:40; overflow:hidden; }
   .sound-toggle{ position:fixed; top:16px; right:16px; z-index:45; width:38px; height:38px; border-radius:50%; border:none; background:rgba(0,0,0,.12); color:var(--ink); font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .bg-balloons{ position:fixed; inset:0; z-index:3; overflow:hidden; pointer-events:none; }
+  .bg-balloon{ position:absolute; bottom:-10vh; will-change:transform; animation:bgBalloonFloat linear infinite; }
+  @keyframes bgBalloonFloat{
+    0%{ transform:translateY(0) translateX(0) rotate(-4deg); }
+    50%{ transform:translateY(-55vh) translateX(16px) rotate(4deg); }
+    100%{ transform:translateY(-115vh) translateX(-12px) rotate(-4deg); }
+  }
+  @media (prefers-reduced-motion: reduce){ .bg-balloon{ animation:none; display:none; } }
   .rain-piece{ position:absolute; top:-40px; font-size:1.6rem; animation:fall linear forwards; }
   @keyframes fall{ to{ transform:translateY(110vh) rotate(200deg); opacity:.2; } }
 </style>
@@ -222,6 +230,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 </head>
 <body>
 
+<div class="bg-balloons" id="bgBalloons" aria-hidden="true"></div>
 <div id="confettiRain"></div>
 <button class="sound-toggle" id="soundToggle" onclick="toggleSound()" aria-label="Toggle sound">🔊</button>
 
@@ -505,6 +514,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     soundOn = !soundOn;
     try { localStorage.setItem('bm_sound_off', soundOn ? '0' : '1'); } catch(e){}
     updateSoundIcon();
+    if(musicGain) musicGain.gain.setTargetAtTime(soundOn ? MUSIC_VOLUME : 0, audioCtx.currentTime, .3);
   }
 
   function initAudio(){
@@ -532,6 +542,45 @@ if ( ! defined( 'ABSPATH' ) ) {
 
   function playChime(){
     [523, 659, 784].forEach((f, i) => setTimeout(() => playTone(f, .4, 'sine', .12), i * 90));
+  }
+
+  // A soft, sustained pad loop — three detuned sine tones through a lowpass
+  // filter, with a slow LFO on the gain for a gentle "breathing" feel
+  // instead of a flat drone. Runs independently of step navigation so it
+  // keeps playing across every screen once the creator reaches the preview.
+  const MUSIC_VOLUME = 0.05;
+  let musicGain = null;
+  let musicStarted = false;
+
+  function startBackgroundMusic(){
+    if(musicStarted || !audioCtx) return;
+    musicStarted = true;
+
+    musicGain = audioCtx.createGain();
+    musicGain.gain.value = soundOn ? MUSIC_VOLUME : 0;
+    musicGain.connect(audioCtx.destination);
+
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 900;
+    filter.connect(musicGain);
+
+    [261.63, 329.63, 392.00].forEach((freq, i) => {
+      const osc = audioCtx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      osc.detune.value = (i - 1) * 4;
+      osc.connect(filter);
+      osc.start();
+    });
+
+    const lfo = audioCtx.createOscillator();
+    const lfoGain = audioCtx.createGain();
+    lfo.frequency.value = 0.08;
+    lfoGain.gain.value = 0.02;
+    lfo.connect(lfoGain);
+    lfoGain.connect(musicGain.gain);
+    lfo.start();
   }
 
   // Silently creates or updates the draft on the server as the wizard
@@ -829,6 +878,8 @@ if ( ! defined( 'ABSPATH' ) ) {
   renderTemplates();
 
   function startGenerating(){
+    initAudio();
+    startBackgroundMusic();
     const msg = document.getElementById('letterMsg').value.trim();
     state.message = msg || "Another year of you is the best news of my year. Happy birthday.";
     const their = state.theirName || 'them';
@@ -1128,6 +1179,25 @@ if ( ! defined( 'ABSPATH' ) ) {
       setTimeout(()=>s.remove(), 5000);
     }
   }
+
+  // Ambient background decoration, independent of step navigation — sits
+  // fixed over the whole page so it drifts continuously no matter which
+  // .step is active, rather than being rebuilt per-screen.
+  (function(){
+    const wrap = document.getElementById('bgBalloons');
+    const count = 9;
+    for(let i=0;i<count;i++){
+      const b = document.createElement('div');
+      b.className = 'bg-balloon';
+      b.textContent = '🎈';
+      b.style.left = Math.round(Math.random()*100) + '%';
+      b.style.fontSize = (1.3 + Math.random()*1.5).toFixed(2) + 'rem';
+      b.style.opacity = (0.12 + Math.random()*0.16).toFixed(2);
+      b.style.animationDuration = (16 + Math.random()*12).toFixed(1) + 's';
+      b.style.animationDelay = (-Math.random()*24).toFixed(1) + 's';
+      wrap.appendChild(b);
+    }
+  })();
 </script>
 </body>
 </html>

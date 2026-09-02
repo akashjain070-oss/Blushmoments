@@ -141,6 +141,17 @@ $cake_label = $cake_labels[ $cake_key ] ?? 'Strawberry Blush';
   .unwrap-btn{ border:none; border-radius:40px; padding:16px 34px; background:linear-gradient(135deg,var(--gold-deep),var(--gold)); color:#fff; font-weight:800; font-size:1rem; cursor:pointer; box-shadow:0 14px 30px rgba(193,122,63,.35); }
   .unwrap-wrap .sound-hint{ font-size:.75rem; opacity:.5; margin-top:16px; }
   .sound-toggle{ position:fixed; top:16px; right:16px; z-index:45; width:38px; height:38px; border-radius:50%; border:none; background:rgba(255,255,255,.15); color:#fff; font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .wordmark{ position:relative; z-index:4; text-align:center; padding:14px 0 0; }
+  .wordmark-pill{ display:inline-block; background:rgba(255,255,255,.92); padding:7px 16px; border-radius:20px; }
+  .wordmark-pill img{ height:30px; width:auto; display:block; }
+  .bg-balloons{ position:fixed; inset:0; z-index:3; overflow:hidden; pointer-events:none; }
+  .bg-balloon{ position:absolute; bottom:-10vh; will-change:transform; animation:bgBalloonFloat linear infinite; }
+  @keyframes bgBalloonFloat{
+    0%{ transform:translateY(0) translateX(0) rotate(-4deg); }
+    50%{ transform:translateY(-55vh) translateX(16px) rotate(4deg); }
+    100%{ transform:translateY(-115vh) translateX(-12px) rotate(-4deg); }
+  }
+  @media (prefers-reduced-motion: reduce){ .bg-balloon{ animation:none; display:none; } }
   .locked-wrap{ padding:60px 24px; text-align:center; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; }
   .locked-wrap .emoji{ font-size:2.6rem; margin-bottom:14px; }
   .locked-wrap h3{ font-size:1.25rem; margin-bottom:8px; }
@@ -169,6 +180,8 @@ $cake_label = $cake_labels[ $cake_key ] ?? 'Strawberry Blush';
 </head>
 <body>
 
+<div class="wordmark"><div class="wordmark-pill"><img src="<?php echo esc_url( BM_PLUGIN_URL . 'assets/logo.png' ); ?>" alt="Blush Moments"></div></div>
+<div class="bg-balloons" id="bgBalloons" aria-hidden="true"></div>
 <div id="confettiRain"></div>
 <button class="sound-toggle" id="soundToggle" onclick="toggleSound()" aria-label="Toggle sound">🔊</button>
 
@@ -300,6 +313,7 @@ $cake_label = $cake_labels[ $cake_key ] ?? 'Strawberry Blush';
     soundOn = !soundOn;
     try { localStorage.setItem('bm_sound_off', soundOn ? '0' : '1'); } catch(e){}
     updateSoundIcon();
+    if(musicGain) musicGain.gain.setTargetAtTime(soundOn ? MUSIC_VOLUME : 0, audioCtx.currentTime, .3);
   }
 
   function initAudio(){
@@ -329,8 +343,49 @@ $cake_label = $cake_labels[ $cake_key ] ?? 'Strawberry Blush';
     [523, 659, 784].forEach((f, i) => setTimeout(() => playTone(f, .4, 'sine', .12), i * 90));
   }
 
+  // A soft, sustained pad loop under the whole experience — three detuned
+  // sine tones through a lowpass filter, with a slow LFO on the gain for a
+  // gentle "breathing" feel instead of a flat drone. Runs independently of
+  // step navigation (nothing here is tied to .step elements) so it keeps
+  // playing across every screen until the tab closes or sound is muted.
+  const MUSIC_VOLUME = 0.05;
+  let musicGain = null;
+  let musicStarted = false;
+
+  function startBackgroundMusic(){
+    if(musicStarted || !audioCtx) return;
+    musicStarted = true;
+
+    musicGain = audioCtx.createGain();
+    musicGain.gain.value = soundOn ? MUSIC_VOLUME : 0;
+    musicGain.connect(audioCtx.destination);
+
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 900;
+    filter.connect(musicGain);
+
+    [261.63, 329.63, 392.00].forEach((freq, i) => {
+      const osc = audioCtx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      osc.detune.value = (i - 1) * 4;
+      osc.connect(filter);
+      osc.start();
+    });
+
+    const lfo = audioCtx.createOscillator();
+    const lfoGain = audioCtx.createGain();
+    lfo.frequency.value = 0.08;
+    lfoGain.gain.value = 0.02;
+    lfo.connect(lfoGain);
+    lfoGain.connect(musicGain.gain);
+    lfo.start();
+  }
+
   function handleUnwrap(){
     initAudio();
+    startBackgroundMusic();
     playChime();
     if(LOCK_SECONDS > 0){
       toStep('locked');
@@ -458,6 +513,25 @@ $cake_label = $cake_labels[ $cake_key ] ?? 'Strawberry Blush';
       setTimeout(()=>s.remove(), 5000);
     }
   }
+
+  // Ambient background decoration, independent of step navigation — sits
+  // fixed over the whole page so it drifts continuously no matter which
+  // .step is active, rather than being rebuilt per-screen.
+  (function(){
+    const wrap = document.getElementById('bgBalloons');
+    const count = 9;
+    for(let i=0;i<count;i++){
+      const b = document.createElement('div');
+      b.className = 'bg-balloon';
+      b.textContent = '🎈';
+      b.style.left = Math.round(Math.random()*100) + '%';
+      b.style.fontSize = (1.3 + Math.random()*1.5).toFixed(2) + 'rem';
+      b.style.opacity = (0.12 + Math.random()*0.16).toFixed(2);
+      b.style.animationDuration = (16 + Math.random()*12).toFixed(1) + 's';
+      b.style.animationDelay = (-Math.random()*24).toFixed(1) + 's';
+      wrap.appendChild(b);
+    }
+  })();
 </script>
 </body>
 </html>
