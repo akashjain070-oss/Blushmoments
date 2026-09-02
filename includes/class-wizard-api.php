@@ -159,10 +159,15 @@ class Blush_Moments_Wizard_API {
 		}
 
 		return array(
-			'id'    => $post_id,
-			'slug'  => $slug,
-			'url'   => home_url( '/s/' . $slug ),
-			'token' => $token,
+			'id'     => $post_id,
+			'slug'   => $slug,
+			'url'    => home_url( '/s/' . $slug ),
+			'token'  => $token,
+			// Resolved photo URLs (and captions, if any) — the client uses
+			// this to replace its in-memory base64 copies so the *next*
+			// autosave re-sends real URLs instead of re-uploading the same
+			// image as a brand new file every time the wizard advances.
+			'photos' => is_array( $content ) && ! empty( $content['photos'] ) ? $content['photos'] : array(),
 		);
 	}
 

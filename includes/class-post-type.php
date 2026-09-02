@@ -30,6 +30,7 @@ class Blush_Moments_Post_Type {
 		'razorpay_payment_id',
 		'expires_at',        // paid_at + 90 days, as a MySQL datetime
 		'opened_at',         // first time the recipient actually viewed it
+		'photos_reclaimed',  // set by class-cron.php once an expired surprise's photo files are deleted
 	);
 
 	public static function init() {
