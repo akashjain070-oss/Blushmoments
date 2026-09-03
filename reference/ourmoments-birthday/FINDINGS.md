@@ -6,6 +6,13 @@ Captured 2026-09-02. Raw artifacts in this folder: `page.html` (full page source
 
 ## Status: feature-complete pass done (2026-09-03)
 
+### Animation-parity tiers
+- **Tier 1 — DONE** (commits d41356a, 9909878): ~48 keyframes ported with their consuming selectors, DOM confetti replaced by the Canvas 2D particle engine, and scenes converted from display-toggling to a true asymmetric cross-fade with a 450ms advance debounce.
+- **Tier 2 — DONE**: the blossom-tree canvas. Transcribed from the deobfuscated source with ZERO guessed constants; runs as a new `tree` scene between `teaser` and `title`, matching the reference's own scene order (their `scene-tree` sits in exactly that slot).
+- **Tier 3 — TODO**: self-drawing cake + envelope/letter upgrade.
+- **Tier 4 — TODO**: GSAP cupid film.
+
+
 Everything below marked "cataloged, not yet built" has now been implemented
 and deployed live, verified end-to-end, **except** items 4 (cinematic
 bow-and-arrow opening) and 7 (in-app-browser escape overlay) — both left out

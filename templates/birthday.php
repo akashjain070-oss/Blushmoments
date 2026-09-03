@@ -226,6 +226,18 @@ $cake_label = $cake_labels[ $cake_key ] ?? 'Strawberry Blush';
      display swap has no frame where both scenes exist, which is what made
      transitions read as a slideshow. Out is fast and undelayed; in is slower
      and delayed, so the outgoing scene has cleared before the new one commits. */
+  /* Blossom-tree scene. Light on purpose: it is the bright beat between
+     the dark teaser and the dark title card, exactly as the reference. */
+  .tree-wrap{ position:relative; min-height:100%; height:100%; overflow:hidden; cursor:pointer; background:linear-gradient(180deg,#fdf6ee 0%,#fbeadd 55%,#f7dfd0 100%); }
+  .tree-canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; }
+  /* Sits BELOW the canopy: the heart fills the full width of our 420px stage,
+     so the reference's left-of-tree placement would land straight on the blossoms. */
+  .tree-copy{ position:absolute; left:0; right:0; top:63%; z-index:2; text-align:center; pointer-events:none; color:#e0447a; font-weight:800; line-height:1.15; text-shadow:0 2px 12px rgba(255,255,255,.85), 0 0 26px rgba(255,255,255,.6); }
+  .tree-copy .l1, .tree-copy .l2{ font-family:var(--font-display); font-size:clamp(1.5rem,7vw,2.2rem); letter-spacing:-.01em; }
+  .tree-note{ font-size:.72rem; font-weight:600; color:#b8607e; margin-top:10px; opacity:0; transition:opacity .6s ease; }
+  .tree-note.is-in{ opacity:1; }
+  .tree-tap{ position:absolute; left:0; right:0; bottom:7%; z-index:2; text-align:center; font-size:.75rem; letter-spacing:.4px; color:#b8607e; opacity:0; transition:opacity .6s ease; pointer-events:none; }
+  .tree-tap.is-in{ opacity:1; }
   .step{ position:absolute; inset:0; overflow-y:auto; -webkit-overflow-scrolling:touch; opacity:0; pointer-events:none; transform:translateY(14px); transition:opacity .28s ease; }
   .step.active{ opacity:1; pointer-events:auto; transform:translateY(0); transition:opacity .5s ease .16s, transform .55s cubic-bezier(.2,.7,.3,1) .06s; }
   /* Every scene now stays in the render tree, so idle scenes would otherwise
@@ -274,10 +286,22 @@ $cake_label = $cake_labels[ $cake_key ] ?? 'Strawberry Blush';
   </div>
 
   <div class="step" data-step="teaser">
-    <div class="teaser-wrap" onclick="toStep('title')">
+    <div class="teaser-wrap" onclick="toStep('tree')">
       <div class="big">Happy<br>Birthday</div>
       <div class="sub2">to someone worth celebrating</div>
       <div class="tap">tap anywhere to continue</div>
+    </div>
+  </div>
+
+  <div class="step" data-step="tree">
+    <div class="tree-wrap" onclick="toStep('title')">
+      <canvas id="treeCanvas" class="tree-canvas" aria-label="A blossom tree grows and blooms into a heart made of petals" role="img"></canvas>
+      <div class="tree-copy">
+        <div class="l1">Happy</div>
+        <div class="l2">Birthday, <?php echo esc_html( $their_name ); ?></div>
+        <div class="tree-note" id="treeWish">it&rsquo;s officially your day</div>
+      </div>
+      <div class="tree-tap" id="treeTap">tap anywhere to continue</div>
     </div>
   </div>
 
@@ -531,6 +555,1080 @@ $cake_label = $cake_labels[ $cake_key ] ?? 'Strawberry Blush';
     fxResizeT = setTimeout(fxResize, 160);
   });
 
+/* =====================================================================
+ * Blossom tree canvas engine — clean transcription of the obfuscated
+ * ourmoments.live/birthday "tree" scene (app.js, IIFE _0x1f7a0b).
+ *
+ * Source region: app.deobfuscated.js chars ~83,300 – ~112,600
+ * aria-label: "A blossom tree grows and blooms into a heart made of petals"
+ *
+ * A bare trunk grows up, branches fork recursively and are CLIPPED against
+ * a heart-shaped boundary, then blossoms bloom in to fill that heart,
+ * then petals detach and drift to the ground.
+ *
+ * Every numeric constant below is recovered verbatim from the source.
+ * Anything guessed is marked with an explicit TODO(GUESS) comment.
+ * (At time of writing there are NO TODO(GUESS) items in the algorithm —
+ *  see the notes at the bottom of the file for the only two additions,
+ *  both of which are plumbing, not maths.)
+ *
+ * Usage:
+ *   var tree = createBlossomTree(document.getElementById('my-canvas'), {
+ *     wishEl: document.getElementById('wish'),   // optional, gets .is-in
+ *     tapEl:  document.getElementById('tap')     // optional, gets .is-in
+ *   });
+ *   tree.start();   // tree.stop();  tree.resize();
+ *
+ * The canvas MUST be sized by CSS (clientWidth/clientHeight drive the
+ * backing store); the engine handles DPR itself.
+ * ===================================================================== */
+
+function createBlossomTree(canvas, opts) {
+  'use strict';
+
+  opts = opts || {};
+
+  /* ------------------------------------------------------------------
+   * CONSTANTS
+   * ---------------------------------------------------------------- */
+
+  // 6 blossom colour pairs: c0 = inner highlight, c1 = body colour.
+  var PALETTE = [
+    { c0: '#ffe1ec', c1: '#ff80aa' },
+    { c0: '#ffd0e0', c1: '#f4577f' },
+    { c0: '#ffc4d2', c1: '#e23b67' },
+    { c0: '#ffd9c4', c1: '#ff8a5b' },
+    { c0: '#ffeec2', c1: '#f6b13e' },
+    { c0: '#ffd2e6', c1: '#e84d9a' }
+  ];
+
+  // Master timeline, in SECONDS since start().
+  var TL = {
+    trunkStart: 0.1,   // t0 of the trunk segment
+    branchSpan: 1.8,   // all branch t0's are renormalised to end here
+    bloomT0: 1.25,     // earliest blossom start (bottom tip of the heart)
+    bloomSpan: 2,      // total spread of blossom start times
+    petalT0: 2.45,     // petals start detaching and falling
+    noteStart: 0.45,   // the "wish" caption fades in
+    done: 4.6          // scene considered finished
+  };
+
+  var SPRITE = 168;    // 0xa8 — baked blossom sprite canvas is 168x168 px
+
+  /* ------------------------------------------------------------------
+   * SMALL MATH HELPERS
+   * ---------------------------------------------------------------- */
+
+  function rand(a, b) { return a + Math.random() * (b - a); }
+  function pick(a) { return a[Math.random() * a.length | 0]; }
+  function clamp(v, lo, hi) { return v < lo ? lo : (v > hi ? hi : v); }
+  function sat(v) { return v < 0 ? 0 : (v > 1 ? 1 : v); }   // clamp to [0,1]
+  function lerp(a, b, t) { return a + (b - a) * t; }
+
+  function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+
+  // easeOutBack — overshoot constant recovered exactly: c1 = 1.70158,
+  // c3 = c1 + 1 = 2.70158 (the standard easings.net value).
+  function easeOutBack(t) {
+    var c1 = 1.70158;
+    var c3 = c1 + 1;
+    return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+  }
+
+  // Additive lighten/darken of a #rrggbb string -> "rgb(r,g,b)".
+  function shade(hex, amt) {
+    var n = parseInt(hex.slice(1), 16);
+    var r = clamp((n >> 16) + amt, 0, 255);
+    var g = clamp((n >> 8 & 255) + amt, 0, 255);
+    var b = clamp((n & 255) + amt, 0, 255);
+    return 'rgb(' + (r | 0) + ',' + (g | 0) + ',' + (b | 0) + ')';
+  }
+
+  function prefersReducedMotion() {
+    // opts.reducedMotion is an ADDITION (not in the original) so callers
+    // can force either branch; the default path is the original check.
+    if (opts.reducedMotion != null) return !!opts.reducedMotion;
+    try {
+      return typeof window.matchMedia === 'function' &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /* ------------------------------------------------------------------
+   * STATE
+   * ---------------------------------------------------------------- */
+
+  var ctx = null;
+  var wishEl = opts.wishEl || null;   // caption element toggled at noteStart
+  var tapEl = opts.tapEl || null;    // "tap to continue" toggled at t >= 3
+  var IN_CLASS = opts.inClass || 'is-in';
+
+  var wired = false;
+  var W = 0, H = 0, dpr = 1;
+
+  var heartCx = 0;    // heart centre X (px)
+  var heartCy = 0;    // heart centre Y (px)
+  var heartRx = 0;    // heart half-width  = heartR * 1.16
+  var heartR = 0;    // heart half-height
+  var groundY = 0;    // where falling petals settle
+
+  var segments = [];  // branch segments (quadratic beziers)
+  var blossoms = [];
+  var falling = [];   // petals in flight
+  var settled = [];   // petals that have landed
+  var bokeh = [];     // big soft out-of-focus blobs
+  var ambient = [];   // background/foreground drifting petals
+  var sparkles = [];
+
+  var bgGrad = null, bloomGrad = null, groundGlowGrad = null;
+
+  var sprites = { crisp: [], soft: [] };  // 6 colours x 2 variants = 12
+  var bokehSprites = [];
+  var sparkleSprite = null;
+  var heartPoly = null;   // normalised cardioid polygon, both axes in [-1,1]
+
+  var rafId = 0;
+  var startMs = 0, lastMs = 0, lastPetalMs = 0;
+  var running = false, finished = false;
+
+  /* ------------------------------------------------------------------
+   * 1. HEART GEOMETRY
+   * ---------------------------------------------------------------- */
+
+  // The 4-bezier heart used for the blossom SPRITE (not the canopy).
+  function heartPath(c, x, y, w, h) {
+    c.beginPath();
+    c.moveTo(x, y + h * 0.28);
+    c.bezierCurveTo(x, y, x - w * 0.5, y, x - w * 0.5, y + h * 0.28);
+    c.bezierCurveTo(x - w * 0.5, y + h * 0.6, x - w * 0.16, y + h * 0.8, x, y + h);
+    c.bezierCurveTo(x + w * 0.16, y + h * 0.8, x + w * 0.5, y + h * 0.6, x + w * 0.5, y + h * 0.28);
+    c.bezierCurveTo(x + w * 0.5, y, x, y, x, y + h * 0.28);
+    c.closePath();
+  }
+
+  // Parametric cardioid, sampled at 161 points (loop is i <= 160, so the
+  // last sample duplicates the first — 160 distinct + 1 closing point),
+  // then normalised so each axis independently spans exactly [-1, 1]:
+  // centre on the midpoint of (min,max) and divide by the half-range.
+  // NOTE: half-ranges are computed per-axis, so the shape is stretched
+  // to fill the unit square; it is NOT aspect-preserving.
+  function buildHeartPoly() {
+    var pts = [];
+    var minX = 1e9, maxX = -1e9, minY = 1e9, maxY = -1e9;   // 0x3b9aca00 = 1e9
+    var SAMPLES = 160;   // 0xa0
+
+    for (var i = 0; i <= SAMPLES; i++) {
+      var t = i / SAMPLES * Math.PI * 2;
+      var x = 16 * Math.pow(Math.sin(t), 3);
+      var y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+      pts.push([x, y]);
+      if (x < minX) minX = x;
+      if (x > maxX) maxX = x;
+      if (y < minY) minY = y;
+      if (y > maxY) maxY = y;
+    }
+
+    var midX = (minX + maxX) / 2;
+    var midY = (minY + maxY) / 2;
+    var halfX = (maxX - minX) / 2;
+    var halfY = (maxY - minY) / 2;
+
+    heartPoly = pts.map(function (p) {
+      return [(p[0] - midX) / halfX, (p[1] - midY) / halfY];
+    });
+  }
+
+  /* ------------------------------------------------------------------
+   * 2. POINT IN POLYGON — even-odd ray casting (horizontal ray, +x)
+   * ---------------------------------------------------------------- */
+
+  function inHeartNorm(px, py) {
+    var inside = false;
+    var poly = heartPoly;
+    for (var i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+      var xi = poly[i][0], yi = poly[i][1];
+      var xj = poly[j][0], yj = poly[j][1];
+      if ((yi > py) !== (yj > py) &&
+          px < (xj - xi) * (py - yi) / (yj - yi) + xi) {
+        inside = !inside;
+      }
+    }
+    return inside;
+  }
+
+  // Screen-space test. `pad` shrinks the heart; branches use the default
+  // 0.9 (so the canopy silhouette sits inside the blossom cloud).
+  // Y is FLIPPED: canvas y grows down, the cardioid's y grows up.
+  function inHeart(x, y, pad) {
+    pad = pad == null ? 0.9 : pad;
+    return inHeartNorm((x - heartCx) / (heartRx * pad),
+                       (heartCy - y) / (heartR * pad));
+  }
+
+  /* ------------------------------------------------------------------
+   * 7. SPRITE BAKING — 12 blossom sprites (6 colours x crisp/soft)
+   * ---------------------------------------------------------------- */
+
+  function bakeBlossom(pal, soft) {
+    var c0 = pal.c0, c1 = pal.c1;
+    var cv = document.createElement('canvas');
+    cv.width = cv.height = SPRITE;
+    var g = cv.getContext('2d');
+
+    var pw = SPRITE * 0.62;   // petal width
+    var ph = SPRITE * 0.58;   // petal height
+    var cx = SPRITE / 2;
+    var top = SPRITE * 0.17;
+
+    // 1. drop shadow pass
+    g.save();
+    g.shadowColor = 'rgba(150,38,72,0.32)';
+    g.shadowBlur = SPRITE * 0.085;
+    g.shadowOffsetY = SPRITE * 0.05;
+    g.fillStyle = c1;
+    heartPath(g, cx, top, pw, ph);
+    g.fill();
+    g.restore();
+
+    // 2. radial body gradient: highlight upper-left, darkened rim
+    var rg = g.createRadialGradient(
+      cx - pw * 0.2, top + ph * 0.2, ph * 0.04,
+      cx,            top + ph * 0.42, ph * 0.92
+    );
+    rg.addColorStop(0, c0);
+    rg.addColorStop(0.55, c1);
+    rg.addColorStop(1, shade(c1, -26));    // -0x1a
+    heartPath(g, cx, top, pw, ph);
+    g.fillStyle = rg;
+    g.fill();
+
+    // 3. clipped detail pass: bottom shading + specular ellipse
+    g.save();
+    heartPath(g, cx, top, pw, ph);
+    g.clip();
+    var lg = g.createLinearGradient(0, top, 0, top + ph);
+    lg.addColorStop(0, 'rgba(255,255,255,0)');
+    lg.addColorStop(0.65, 'rgba(110,16,46,0)');
+    lg.addColorStop(1, 'rgba(110,16,46,0.26)');
+    g.fillStyle = lg;
+    g.fillRect(0, 0, SPRITE, SPRITE);
+    g.globalAlpha = 0.55;
+    g.fillStyle = '#ffffff';
+    g.beginPath();
+    g.ellipse(cx - pw * 0.15, top + ph * 0.24, pw * 0.17, ph * 0.11, -0.5, 0, Math.PI * 2);
+    g.fill();
+    g.restore();
+
+    if (!soft) return cv;
+
+    // "Soft" variant = the crisp sprite blurred 2.6px, then washed with a
+    // 42%-alpha cream tint clipped to the existing pixels (source-atop).
+    // Used for the far/hazy blossoms and the background ambient petals.
+    var cv2 = document.createElement('canvas');
+    cv2.width = cv2.height = SPRITE;
+    var g2 = cv2.getContext('2d');
+    g2.filter = 'blur(2.6px)';
+    g2.drawImage(cv, 0, 0);
+    g2.filter = 'none';
+    g2.globalCompositeOperation = 'source-atop';
+    g2.globalAlpha = 0.42;
+    g2.fillStyle = '#fff3ea';
+    g2.fillRect(0, 0, SPRITE, SPRITE);
+    return cv2;
+  }
+
+  // 128px radial blob used for the big out-of-focus bokeh circles.
+  function bakeBokeh(rgb) {
+    var S = 128;    // 0x80
+    var cv = document.createElement('canvas');
+    cv.width = cv.height = S;
+    var g = cv.getContext('2d');
+    var rg = g.createRadialGradient(S / 2, S / 2, 0, S / 2, S / 2, S / 2);
+    rg.addColorStop(0, 'rgba(' + rgb + ',0.9)');
+    rg.addColorStop(0.45, 'rgba(' + rgb + ',0.22)');
+    rg.addColorStop(1, 'rgba(' + rgb + ',0)');
+    g.fillStyle = rg;
+    g.fillRect(0, 0, S, S);
+    return cv;
+  }
+
+  // 64px 4-point star + glow, drawn twice (second pass rotated 45deg and
+  // scaled 50%) to make an 8-point sparkle.
+  function bakeSparkle() {
+    var S = 64;    // 0x40
+    var cv = document.createElement('canvas');
+    cv.width = cv.height = S;
+    var g = cv.getContext('2d');
+    var h = S / 2;
+    var rg = g.createRadialGradient(h, h, 0, h, h, h);
+    rg.addColorStop(0, 'rgba(255,255,255,0.95)');
+    rg.addColorStop(0.25, 'rgba(255,236,200,0.5)');
+    rg.addColorStop(1, 'rgba(255,236,200,0)');
+    g.fillStyle = rg;
+    g.beginPath();
+    g.arc(h, h, h, 0, 6.2832);
+    g.fill();
+
+    g.fillStyle = 'rgba(255,255,255,0.95)';
+    g.translate(h, h);
+    for (var i = 0; i < 2; i++) {
+      g.beginPath();
+      g.moveTo(0, -h);
+      g.quadraticCurveTo(0, 0, h, 0);
+      g.quadraticCurveTo(0, 0, 0, h);
+      g.quadraticCurveTo(0, 0, -h, 0);
+      g.quadraticCurveTo(0, 0, 0, -h);
+      g.fill();
+      g.rotate(Math.PI / 4);
+      g.scale(0.5, 0.5);
+    }
+    return cv;
+  }
+
+  function bakeAll() {
+    sprites = {
+      crisp: PALETTE.map(function (p) { return bakeBlossom(p, false); }),
+      soft:  PALETTE.map(function (p) { return bakeBlossom(p, true); })
+    };
+    bokehSprites = [
+      bakeBokeh('255,224,188'),
+      bakeBokeh('255,196,214'),
+      bakeBokeh('255,238,210')
+    ];
+    sparkleSprite = bakeSparkle();
+  }
+
+  // Note the -size*0.47 vertical offset: sprites are pivoted slightly
+  // above centre so blossoms hang correctly off their branch tips.
+  function drawSprite(img, x, y, size, rot, alpha) {
+    ctx.save();
+    ctx.translate(x, y);
+    if (rot) ctx.rotate(rot);
+    ctx.globalAlpha = alpha;
+    ctx.drawImage(img, -size * 0.5, -size * 0.47, size, size);
+    ctx.restore();
+  }
+
+  /* ------------------------------------------------------------------
+   * 3/4/5. BRANCH GROWTH, CLIPPING, TIMELINE RENORMALISATION
+   * ---------------------------------------------------------------- */
+
+  function qPoint(seg, t) {
+    var u = 1 - t;
+    var a = u * u, b = 2 * u * t, c = t * t;
+    return {
+      x: a * seg.x1 + b * seg.cx + c * seg.x2,
+      y: a * seg.y1 + b * seg.cy + c * seg.y2
+    };
+  }
+
+  // Bark gradient — darker at the base, lighter with depth.
+  function barkGrad(x1, y1, x2, y2, depth) {
+    var g = ctx.createLinearGradient(x1, y1, x2, y2);
+    g.addColorStop(0, 'hsl(348 26% ' + (26 + depth * 3) + '%)');
+    g.addColorStop(1, 'hsl(346 24% ' + (40 + depth * 5) + '%)');
+    return g;
+  }
+
+  // Emit ONE branch segment. If its far end leaves the heart, binary-search
+  // (12 iterations => ~1/4096 of the segment length) for the crossing point
+  // and truncate there, reporting clipped:true so the caller stops growing.
+  function addSegment(x, y, ang, len, w, depth, t0) {
+    var ex = x + Math.cos(ang) * len;
+    var ey = y + Math.sin(ang) * len;
+    var clipped = false;
+
+    if (!inHeart(ex, ey)) {
+      var lo = 0, hi = 1;
+      for (var i = 0; i < 12; i++) {           // 0xc iterations
+        var mid = (lo + hi) / 2;
+        if (inHeart(x + Math.cos(ang) * len * mid,
+                    y + Math.sin(ang) * len * mid)) {
+          lo = mid;
+        } else {
+          hi = mid;
+        }
+      }
+      ex = x + Math.cos(ang) * len * lo;
+      ey = y + Math.sin(ang) * len * lo;
+      clipped = true;
+    }
+
+    // Slight sideways bow: control point pushed off the chord midpoint
+    // along the perpendicular by up to +/-12% of the UNCLIPPED length.
+    var mx = (x + ex) / 2;
+    var my = (y + ey) / 2;
+    var perp = ang + Math.PI / 2;
+    var bow = rand(-1, 1) * len * 0.12;
+    var w1 = w * 0.66;                          // taper per generation
+
+    segments.push({
+      x1: x, y1: y,
+      cx: mx + Math.cos(perp) * bow,
+      cy: my + Math.sin(perp) * bow,
+      x2: ex, y2: ey,
+      w0: w, w1: w1,
+      t0: t0,
+      dur: Math.max(0.14, 0.32 - depth * 0.03),  // deeper = quicker
+      depth: depth,
+      grad: barkGrad(x, y, ex, ey, depth)
+    });
+
+    return { ex: ex, ey: ey, w1: w1, clipped: clipped };
+  }
+
+  // Recursive fork. STOP CONDITIONS (exactly as in source):
+  //   segment was clipped by the heart  ||  depth >= 6  ||  len < heartR*0.06
+  function grow(x, y, ang, len, w, depth, t0) {
+    var seg = addSegment(x, y, ang, len, w, depth, t0);
+    if (seg.clipped || depth >= 6 || len < heartR * 0.06) return;
+
+    // Children start 60% of the way through this segment's own duration.
+    var childT0 = t0 + (0.32 - depth * 0.03) * 0.6;
+    var n = Math.random() < 0.55 ? 2 : 3;       // 55% chance of a 2-way fork
+
+    for (var i = 0; i < n; i++) {
+      var spread = 0.6 * (i - (n - 1) / 2) + rand(-0.22, 0.22); // 0.6 rad apart
+      var lean = -0.06 + rand(-0.05, 0.05);                    // slight bias
+      grow(seg.ex, seg.ey,
+           ang + spread + lean,
+           len * rand(0.74, 0.84),               // length decay per level
+           seg.w1,                               // width decay = *0.66
+           depth + 1,
+           childT0 + i * 0.03);                  // stagger siblings 30ms
+    }
+  }
+
+  function buildTree() {
+    var trunkX = heartCx;
+    var trunkBaseY = H * 1;                       // trunk starts at the very bottom
+    var trunkTopY = heartCy + heartR * 0.62;      // where the canopy begins
+    var trunkW = Math.max(9, W * 0.024);
+    var branchLen = heartR * 0.6;                 // primary branch length
+
+    // Trunk: a single straight segment, drawn slowly (dur overridden to 0.55).
+    addSegment(trunkX, trunkBaseY, -Math.PI / 2,
+               trunkBaseY - trunkTopY, trunkW, 0, TL.trunkStart);
+    segments[0].dur = 0.55;
+
+    // 3 primary branches fanning from the trunk top, 0.62 rad apart.
+    var primaryT0 = TL.trunkStart + 0.36;
+    var PRIMARIES = 3;
+    for (var i = 0; i < PRIMARIES; i++) {
+      var a = -Math.PI / 2 + 0.62 * (i - (PRIMARIES - 1) / 2) + rand(-0.12, 0.12);
+      grow(trunkX, trunkTopY, a, branchLen, trunkW * 0.7, 1, primaryT0 + i * 0.05);
+    }
+
+    /* --- 5. t0 RENORMALISATION -----------------------------------------
+     * The recursion is randomised, so the natural finish time varies run to
+     * run. Fix: find the LATEST end time over all segments (max of t0+dur),
+     * then compute the single factor that maps the interval
+     *     [trunkStart, latestEnd]  ->  [trunkStart, branchSpan]
+     * and apply it to every t0 (pivoting on trunkStart, which stays put).
+     * Durations are deliberately NOT scaled, so the true finish differs
+     * from branchSpan by dur * (1 - scale): it UNDERshoots when the random
+     * recursion happened to finish early (scale > 1) and OVERshoots when it
+     * ran long (scale < 1). Measured spread is ~1.76-1.78s against a target
+     * of 1.80 — a few tens of ms, invisible.
+     * Growth therefore always *starts* at trunkStart and *lands on*
+     * branchSpan regardless of how deep the random recursion went.
+     * ------------------------------------------------------------------ */
+    var latestEnd = segments.reduce(function (acc, s) {
+      return Math.max(acc, s.t0 + s.dur);
+    }, 0);
+    var scale = (TL.branchSpan - TL.trunkStart) / (latestEnd - TL.trunkStart);
+    for (var k = 0; k < segments.length; k++) {
+      segments[k].t0 = TL.trunkStart + (segments[k].t0 - TL.trunkStart) * scale;
+    }
+  }
+
+  /* ------------------------------------------------------------------
+   * 6. BLOSSOM PLACEMENT
+   * ---------------------------------------------------------------- */
+
+  function buildBlossoms() {
+    // Count scales with heart area, clamped to [250, 440].
+    var count = Math.round(clamp(heartRx * heartR / 56, 250, 440));
+    // Base sprite size on screen, clamped to [30, 74] px.
+    var baseBox = clamp(Math.min(W, H) * 0.115, 30, 74);
+
+    var guard = 0;
+    // Rejection sampling inside the unit square (slightly oversized at
+    // 1.06 so blossoms can spill just past the strict heart outline).
+    // Guard: at most 50 attempts per requested blossom.
+    while (blossoms.length < count && guard < count * 50) {
+      guard++;
+      var nx = rand(-1.06, 1.06);
+      var ny = rand(-1.06, 1.06);
+      if (!inHeartNorm(nx, ny)) continue;
+
+      var x = heartCx + nx * heartRx;
+      var y = heartCy - ny * heartR;         // flip: cardioid y is up
+
+      // Bloom ripple: distance from the heart's BOTTOM TIP, which in
+      // normalised space is (0, -1). Divided by 2.4 then clamped, so the
+      // far top lobes are ~0.9 through the ramp.
+      var d = sat(Math.hypot(nx, ny + 1) / 2.4);
+      var t0 = TL.bloomT0 + d * (TL.bloomSpan * 0.82) + rand(0, TL.bloomSpan * 0.18);
+
+      var soft = Math.random() < 0.42;       // 42% are the blurred variant
+
+      blossoms.push({
+        x: x, y: y,
+        idx: Math.random() * PALETTE.length | 0,   // sprite colour
+        soft: soft,
+        box: baseBox * (soft ? rand(0.6, 0.85) : rand(0.78, 1.12)),
+        rot: rand(-0.55, 0.55),
+        sway: rand(0, 6.28),                 // per-blossom sway phase
+        t0: t0
+      });
+    }
+
+    // Paint order: all soft (hazy) blossoms first, then crisp ones;
+    // within each group, top of the canvas first so lower blossoms overlap.
+    blossoms.sort(function (a, b) {
+      return a.soft === b.soft ? a.y - b.y : (a.soft ? -1 : 1);
+    });
+  }
+
+  /* ------------------------------------------------------------------
+   * SCENE BUILD (layout + background + ambient layers)
+   * ---------------------------------------------------------------- */
+
+  function build() {
+    segments = [];
+    blossoms = [];
+    falling = [];
+    settled = [];
+    sparkles = [];
+    bokeh = [];
+    ambient = [];
+
+    buildHeartPoly();
+
+    var wide = W / H > 1.2;                 // landscape-ish layout switch
+    heartCx = W * (wide ? 0.57 : 0.5);
+    heartCy = H * (wide ? 0.37 : 0.38);
+    // Verbatim from source: the ternary really does have 0.33 on BOTH
+    // branches (a leftover from tuning), so heartR = min(H*0.33, W*0.34).
+    heartR = Math.min(H * (wide ? 0.33 : 0.33), W * 0.34);
+    heartRx = heartR * 1.16;                // heart is 16% wider than tall
+    groundY = H * 0.93;
+
+    // Warm dawn backdrop.
+    bgGrad = ctx.createLinearGradient(0, 0, 0, H);
+    bgGrad.addColorStop(0, '#fff3e9');
+    bgGrad.addColorStop(0.46, '#ffe7d6');
+    bgGrad.addColorStop(0.78, '#fcd9c4');
+    bgGrad.addColorStop(1, '#f3c4b5');
+
+    // Radial glow behind the canopy, faded in with the bloom.
+    bloomGrad = ctx.createRadialGradient(heartCx, heartCy, heartR * 0.1,
+                                         heartCx, heartCy, heartR * 1.55);
+    bloomGrad.addColorStop(0, 'rgba(255,219,170,0.6)');
+    bloomGrad.addColorStop(0.5, 'rgba(255,170,150,0.2)');
+    bloomGrad.addColorStop(1, 'rgba(255,170,150,0)');
+
+    // Ground bounce light, centred just below the bottom edge.
+    groundGlowGrad = ctx.createRadialGradient(heartCx, H * 1.02, heartR * 0.2,
+                                              heartCx, H * 1.02, heartR * 1.6);
+    groundGlowGrad.addColorStop(0, 'rgba(255,205,165,0.5)');
+    groundGlowGrad.addColorStop(1, 'rgba(255,205,165,0)');
+
+    // 11 slow-rising bokeh blobs.
+    for (var i = 0; i < 11; i++) {
+      bokeh.push({
+        x: rand(0, W),
+        y: rand(0, H),
+        r: rand(W * 0.05, W * 0.17),
+        vy: rand(-6, -16),                  // negative => drifts upward
+        drift: rand(-0.3, 0.3),
+        phase: rand(0, 6.28),
+        alpha: rand(0.05, 0.13),
+        sprite: pick(bokehSprites)
+      });
+    }
+
+    // Ambient drifting petals: 18 in landscape, 15 in portrait.
+    // `depth` in [0,1) drives size / speed / opacity, and splits them into
+    // a back layer (depth < 0.6) and a front layer (depth >= 0.6).
+    var ambientCount = wide ? 18 : 15;
+    for (var j = 0; j < ambientCount; j++) {
+      var depth = Math.random();
+      ambient.push({
+        x: rand(0, W),
+        y: rand(-H * 0.1, H * 1.1),
+        depth: depth,
+        idx: Math.random() * PALETTE.length | 0,
+        box: lerp(Math.min(W, H) * 0.025, Math.min(W, H) * 0.075, depth),
+        vy: lerp(7, 20, depth),
+        sway: rand(8, 22),                  // 0x8 .. 0x16
+        phase: rand(0, 6.28),
+        rot: rand(-0.4, 0.4),
+        vrot: rand(-0.5, 0.5),
+        baseA: lerp(0.16, 0.5, depth),
+        soft: depth < 0.45
+      });
+    }
+
+    buildTree();
+    buildBlossoms();
+  }
+
+  /* ------------------------------------------------------------------
+   * DRAW LAYERS
+   * ---------------------------------------------------------------- */
+
+  function drawBackground() {
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, W, H);
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = groundGlowGrad;
+    ctx.fillRect(0, 0, W, H);
+    ctx.restore();
+  }
+
+  // 9 god-rays fanning down from just above the heart, gently breathing.
+  function drawGodRays(t, intensity) {
+    if (intensity <= 0) return;
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+
+    var ox = heartCx;
+    var oy = heartCy - heartR * 0.35;
+    var reach = Math.hypot(W, H) * 1.1;
+    var RAYS = 9;
+    var swing = Math.sin(t * 0.07) * 0.18;   // whole fan rocks very slowly
+
+    for (var i = 0; i < RAYS; i++) {
+      var a = -Math.PI / 2 + swing + (i - (RAYS - 1) / 2) * 0.2;  // 0.2 rad apart
+      var halfW = 0.035 + 0.02 * (0.5 + 0.5 * Math.sin(t * 0.5 + i * 1.7));
+      var a0 = a - halfW;
+      var a1 = a + halfW;
+
+      var g = ctx.createLinearGradient(ox, oy,
+                                       ox + Math.cos(a) * reach,
+                                       oy + Math.sin(a) * reach);
+      g.addColorStop(0, 'rgba(255,232,190,' + 0.1 * intensity + ')');
+      g.addColorStop(0.5, 'rgba(255,214,170,' + 0.05 * intensity + ')');
+      g.addColorStop(1, 'rgba(255,214,170,0)');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.moveTo(ox, oy);
+      ctx.lineTo(ox + Math.cos(a0) * reach, oy + Math.sin(a0) * reach);
+      ctx.lineTo(ox + Math.cos(a1) * reach, oy + Math.sin(a1) * reach);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  // Canopy glow ramps in over 90% of the bloom span.
+  function drawBloomGlow(t) {
+    var p = sat((t - TL.bloomT0) / (TL.bloomSpan * 0.9));
+    if (p <= 0) return;
+    ctx.save();
+    ctx.globalAlpha = p;
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.fillStyle = bloomGrad;
+    ctx.fillRect(0, 0, W, H);
+    ctx.restore();
+  }
+
+  function drawBokeh(t, dt) {
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    for (var i = 0; i < bokeh.length; i++) {
+      var b = bokeh[i];
+      b.y += b.vy * dt;
+      b.x += Math.sin(t * 0.3 + b.phase) * b.drift;
+      if (b.y < -b.r) { b.y = H + b.r; b.x = rand(0, W); }
+      ctx.globalAlpha = b.alpha;
+      ctx.drawImage(b.sprite, b.x - b.r, b.y - b.r, b.r * 2, b.r * 2);
+    }
+    ctx.restore();
+  }
+
+  // front=false draws the back layer (depth < 0.6), front=true the rest.
+  function drawAmbient(t, dt, front) {
+    var fade = sat((t - 0.2) / 1.4);         // ambient layer fades in early
+    if (fade <= 0) return;
+    for (var i = 0; i < ambient.length; i++) {
+      var p = ambient[i];
+      if ((p.depth >= 0.6) !== front) continue;
+      p.y -= p.vy * dt;                      // ambient petals rise
+      p.x += Math.sin(t * 0.5 + p.phase) * p.sway * dt;
+      p.rot += p.vrot * dt;
+      if (p.y < -p.box) { p.y = H + p.box; p.x = rand(0, W); }
+      drawSprite((p.soft ? sprites.soft : sprites.crisp)[p.idx],
+                 p.x, p.y, p.box, p.rot, p.baseA * fade);
+    }
+  }
+
+  // Branches are stroked as a chain of up to 12 short tapered lines so the
+  // width can interpolate along the bezier (canvas has no variable stroke).
+  function drawBranches(t) {
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    for (var i = 0; i < segments.length; i++) {
+      var s = segments[i];
+      var p = sat((t - s.t0) / s.dur);
+      if (p <= 0) continue;
+      var e = easeOutCubic(p);
+      ctx.strokeStyle = s.grad;
+
+      var STEPS = 12;
+      var n = Math.max(1, Math.ceil(STEPS * e));
+      var prev = qPoint(s, 0);
+      for (var k = 1; k <= n; k++) {
+        var tt = Math.min(e, k / STEPS);
+        var cur = qPoint(s, tt);
+        ctx.lineWidth = lerp(s.w0, s.w1, tt);
+        ctx.beginPath();
+        ctx.moveTo(prev.x, prev.y);
+        ctx.lineTo(cur.x, cur.y);
+        ctx.stroke();
+        prev = cur;
+      }
+    }
+  }
+
+  function drawBlossoms(t) {
+    // Whole canopy "breathes" +/-1.2% about the heart centre.
+    var breathe = 1 + Math.sin(t * 0.8) * 0.012;
+
+    for (var i = 0; i < blossoms.length; i++) {
+      var b = blossoms[i];
+      var p = sat((t - b.t0) / 0.6);         // each blossom pops over 0.6s
+      if (p <= 0) continue;
+
+      var scale = Math.max(0, easeOutBack(p));   // overshoot pop
+      var alpha = sat(p * 1.7);                  // fades in ~1.7x faster
+      if (b.soft) alpha *= 0.8;
+
+      // Sway only starts 0.6s AFTER the pop finishes, ramping over 0.7s.
+      var swayAmt = sat((t - b.t0 - 0.6) / 0.7);
+      var sway = swayAmt * Math.sin(t * 1.5 + b.sway) * (b.box * 0.05);
+
+      // Small upward settle as the pop eases out.
+      var rise = (1 - easeOutCubic(p)) * b.box * 0.45;
+
+      var x = heartCx + (b.x - heartCx) * breathe + sway;
+      var y = heartCy + (b.y - heartCy) * breathe - rise;
+
+      drawSprite((b.soft ? sprites.soft : sprites.crisp)[b.idx],
+                 x, y, b.box * scale, b.rot + sway * 0.012, alpha);
+    }
+  }
+
+  // Sparkles start once the bloom is 45% through, max 9 alive at a time.
+  function drawSparkles(t, dt) {
+    var canSpawn = t > TL.bloomT0 + TL.bloomSpan * 0.45;
+    if (canSpawn && sparkles.length < 9 && Math.random() < 0.5) {
+      var host = blossoms[Math.random() * blossoms.length | 0];
+      if (host) {
+        sparkles.push({
+          x: host.x, y: host.y,
+          size: rand(0.6, 1.3) * (Math.min(W, H) * 0.05),
+          age: 0,
+          life: rand(0.7, 1.2),
+          rot: rand(0, 6.28)
+        });
+      }
+    }
+
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    for (var i = sparkles.length - 1; i >= 0; i--) {
+      var s = sparkles[i];
+      s.age += dt;
+      var p = s.age / s.life;
+      if (p >= 1) { sparkles.splice(i, 1); continue; }
+      var a = Math.sin(p * Math.PI);          // fade in then out
+      drawSprite(sparkleSprite, s.x, s.y,
+                 s.size * (0.6 + 0.4 * a), s.rot + p * 1.2, a);
+    }
+    ctx.restore();
+  }
+
+  /* ------------------------------------------------------------------
+   * 8. FALLING PETALS
+   * ---------------------------------------------------------------- */
+
+  function spawnPetal() {
+    var host = blossoms[Math.random() * blossoms.length | 0];
+    if (!host) return;
+    falling.push({
+      x: host.x + rand(-8, 8),
+      y: host.y + rand(-8, 8),
+      vy: rand(14, 30),                // 0xe .. 0x1e, px/s downward
+      vx: rand(-8, 8),
+      sway: rand(0.6, 1.4),            // horizontal wobble frequency
+      phase: rand(0, 6.28),
+      box: host.box * rand(0.34, 0.6), // detached petals are smaller
+      idx: host.idx,
+      rot: rand(0, 6.28),
+      vrot: rand(-1.4, 1.4),
+      age: 0,
+      land: groundY + rand(-6, H * 0.05)   // per-petal landing line
+    });
+  }
+
+  function drawFalling(t, dt) {
+    for (var i = falling.length - 1; i >= 0; i--) {
+      var p = falling[i];
+      p.age += dt;
+      p.vy += 8 * dt;                                        // gravity
+      p.x += (p.vx + Math.sin(t * p.sway + p.phase) * 16) * dt;  // 16px sway
+      p.y += p.vy * dt;
+      p.rot += p.vrot * dt;
+
+      if (p.y >= p.land) {
+        settled.push({
+          x: clamp(p.x, 6, W - 6),
+          y: p.land,
+          box: p.box,
+          idx: p.idx,
+          rot: p.rot,
+          a: rand(0.7, 0.95)
+        });
+        if (settled.length > 90) settled.shift();   // cap the ground litter
+        falling.splice(i, 1);
+        continue;
+      }
+
+      var fadeIn = p.age < 0.3 ? p.age / 0.3 : 1;
+      drawSprite(sprites.crisp[p.idx], p.x, p.y, p.box, p.rot, fadeIn);
+    }
+  }
+
+  function drawSettled() {
+    for (var i = 0; i < settled.length; i++) {
+      var s = settled[i];
+      drawSprite(sprites.crisp[s.idx], s.x, s.y, s.box, s.rot, s.a);
+    }
+  }
+
+  /* ------------------------------------------------------------------
+   * DOM CAPTION TOGGLES
+   * ---------------------------------------------------------------- */
+
+  function showWish(on) { if (wishEl) wishEl.classList.toggle(IN_CLASS, on); }
+  function showTap(on) { if (tapEl) tapEl.classList.toggle(IN_CLASS, on); }
+
+  /* ------------------------------------------------------------------
+   * 9. MAIN LOOP
+   * ---------------------------------------------------------------- */
+
+  function tick(now) {
+    if (!running) return;
+
+    if (!startMs) { startMs = now; lastMs = now; }
+    var t = (now - startMs) / 1000;               // seconds on the timeline
+    var dt = Math.min(0.05, (now - lastMs) / 1000); // dt capped at 50ms
+    lastMs = now;
+
+    var bloomP = sat((t - TL.bloomT0) / TL.bloomSpan);
+
+    drawBackground();
+    drawGodRays(t, bloomP);
+    drawBloomGlow(t);
+    drawBokeh(t, dt);
+    drawAmbient(t, dt, false);      // back layer
+    drawBranches(t);
+    drawBlossoms(t);
+    drawSparkles(t, dt);
+
+    // Two petals released every 150ms once past petalT0.
+    if (t > TL.petalT0 && now - lastPetalMs > 150) {
+      spawnPetal();
+      spawnPetal();
+      lastPetalMs = now;
+    }
+
+    drawFalling(t, dt);
+    drawSettled();
+    drawAmbient(t, dt, true);       // front layer
+
+    showWish(t >= TL.noteStart);
+    if (t >= 3) showTap(true);      // "tap to continue" hint at 3s
+    if (!finished && t >= TL.done) finished = true;
+
+    // NOTE: the loop keeps running after `done` — it is only a flag.
+    // Nothing cancels the rAF; stop() is called externally when the
+    // scene changes.
+    rafId = requestAnimationFrame(tick);
+  }
+
+  /* ------------------------------------------------------------------
+   * SIZING / DPR
+   * ---------------------------------------------------------------- */
+
+  function layout() {
+    if (!canvas) return;
+    dpr = Math.min(window.devicePixelRatio || 1, 2);   // capped at 2x
+    W = canvas.clientWidth;
+    H = canvas.clientHeight;
+    if (!W || !H) return;
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);            // draw in CSS pixels
+    bakeAll();
+    build();
+    if (prefersReducedMotion()) renderStatic();
+  }
+
+  var resizePending = 0;
+  function onResize() {
+    if (!running) return;
+    if (resizePending) return;
+    resizePending = requestAnimationFrame(function () {
+      resizePending = 0;
+      layout();
+    });
+  }
+
+  // Single frame showing the finished scene, for prefers-reduced-motion.
+  // t = 99 is simply "far past the end of the timeline".
+  function renderStatic() {
+    build();
+    drawBackground();
+    drawGodRays(0, 1);
+    drawBloomGlow(TL.done);
+    drawBokeh(0, 0);
+    drawAmbient(99, 0, false);
+    drawBranches(99);
+    drawBlossoms(99);
+
+    // Scatter 40 fallen petals on the ground.
+    for (var i = 0; i < 40; i++) {
+      var b = blossoms[Math.random() * blossoms.length | 0];
+      if (!b) continue;
+      settled.push({
+        x: clamp(b.x + rand(-W * 0.3, W * 0.3), 6, W - 6),
+        y: groundY + rand(-6, H * 0.05),
+        box: b.box * 0.5,
+        idx: b.idx,
+        rot: rand(0, 6.28),
+        a: 0.85
+      });
+    }
+    drawSettled();
+    drawAmbient(99, 0, true);
+    showWish(true);
+    showTap(true);
+    finished = true;
+  }
+
+  /* ------------------------------------------------------------------
+   * PUBLIC API
+   * ---------------------------------------------------------------- */
+
+  function ensure() {
+    if (wired) return true;
+    if (!canvas) return false;
+    ctx = canvas.getContext('2d');
+    if (!ctx) return false;
+    window.addEventListener('resize', onResize);
+    wired = true;
+    return true;
+  }
+
+  function start() {
+    if (!ensure()) return;
+    stop();
+    running = true;
+    startMs = 0;
+    lastMs = 0;
+    lastPetalMs = 0;
+    finished = false;
+    showWish(false);
+    showTap(false);
+    layout();
+    if (prefersReducedMotion()) { running = false; return; }
+    if (!rafId) rafId = requestAnimationFrame(tick);
+  }
+
+  function renderAt(t) {
+    if (!ensure()) return;
+    stop();
+    layout();
+    var bloomP = sat((t - TL.bloomT0) / TL.bloomSpan);
+    drawBackground();
+    drawGodRays(t, bloomP);
+    drawBloomGlow(t);
+    drawBokeh(t, 0);
+    drawAmbient(t, 0, false);
+    drawBranches(t);
+    drawBlossoms(t);
+    drawSparkles(t, 0);
+    drawFalling(t, 0);
+    drawSettled();
+    drawAmbient(t, 0, true);
+    showWish(t >= TL.noteStart);
+    showTap(t >= 3);
+  }
+
+  function stop() {
+    running = false;
+    if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
+  }
+
+  return {
+    start: start,
+    stop: stop,
+    resize: layout,
+    renderAt: renderAt,
+    renderStatic: renderStatic,
+    isRunning: function () { return running; }
+  };
+}
+
+/* =====================================================================
+ * TRANSCRIPTION NOTES
+ * ---------------------------------------------------------------------
+ * Nothing in the ALGORITHM was guessed — every constant above was read
+ * directly out of the obfuscated source. Two structural changes were made
+ * to satisfy the "no global collisions / pass a canvas in" requirement:
+ *
+ *   1. The original grabbed its DOM by id inside the IIFE:
+ *        canvas  -> #om-bday-tree-canvas
+ *        wishEl  -> #om-bday-tree-wish
+ *        tapEl   -> #om-bday-tree-tap
+ *      Here they are constructor arguments / opts instead.
+ *
+ *   2. `opts.reducedMotion` was added as an override for the
+ *      matchMedia('(prefers-reduced-motion: reduce)') check. Pass nothing
+ *      and behaviour is identical to the original.
+ *
+ * The original also exported `isRunning()`; it is kept.
+ *
+ * One genuine quirk worth flagging (faithfully reproduced, not a bug in
+ * this transcription): in the animation loop nothing cancels the rAF when
+ * `t >= TL.done` — `finished` is only a flag, and the host page calls
+ * stop() when it switches scenes.
+ * ===================================================================== */
+
+  // The tree is a canvas engine, not CSS — it has to be started when its
+  // scene opens and stopped when it closes, or its rAF keeps running.
+  let bmTree = null;
+  function startTree(){
+    const cv = document.getElementById('treeCanvas');
+    if(!cv || typeof createBlossomTree !== 'function') return;
+    if(!bmTree){
+      bmTree = createBlossomTree(cv, {
+        wishEl: document.getElementById('treeWish'),
+        tapEl: document.getElementById('treeTap')
+      });
+    }
+    bmTree.start();
+  }
+
   // Scene-scoped timers, flushed on every transition so a finale that is left
   // early cannot keep emitting into the next scene.
   const sceneTimers = [];
@@ -551,6 +1649,8 @@ $cake_label = $cake_labels[ $cake_key ] ?? 'Strawberry Blush';
         try { navigator.vibrate && navigator.vibrate([16, 60, 24]); } catch(e){}
       }, 500));
     }
+    if(n === 'tree') startTree();
+    else if(bmTree) bmTree.stop();
     if(n === 'balloons') renderPopBalloons();
     if(n === 'photos') renderPhotos();
     if(n === 'closing') confettiBurst();
