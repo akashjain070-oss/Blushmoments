@@ -127,6 +127,18 @@ $cake_label = $cake_labels[ $cake_key ] ?? 'Strawberry Blush';
   .envelope{ width:180px; height:120px; background:linear-gradient(160deg,#ffcf7a,#f2a83c); border-radius:8px; position:relative; cursor:pointer; box-shadow:0 14px 30px rgba(0,0,0,.3); animation:float 3s ease-in-out infinite; }
   @keyframes float{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-6px); } }
   .envelope::before{ content:''; position:absolute; inset:0; background:linear-gradient(135deg,transparent 49.5%,rgba(0,0,0,.15) 50%),linear-gradient(-135deg,transparent 49.5%,rgba(0,0,0,.15) 50%); }
+  /* The flap is a real element hinged at the top, so opening is a 3D rotation
+     rather than a fade. .8s with a slight overshoot on the way over. */
+  .env-flap{ position:absolute; top:0; left:0; right:0; height:55%; transform-origin:top center; transform-style:preserve-3d; z-index:5; border-radius:8px 8px 0 0; background:linear-gradient(160deg,#ffdca0,#eda23a); clip-path:polygon(0 0, 100% 0, 50% 100%); transition:transform .8s cubic-bezier(.175,.885,.32,1.275), z-index .3s; }
+  .envelope.is-open .env-flap{ transform:rotateX(180deg); z-index:1; }
+  .env-glow{ position:absolute; width:340px; height:340px; max-width:90vw; top:50%; left:50%; transform:translate(-50%,-50%); background:radial-gradient(circle,rgba(255,150,80,.34) 0,transparent 68%); filter:blur(36px); z-index:0; pointer-events:none; animation:envGlowPulse 3s ease-in-out infinite; }
+  @keyframes envGlowPulse{ 0%,100%{ opacity:.55; transform:translate(-50%,-50%) scale(.95); } 50%{ opacity:.9; transform:translate(-50%,-50%) scale(1.08); } }
+  /* Rise + sway are split across two elements so the transforms compose;
+     the reference animated bottom/margin-left, which lays out every frame. */
+  .env-float{ position:absolute; left:50%; bottom:40%; z-index:4; pointer-events:none; animation:envFloatRise linear forwards; }
+  .env-float i{ display:block; font-style:normal; animation:envFloatSway 1.4s ease-in-out infinite alternate; }
+  @keyframes envFloatRise{ 0%{ transform:translateY(0); opacity:0; } 15%{ opacity:.95; } 80%{ opacity:.85; } 100%{ transform:translateY(-260px); opacity:0; } }
+  @keyframes envFloatSway{ 0%{ transform:translateX(-18px); } 100%{ transform:translateX(18px); } }
   .envelope .seal{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:44px; height:44px; border-radius:50%; background:#fff; color:var(--gold-deep); font-weight:900; display:flex; align-items:center; justify-content:center; font-size:1.2rem; box-shadow:0 4px 10px rgba(0,0,0,.2); }
   .envelope-wrap .tap{ font-size:.75rem; opacity:.6; margin-top:20px; animation:hintBounce 1.8s ease-in-out infinite; }
   @keyframes hintBounce{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-9px); } }
@@ -135,6 +147,14 @@ $cake_label = $cake_labels[ $cake_key ] ?? 'Strawberry Blush';
   @keyframes letterAppear{ 0%{ opacity:0; transform:scale(.92); } 100%{ opacity:1; transform:scale(1); } }
   .letter-paper .dear{ font-weight:800; color:var(--gold-deep); margin-bottom:14px; font-size:1.05rem; }
   .letter-paper .msg{ line-height:1.7; font-size:.95rem; color:#3a2a10; white-space:pre-wrap; }
+  /* Each character lands as a warm amber spark and cools into ink. This is
+     what makes reading the letter an event rather than text appearing. */
+  .magic-char{ display:inline-block; white-space:pre; opacity:0; animation:magicIn .5s ease forwards; }
+  @keyframes magicIn{
+    0%{ opacity:0; transform:scale(1.5) translateY(-4px); filter:blur(2px); color:#f0a83e; text-shadow:0 0 10px #ffc46b, 0 0 20px #ffc46b; }
+    40%{ opacity:1; transform:scale(1.08) translateY(0); filter:blur(0); color:#f0a83e; text-shadow:0 0 12px #ffc46b; }
+    100%{ opacity:1; transform:scale(1) translateY(0); filter:blur(0); color:#3a2a10; text-shadow:none; }
+  }
   .letter-paper .sign{ text-align:right; margin-top:18px; font-weight:700; color:var(--gold-deep); }
   .letter-page .primary-btn{ margin-top:20px; }
   .primary-btn{ position:relative; overflow:hidden; width:100%; border:none; border-radius:40px; padding:15px; background:linear-gradient(135deg,var(--gold-deep),var(--gold)); color:#fff; font-weight:700; font-size:.95rem; cursor:pointer; box-shadow:0 10px 26px rgba(242,121,11,.35); }
@@ -211,6 +231,10 @@ $cake_label = $cake_labels[ $cake_key ] ?? 'Strawberry Blush';
     .closing-wrap .decor,
     .closing-wrap .decor.is-pop{ animation:none; opacity:1; transform:none; }
     .letter-paper{ animation:none; opacity:1; }
+    .magic-char{ animation:none; opacity:1; color:#3a2a10; filter:none; text-shadow:none; transform:none; }
+    .env-flap{ transition:none; }
+    .env-glow, .env-float, .env-float i{ animation:none; }
+    .env-float{ display:none; }
     .reason-card{ animation:none; }
     .reason-card::before{ animation:none; opacity:0; }
     .night-btn::after, .primary-btn::after{ animation:none; opacity:0; }
@@ -340,7 +364,8 @@ $cake_label = $cake_labels[ $cake_key ] ?? 'Strawberry Blush';
     <div class="envelope-wrap">
       <h3>One last thing, <?php echo esc_html( $their_name ); ?>...</h3>
       <div class="sub"><?php echo esc_html( $your_name ); ?> wrote you a letter.</div>
-      <div class="envelope" onclick="openLetter()"><div class="seal">🎂</div></div>
+      <div class="env-glow" aria-hidden="true"></div>
+      <div class="envelope" id="envelope" onclick="openLetter()"><div class="env-flap" aria-hidden="true"></div><div class="seal">🎂</div></div>
       <div class="tap">Tap to open your letter</div>
     </div>
   </div>
@@ -1870,26 +1895,79 @@ function createBlossomTree(canvas, opts) {
     }
   }
 
+  // Short, cheap haptic patterns — a large part of felt quality on a phone,
+  // and a no-op everywhere else.
+  function vib(pattern){
+    try { if(navigator.vibrate) navigator.vibrate(pattern || 18); } catch(e){}
+  }
+
+  // 14 emoji lift off the envelope as it opens.
+  function envFloatBurst(){
+    const host = document.querySelector('.envelope-wrap');
+    if(!host || fxReduced()) return;
+    const glyphs = ['💛','✨','🎈','💌','🎂','⭐','💖'];
+    for(let i = 0; i < 14; i++){
+      const el = document.createElement('div');
+      el.className = 'env-float';
+      el.style.left = (35 + Math.random() * 30) + '%';
+      el.style.fontSize = (0.5 + Math.random() * 0.8).toFixed(2) + 'rem';
+      const dur = 2 + Math.random() * 2;
+      el.style.animationDuration = dur + 's';
+      el.style.animationDelay = (Math.random() * 0.5).toFixed(2) + 's';
+      const inner = document.createElement('i');
+      inner.textContent = glyphs[Math.random() * glyphs.length | 0];
+      inner.style.animationDelay = (Math.random() * 1.4).toFixed(2) + 's';
+      el.appendChild(inner);
+      host.appendChild(el);
+      sceneTimers.push(setTimeout(() => el.remove(), (dur + 1) * 1000));
+    }
+  }
+
   function openLetter(){
-    toStep('letter');
+    const env = document.getElementById('envelope');
+    if(env) env.classList.add('is-open');
+    vib([30, 40, 80]);
+    envFloatBurst();
     initAudio();
     playChime();
+    // let the flap actually swing before leaving the scene
+    sceneTimers.push(setTimeout(revealLetter, 620));
+  }
+
+  function revealLetter(){
+    toStep('letter', true);
     const out = document.getElementById('letterMsgOut');
     const sign = document.getElementById('letterSign');
     const cont = document.getElementById('letterContinueBtn');
     out.textContent = '';
     sign.style.display = 'none';
     cont.style.display = 'none';
-    let i = 0;
-    const typer = setInterval(()=>{
-      out.textContent = MESSAGE.slice(0, i+1);
-      i++;
-      if(i >= MESSAGE.length){
-        clearInterval(typer);
-        sign.style.display='block';
-        cont.style.display='block';
-      }
-    }, 18);
+
+    // Spread rather than split(''), so astral emoji stay whole instead of
+    // being torn into surrogate halves (the reference has this bug).
+    const chars = Array.from(String(MESSAGE || ''));
+    if(fxReduced()){
+      out.textContent = chars.join('');
+      sign.style.display = 'block';
+      cont.style.display = 'block';
+      return;
+    }
+    // 30ms/char reads best, but our letters run to 500 characters — compress
+    // the stagger so the reveal always lands in about 2.6s.
+    const per = Math.min(30, 2600 / Math.max(1, chars.length));
+    const frag = document.createDocumentFragment();
+    chars.forEach((ch, i) => {
+      const sp = document.createElement('span');
+      sp.className = 'magic-char';
+      sp.textContent = ch;
+      sp.style.animationDelay = Math.round(i * per) + 'ms';
+      frag.appendChild(sp);
+    });
+    out.appendChild(frag);
+    sceneTimers.push(setTimeout(() => {
+      sign.style.display = 'block';
+      cont.style.display = 'block';
+    }, chars.length * per + 620));
   }
 
   function confettiBurst(){
