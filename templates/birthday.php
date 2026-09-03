@@ -79,6 +79,8 @@ $cake_label = $cake_labels[ $cake_key ] ?? 'Strawberry Blush';
     --ink:#3a2620; --muted:#8a6e63; --night:#2a1830; --night-card:#3a2440;
     --font-display:'Outfit', -apple-system, 'Segoe UI', Roboto, sans-serif;
     --font-script:'Yellowtail', cursive;
+    /* the film CSS is used verbatim and reads this name */
+    --bd-font-display:var(--font-display);
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   html,body{ height:100%; }
@@ -252,6 +254,425 @@ $cake_label = $cake_labels[ $cake_key ] ?? 'Strawberry Blush';
      and delayed, so the outgoing scene has cleared before the new one commits. */
   /* Blossom-tree scene. Light on purpose: it is the bright beat between
      the dark teaser and the dark title card, exactly as the reference. */
+/* ===== cupid film — CSS verbatim from the reference ===== */
+.om-bday-film-hero {
+  position:absolute;
+  inset:0;
+  z-index:3;
+  overflow:hidden
+}
+
+.om-bday-film-herobg {
+  position:absolute;
+  inset:0;
+  background:radial-gradient(120% 88% at 50% 24%,#fff8f1 0,#fff6ee 38%,#f9e2d2 74%,#f2c9b8 100%)
+}
+
+.om-bday-film-herobg::after {
+  content:"";
+  position:absolute;
+  left:50%;
+  top:44%;
+  width:min(78vw,720px);
+  aspect-ratio:1;
+  transform:translate(-50%,-50%);
+  background:radial-gradient(circle,rgb(255 190 150 / .55),rgb(255 150 170 / .16) 46%,transparent 70%);
+  filter:blur(6px)
+}
+
+.om-bday-film-motes {
+  position:absolute;
+  inset:0;
+  pointer-events:none
+}
+
+.om-bday-film-mote {
+  position:absolute;
+  border-radius:50%;
+  background:radial-gradient(circle,rgb(255 236 214 / .9),rgb(255 206 180 / .15) 55%,transparent 72%);
+  will-change:transform,opacity
+}
+
+.om-bday-film-eyebrow {
+  position:absolute;
+  top:13%;
+  left:0;
+  right:0;
+  text-align:center;
+  font-family:var(--bd-font-display);
+  font-style:italic;
+  font-weight:600;
+  font-size:clamp(15px, 3.6vw, 26px);
+  letter-spacing:.06em;
+  color:#a85069;
+  text-shadow:0 1px 10px rgb(255 248 241 / .9);
+  opacity:0
+}
+
+.om-bday-film-targetwrap {
+  position:absolute;
+  top:33%;
+  left:0;
+  right:0;
+  display:flex;
+  justify-content:center;
+  transform:translateY(-50%);
+  pointer-events:none
+}
+
+.om-bday-film-target {
+  position:relative;
+  width:clamp(120px,27vw,208px);
+  aspect-ratio:100/92;
+  will-change:transform;
+  transform-origin:50% 60%
+}
+
+.om-bday-film-targetheart {
+  position:absolute;
+  inset:0;
+  display:block
+}
+
+.om-bday-film-heartglow {
+  position:absolute;
+  left:50%;
+  top:52%;
+  width:230%;
+  aspect-ratio:1;
+  transform:translate(-50%,-50%) scale(1);
+  border-radius:50%;
+  background:radial-gradient(circle,rgb(255 120 150 / .55),rgb(255 90 130 / .18) 42%,transparent 68%);
+  filter:blur(4px);
+  pointer-events:none;
+  will-change:transform,opacity
+}
+
+.om-bday-film-heartsvg {
+  width:100%;
+  height:100%;
+  display:block;
+  transform-origin:50% 60%;
+  filter:drop-shadow(0 10px 22px rgb(168 15 64 / .34)) drop-shadow(0 3px 6px rgb(120 10 48 / .3));
+  will-change:transform
+}
+
+.om-bday-film-archery {
+  position:absolute;
+  top:0;
+  left:0;
+  width:clamp(100px,18vw,168px);
+  cursor:grab;
+  -webkit-tap-highlight-color:#fff0;
+  touch-action:none;
+  will-change:transform
+}
+
+.om-bday-film-archery:active {
+  cursor:grabbing
+}
+
+.om-bday-film-archery:focus-visible {
+  outline:0
+}
+
+.om-bday-film-archery:focus-visible .om-bday-film-bow {
+  filter:drop-shadow(0 0 0 3px rgb(255 255 255 / .85)) drop-shadow(0 10px 18px rgb(120 50 20 / .4))
+}
+
+.om-bday-film-bow {
+  display:block;
+  width:100%;
+  height:auto;
+  filter:drop-shadow(0 12px 18px rgb(90 40 15 / .3));
+  overflow:visible
+}
+
+.om-bday-film-aim {
+  position:absolute;
+  left:50%;
+  bottom:32%;
+  width:2px;
+  height:190%;
+  margin-left:-1px;
+  transform-origin:bottom center;
+  background:linear-gradient(0deg,rgb(255 214 150 / .6) 0,rgb(255 150 170 / .22) 52%,transparent 78%);
+  opacity:0;
+  pointer-events:none
+}
+
+.om-bday-film-arrow {
+  position:absolute;
+  left:0;
+  right:0;
+  margin-inline:auto;
+  bottom:36%;
+  width:17.5%;
+  height:auto;
+  overflow:visible;
+  will-change:transform;
+  filter:drop-shadow(0 5px 7px rgb(90 40 15 / .36))
+}
+
+.om-bday-film-wings {
+  transform-box:fill-box;
+  transform-origin:50% 90%
+}
+
+.om-bday-film-wingL,.om-bday-film-wingR {
+  transform-box:fill-box
+}
+
+.om-bday-film-wingL {
+  transform-origin:88% 60%;
+  animation:om-bday-film-flapL 2.6s ease-in-out infinite
+}
+
+.om-bday-film-wingR {
+  transform-origin:12% 60%;
+  animation:om-bday-film-flapR 2.6s ease-in-out infinite
+}
+
+@keyframes om-bday-film-flapL {
+  0%,100%{transform:rotate(0)}50%{transform:rotate(-11deg)}
+}
+
+@keyframes om-bday-film-flapR {
+  0%,100%{transform:rotate(0)}50%{transform:rotate(11deg)}
+}
+
+.om-bday-film-hint {
+  position:absolute;
+  bottom:8.5%;
+  left:0;
+  right:0;
+  text-align:center;
+  font-family:var(--bd-font-display);
+  font-weight:600;
+  font-style:italic;
+  font-size:clamp(13px, 3.1vw, 19px);
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  color:#b06a7c;
+  opacity:0
+}
+
+.om-bday-film-flood {
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:140px;
+  height:140px;
+  margin:-70px 0 0 -70px;
+  border-radius:50%;
+  background:radial-gradient(circle at 40% 34%,#ff5f86,#d4235c 46%,#a80f43 100%);
+  z-index:5;
+  opacity:0;
+  transform:scale(.001);
+  will-change:transform,opacity;
+  pointer-events:none
+}
+
+.om-bday-film-field {
+  position:absolute;
+  inset:0;
+  z-index:4;
+  opacity:0;
+  pointer-events:none;
+  overflow:hidden;
+  background:radial-gradient(120% 100% at 50% 8%,#d5265f 0,#d4235c 42%,#a80f43 78%,#6e0a31 100%);
+  color:#fff
+}
+
+.om-bday-film-blob {
+  position:absolute;
+  border-radius:50%;
+  filter:blur(46px);
+  opacity:0;
+  mix-blend-mode:screen;
+  will-change:transform,opacity
+}
+
+.om-bday-film-blob-1 {
+  width:58vmax;
+  height:58vmax;
+  left:-18vmax;
+  top:-16vmax;
+  background:radial-gradient(circle,rgb(255 130 160 / .9),transparent 62%)
+}
+
+.om-bday-film-blob-2 {
+  width:46vmax;
+  height:46vmax;
+  right:-14vmax;
+  top:22vmax;
+  background:radial-gradient(circle,rgb(255 90 120 / .75),transparent 64%)
+}
+
+.om-bday-film-blob-3 {
+  width:52vmax;
+  height:52vmax;
+  left:24vmax;
+  bottom:-22vmax;
+  background:radial-gradient(circle,rgb(180 20 70 / .8),transparent 66%)
+}
+
+.om-bday-film-fgrid {
+  position:absolute;
+  inset:-6%;
+  background-image:linear-gradient(rgb(255 255 255 / .05) 1px,transparent 1px),linear-gradient(90deg,rgb(255 255 255 / .05) 1px,transparent 1px);
+  background-size:clamp(38px,7vw,74px) clamp(38px,7vw,74px);
+  will-change:transform
+}
+
+.om-bday-film-fvignette {
+  position:absolute;
+  inset:0;
+  background:radial-gradient(128% 96% at 50% 44%,transparent 50%,rgb(70 6 28 / .5) 100%)
+}
+
+.om-bday-film-camera {
+  position:absolute;
+  inset:0;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  gap:clamp(4px,1.2vh,12px);
+  padding:17vh 6vw;
+  text-align:center;
+  will-change:transform
+}
+
+.om-bday-film-keyebrow {
+  font-family:var(--bd-font-display);
+  font-style:italic;
+  font-weight:500;
+  font-size:clamp(15px, 3.6vw, 27px);
+  letter-spacing:.08em;
+  color:#ffd7c8;
+  opacity:0;
+  transform:translateY(10px);
+  margin-bottom:clamp(2px,1vh,10px)
+}
+
+.om-bday-film-headline {
+  font-family:var(--bd-font-display);
+  line-height:.92
+}
+
+.om-bday-film-hlline {
+  display:block;
+  font-size:clamp(52px, 15vw, 168px);
+  letter-spacing:-.02em
+}
+
+.om-bday-film-mask {
+  display:inline-block;
+  overflow:hidden;
+  padding:.3em .14em .22em;
+  margin:-.3em -.14em -.22em
+}
+
+.om-bday-film-hlword {
+  display:inline-block;
+  font-weight:900;
+  font-size:1em;
+  color:#fff6f1;
+  text-shadow:0 6px 34px rgb(60 4 24 / .34),0 2px 3px rgb(90 8 36 / .42)
+}
+
+.om-bday-film-hlch {
+  display:inline-block;
+  will-change:transform
+}
+
+.om-bday-film-uline {
+  width:clamp(150px,40vw,380px);
+  height:auto;
+  margin-top:clamp(4px,1.4vh,14px);
+  color:#ffcf6a;
+  filter:drop-shadow(0 2px 8px rgb(255 180 90 / .5))
+}
+
+.om-bday-film-ksub {
+  margin-top:clamp(12px,2.4vh,26px);
+  font-family:var(--bd-font-display);
+  font-weight:500;
+  font-style:italic;
+  font-size:clamp(14px, 3.4vw, 24px);
+  letter-spacing:.05em;
+  color:#ffdfd2;
+  opacity:0;
+  transform:translateY(10px)
+}
+
+.om-bday-film-bar {
+  position:absolute;
+  left:0;
+  right:0;
+  height:16vh;
+  background:#12040b;
+  z-index:3;
+  will-change:transform;
+  pointer-events:none
+}
+
+.om-bday-film-bar-top {
+  top:0
+}
+
+.om-bday-film-bar-bot {
+  bottom:0
+}
+
+.om-bday-film-bloom {
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:60px;
+  height:60px;
+  margin:-30px 0 0 -30px;
+  border-radius:50%;
+  background:radial-gradient(circle,#fff 0,#fff2d6 30%,rgb(255 214 150 / .85) 55%,#fff0 74%);
+  z-index:8;
+  opacity:0;
+  transform:scale(.001);
+  will-change:transform,opacity;
+  pointer-events:none
+}
+
+.om-bday-film-burst {
+  position:absolute;
+  z-index:4;
+  pointer-events:none
+}
+
+@media (prefers-reduced-motion:reduce) >> .om-bday-film-bloom,.om-bday-film-field,.om-bday-film-flood,.om-bday-film-hero {
+  display:none!important
+}
+
+@media (max-height:600px) >> .om-bday-film-bar {
+  height:11vh
+}
+
+@media (max-height:600px) >> .om-bday-film-camera {
+  padding:12vh 6vw
+}
+
+@media (max-height:600px) >> .om-bday-film-hlline {
+  font-size:clamp(40px, 11vw, 118px)
+}
+/* ===== end film CSS ===== */
+  /* The film plays inside the tree scene, above the canvas. While it runs the
+     tree's own copy must stay hidden, or the headline shows twice. */
+  .tree-wrap.film-playing .tree-copy,
+  .tree-wrap.film-playing .tree-tap{ opacity:0 !important; }
+  .om-bday-film-hero{ z-index:6; }
+  .tree-wrap > .om-bday-film-flood,
+  .tree-wrap > .om-bday-film-field,
+  .tree-wrap > .om-bday-film-bloom,
+  .tree-wrap > .om-bday-film-camera{ z-index:7; }
   .tree-wrap{ position:relative; min-height:100%; height:100%; overflow:hidden; cursor:pointer; background:linear-gradient(180deg,#fdf6ee 0%,#fbeadd 55%,#f7dfd0 100%); }
   .tree-canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; }
   /* Sits BELOW the canopy: the heart fills the full width of our 420px stage,
@@ -318,7 +739,8 @@ $cake_label = $cake_labels[ $cake_key ] ?? 'Strawberry Blush';
   </div>
 
   <div class="step" data-step="tree">
-    <div class="tree-wrap" onclick="toStep('title')">
+    <div class="tree-wrap" id="treeWrap" onclick="treeSceneTap()">
+<section class="om-bday-film-hero" id="om-bday-film-hero" aria-label="Draw the bow to open the card"><div class="om-bday-film-herobg" aria-hidden="true"></div><div class="om-bday-film-motes" id="om-bday-film-motes" aria-hidden="true"></div><p class="om-bday-film-eyebrow" id="om-bday-film-eyebrow">a little something, for you</p><div class="om-bday-film-targetwrap" aria-hidden="true"><div class="om-bday-film-target" id="om-bday-film-target"> <span class="om-bday-film-heartglow" aria-hidden="true"></span> <span class="om-bday-film-targetheart" id="om-bday-film-targetheart"> <svg class="om-bday-film-heartsvg" viewBox="0 0 100 92" aria-hidden="true"> <defs> <radialGradient id="omf-hg" cx="38%" cy="30%" r="80%"> <stop offset="0%" stop-color="#ffd9e4"/> <stop offset="42%" stop-color="#ff6f97"/> <stop offset="82%" stop-color="#d81e57"/> <stop offset="100%" stop-color="#9d0f3e"/> </radialGradient> <linearGradient id="omf-hsheen" x1="0" y1="0" x2="0" y2="1"> <stop offset="0%" stop-color="rgba(255,255,255,.85)"/> <stop offset="34%" stop-color="rgba(255,255,255,0)"/> </linearGradient> </defs> <path d="M50 86.5C26 68 10.5 53.6 10.5 34.6 10.5 20.4 21 11 33.2 11c8.6 0 14.2 4.7 16.8 11.4C52.6 15.7 58.2 11 66.8 11 79 11 89.5 20.4 89.5 34.6 89.5 53.6 74 68 50 86.5Z" fill="url(#omf-hg)"/> <path d="M50 86.5C26 68 10.5 53.6 10.5 34.6 10.5 20.4 21 11 33.2 11c8.6 0 14.2 4.7 16.8 11.4C52.6 15.7 58.2 11 66.8 11 79 11 89.5 20.4 89.5 34.6 89.5 53.6 74 68 50 86.5Z" fill="url(#omf-hsheen)" opacity=".7"/> <ellipse cx="34" cy="30" rx="8.5" ry="5.4" fill="#fff" opacity=".72" style="mix-blend-mode:screen"/> </svg> </span></div></div><div class="om-bday-film-archery" id="om-bday-film-archery" role="button" tabindex="0" aria-label="Draw the bow and release to send the arrow to the heart"><div class="om-bday-film-aim" id="om-bday-film-aim" aria-hidden="true"></div> <svg class="om-bday-film-bow" id="om-bday-film-bow" viewBox="0 0 460 300" aria-hidden="true"> <defs> <linearGradient id="omf-limb" x1="0" y1="0" x2="1" y2="0"> <stop offset="0" stop-color="#4a2a1a"/> <stop offset=".18" stop-color="#6b3f24"/> <stop offset=".5" stop-color="#8a5127"/> <stop offset=".82" stop-color="#6b3f24"/> <stop offset="1" stop-color="#4a2a1a"/> </linearGradient> <linearGradient id="omf-limbHi" x1="0" y1="0" x2="0" y2="1"> <stop offset="0" stop-color="rgba(255,214,160,.8)"/> <stop offset="1" stop-color="rgba(255,214,160,0)"/> </linearGradient> <linearGradient id="omf-grip" x1="0" y1="0" x2="1" y2="0"> <stop offset="0" stop-color="#2a1a10"/> <stop offset=".5" stop-color="#5a3822"/> <stop offset="1" stop-color="#2a1a10"/> </linearGradient> </defs> <path class="om-bday-film-bowlimb" d="M34 96 C 118 168, 168 240, 230 252 C 292 240, 342 168, 426 96" fill="none" stroke="url(#omf-limb)" stroke-width="13" stroke-linecap="round"/> <path d="M34 96 C 118 168, 168 240, 230 252 C 292 240, 342 168, 426 96" fill="none" stroke="url(#omf-limbHi)" stroke-width="3" stroke-linecap="round" opacity=".7"/> <path d="M34 96 C 22 82, 26 70, 40 66" fill="none" stroke="url(#omf-limb)" stroke-width="8" stroke-linecap="round"/> <path d="M426 96 C 438 82, 434 70, 420 66" fill="none" stroke="url(#omf-limb)" stroke-width="8" stroke-linecap="round"/> <rect x="216" y="206" width="28" height="70" rx="9" fill="url(#omf-grip)"/> <path d="M219 220h22 M219 236h22 M219 252h22" stroke="rgba(0,0,0,.35)" stroke-width="2"/> <line class="om-bday-film-str" id="omf-strL" x1="40" y1="70" x2="230" y2="96" stroke="#9a8068" stroke-width="2.2" stroke-linecap="round"/> <line class="om-bday-film-str" id="omf-strR" x1="420" y1="70" x2="230" y2="96" stroke="#9a8068" stroke-width="2.2" stroke-linecap="round"/> <circle id="omf-serving" cx="230" cy="96" r="4.5" fill="#6f5137"/> </svg> <svg class="om-bday-film-arrow" id="om-bday-film-arrow" viewBox="0 0 64 220" aria-hidden="true"> <defs> <linearGradient id="omf-shaft" x1="0" y1="0" x2="1" y2="0"> <stop offset="0" stop-color="#4a2c14"/> <stop offset=".5" stop-color="#8a5a2c"/> <stop offset="1" stop-color="#3e2410"/> </linearGradient> <linearGradient id="omf-gold" x1="0" y1="0" x2="1" y2="1"> <stop offset="0" stop-color="#ffe38c"/> <stop offset=".45" stop-color="#f4a626"/> <stop offset="1" stop-color="#a85f0e"/> </linearGradient> <linearGradient id="omf-feath" x1="0" y1="0" x2="1" y2="1"> <stop offset="0" stop-color="#ff7f9c"/> <stop offset=".5" stop-color="#e6396a"/> <stop offset="1" stop-color="#a8154a"/> </linearGradient> <linearGradient id="omf-wing" x1="0" y1="0" x2="0" y2="1"> <stop offset="0" stop-color="#ffffff"/> <stop offset="1" stop-color="#ffe0c4"/> </linearGradient> </defs> <rect x="29.4" y="30" width="5.2" height="168" rx="2.6" fill="url(#omf-shaft)"/> <g class="om-bday-film-wings"> <path class="om-bday-film-wingL" d="M31 30 C 10 16, 2 20, 4 34 C 12 30, 20 32, 31 40 Z" fill="url(#omf-wing)" stroke="rgba(196,132,58,.72)" stroke-width="1.2"/> <path class="om-bday-film-wingR" d="M33 30 C 54 16, 62 20, 60 34 C 52 30, 44 32, 33 40 Z" fill="url(#omf-wing)" stroke="rgba(196,132,58,.72)" stroke-width="1.2"/> </g> <path d="M32 12 C 30 7, 22 6.5, 21.5 13 C 21 18, 27 22, 32 27 C 37 22, 43 18, 42.5 13 C 42 6.5, 34 7, 32 12 Z" fill="url(#omf-gold)" stroke="#a5701a" stroke-width=".8"/> <ellipse cx="27" cy="13" rx="2.6" ry="1.7" fill="#fff" opacity=".8" style="mix-blend-mode:screen"/> <g class="om-bday-film-fletch"> <path d="M32 150 C 16 156, 10 178, 15 200 C 24 194, 30 184, 32 176 Z" fill="url(#omf-feath)"/> <path d="M32 150 C 48 156, 54 178, 49 200 C 40 194, 34 184, 32 176 Z" fill="url(#omf-feath)" opacity=".92"/> <path d="M28 160l4 3 M26 170l6 3 M25 180l7 3" stroke="rgba(130,12,48,.45)" stroke-width="1"/> <path d="M36 160l-4 3 M38 170l-6 3 M39 180l-7 3" stroke="rgba(130,12,48,.45)" stroke-width="1"/> </g> <path d="M29 200 L32 205 L35 200" fill="none" stroke="#c9a25a" stroke-width="2" stroke-linecap="round"/> <circle id="omf-tip" cx="32" cy="9" r="0.6" fill="none"/> </svg></div><p class="om-bday-film-hint" id="om-bday-film-hint">pull &amp; release</p></section><div class="om-bday-film-flood" id="om-bday-film-flood" aria-hidden="true"></div><div class="om-bday-film-field" id="om-bday-film-field" aria-hidden="true"><div class="om-bday-film-blob om-bday-film-blob-1"></div><div class="om-bday-film-blob om-bday-film-blob-2"></div><div class="om-bday-film-blob om-bday-film-blob-3"></div><div class="om-bday-film-fgrid" id="om-bday-film-fgrid"></div><div class="om-bday-film-fvignette"></div><div class="om-bday-film-camera" id="om-bday-film-camera"><p class="om-bday-film-keyebrow" id="om-bday-film-keyebrow">make a wish&hellip;</p><h2 class="om-bday-film-headline" id="om-bday-film-headline"> <span class="om-bday-film-hlline"><span class="om-bday-film-mask"><span class="om-bday-film-hlword" id="om-bday-film-wline1">Happy</span></span></span> <span class="om-bday-film-hlline"><span class="om-bday-film-mask"><span class="om-bday-film-hlword" id="om-bday-film-wline2">Birthday</span></span></span></h2> <svg class="om-bday-film-uline" id="om-bday-film-uline" viewBox="0 0 300 26" fill="none" aria-hidden="true"> <path class="om-bday-film-uline-path" d="M8 16C56 7 132 4 178 6c30 1 78 5 114 12-40 3-108 4-176 3" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/> </svg><p class="om-bday-film-ksub" id="om-bday-film-ksub">to someone worth celebrating</p></div><div class="om-bday-film-bar om-bday-film-bar-top" id="om-bday-film-bartop"></div><div class="om-bday-film-bar om-bday-film-bar-bot" id="om-bday-film-barbot"></div></div><div class="om-bday-film-bloom" id="om-bday-film-bloom" aria-hidden="true"></div>
       <canvas id="treeCanvas" class="tree-canvas" aria-label="A blossom tree grows and blooms into a heart made of petals" role="img"></canvas>
       <div class="tree-copy">
         <div class="l1">Happy</div>
@@ -393,6 +815,16 @@ $cake_label = $cake_labels[ $cake_key ] ?? 'Strawberry Blush';
 
 </div>
 
+<script>
+<?php
+// Inlined so the film has no CDN or CSP dependency, matching the reference's
+// own reasoning. Never a heredoc — PHP would interpolate the $ sequences.
+$bm_gsap_path = BM_PLUGIN_DIR . 'assets/js/gsap.min.js';
+if ( is_readable( $bm_gsap_path ) ) {
+	echo file_get_contents( $bm_gsap_path ); // phpcs:ignore WordPress.WP.AlternativeFunctions
+}
+?>
+</script>
 <script>
   const BALLOONS = <?php echo wp_json_encode( $balloons, JSON_UNESCAPED_UNICODE ); ?>;
   const MESSAGE = <?php echo wp_json_encode( $message, JSON_UNESCAPED_UNICODE ); ?>;
@@ -1641,7 +2073,1156 @@ function createBlossomTree(canvas, opts) {
 
   // The tree is a canvas engine, not CSS — it has to be started when its
   // scene opens and stopped when it closes, or its rAF keeps running.
+/* ===== cupid film engine ===== */
+/* =============================================================================
+ * film-engine.transcribed.js
+ * -----------------------------------------------------------------------------
+ * Clean, readable, runnable transcription of the ourmoments.live "cupid film"
+ * opening (the bow-and-heart scene that precedes the birthday card).
+ *
+ * Recovered from:
+ *   reference/ourmoments-birthday/film-opening-deob.js       (module _0x52f44a)
+ *   reference/ourmoments-birthday/film-opening-markup.html
+ *   reference/ourmoments-birthday/film-opening-css.txt
+ *   reference/ourmoments-birthday/app.deobfuscated.js        (call sites/helpers)
+ *
+ * Plain browser JS. No imports, no build step. Exposes exactly ONE global:
+ *
+ *     createCupidFilm(root, opts) -> { start, stop, seek, destroy, duration }
+ *
+ * `root` is the film's container element (in the original this is
+ * #om-bday-scene-tree — the element that holds the .om-bday-film-hero <section>
+ * AND its siblings .om-bday-film-flood / .om-bday-film-field / .om-bday-film-bloom,
+ * and whose getBoundingClientRect() defines the scene coordinate space).
+ *
+ * Requires window.gsap (3.12.5 in the original). start() returns false if absent.
+ *
+ * DOM contract — every id the engine needs (all inside `root`):
+ *   #om-bday-film-hero        the interactive stage <section>
+ *   #om-bday-film-eyebrow     "a little something, for you"
+ *   #om-bday-film-hint        "pull & release"
+ *   #om-bday-film-motes       empty div; motes are injected here
+ *   #om-bday-film-target      the heart wrapper (moves/squashes)
+ *   #om-bday-film-targetheart the heart <span> (pulses)
+ *     .om-bday-film-heartglow (inside #om-bday-film-target)
+ *   #om-bday-film-aim         the aim beam
+ *   #om-bday-film-archery     the DRAG TARGET (role=button, tabindex=0)
+ *   #om-bday-film-bow         bow <svg viewBox="0 0 460 300">
+ *   #om-bday-film-arrow       arrow <svg viewBox="0 0 64 220">
+ *   #omf-strL #omf-strR       the two bowstring <line>s
+ *   #omf-serving              the <circle> nocking point
+ *   #omf-tip                  zero-radius <circle> at the arrowhead (measure only)
+ *   #om-bday-film-flood       magenta flood disc (140x140, margin -70)
+ *   #om-bday-film-field       the magenta title field
+ *   #om-bday-film-camera      the parallax camera layer
+ *   #om-bday-film-fgrid       the parallax grid layer
+ *   #om-bday-film-keyebrow    "make a wish..."
+ *   #om-bday-film-wline1      "Happy"     (split into chars)
+ *   #om-bday-film-wline2      "Birthday"  (split into chars)
+ *   #om-bday-film-uline       underline <svg>, holds .om-bday-film-uline-path
+ *   #om-bday-film-ksub        "to someone worth celebrating"
+ *   #om-bday-film-bartop      letterbox bar (top)
+ *   #om-bday-film-barbot      letterbox bar (bottom)
+ *   #om-bday-film-bloom       white bloom disc (60x60, margin -30)
+ *   .om-bday-film-blob        x3, inside #om-bday-film-field
+ *
+ * CSS contract: #om-bday-film-archery MUST have `touch-action:none` or the
+ * pointermove drag is stolen by the browser's scroll gesture on touch.
+ * ============================================================================= */
+
+/* eslint-disable no-var */
+var createCupidFilm = (function () {
+  'use strict';
+
+  /* ===========================================================================
+   * SECTION 1 — RECOVERED CONSTANTS
+   * Every magic number from the original, named, with what it controls.
+   * ========================================================================= */
+
+  // ---- Geometry: SVG viewBox intrinsics (must match film-opening-markup.html)
+  var BOW_VB_W = 460;          // 0x1cc — bow <svg viewBox="0 0 460 300"> width.
+                               //         bowScale = bowRect.width / 460.
+  var BOW_GRIP_Y_FRAC = 240 / 300;  // 0xf0/0x12c — grip centre as a fraction of
+                               //         bow height. This is the ROTATION PIVOT.
+  var ARROW_NOCK_Y_FRAC = 205 / 220;// 0xcd/0xdc — the nock notch as a fraction of
+                               //         arrow height (viewBox 0 0 64 220).
+  var NOCK_REST_Y = 96;        // 0x60 — bowstring y2 / serving cy at full rest,
+                               //         in bow viewBox units. Matches the markup.
+
+  // ---- Anchors: where the bow and the heart sit, as fractions of the scene box
+  var ARCHERY_ANCHOR_X = 0.24; // bow grip x = sceneW * 0.24
+  var ARCHERY_ANCHOR_Y = 0.76; // bow grip y = sceneH * 0.76
+  var TARGET_ANCHOR_X = 0.50;  // heart x = sceneW * 0.50   (CSS: targetwrap centred)
+  var TARGET_ANCHOR_Y = 0.33;  // heart y = sceneH * 0.33   (CSS: .targetwrap top:33%)
+                               // The DRAW AXIS is atan2 between these two points.
+
+  // ---- Draw mechanic
+  var MAX_DRAW_PX_DEFAULT = 120;   // 0x78 — placeholder until first layout()
+  var MAX_DRAW_BOW_FRAC = 0.72;    // maxDraw candidate: bowRect.height * 0.72
+  var MAX_DRAW_SCENE_FRAC = 0.16;  // maxDraw candidate: sceneH * 0.16
+  var MAX_DRAW_HARD_CAP = 132;     // 0x84 — absolute ceiling, px
+  var RELEASE_THRESHOLD = 0.26;    // release fires only if draw > maxDraw * 0.26
+  var AIM_MAX_OPACITY = 0.55;      // aim beam opacity = 0.55 * (draw / maxDraw)
+
+  // ---- Flood / bloom disc radii (from CSS; these are the scale divisors)
+  var FLOOD_RADIUS = 70;   // 0x46 — .om-bday-film-flood is 140x140, margin -70
+  var FLOOD_OVERSHOOT = 1.12;  // floodScale = cornerDist * 1.12 / 70
+  var FLOOD_START_SCALE = 0.02;
+  var BLOOM_RADIUS = 30;   // 0x1e — .om-bday-film-bloom is 60x60, margin -30
+  var BLOOM_OVERSHOOT = 1.20;  // bloomScale = halfDiagonal * 1.2 / 30
+  var BLOOM_START_SCALE = 0.02;
+
+  // ---- Heart fall
+  var FALL_SCENE_FRAC = 0.26;      // fall distance candidate: sceneH * 0.26
+  var FALL_TARGET_BOTTOM_PAD = 0.4;// ...clamped so the heart's lower 40% clears the
+                                   //    bottom edge: sceneH - targetY - tH*0.4
+
+  // ---- Headline char split (3D flip-up)
+  var CHAR_PERSPECTIVE = 620;      // 0x26c
+  var CHAR_START_YPCT = 135;       // 0x87
+  var CHAR_START_ROTX = -82;       // -0x52
+  var CHAR_STAGGER = 0.033;
+
+  // ---- Letterbox bars
+  var BAR_OFFSCREEN_PCT = 100;     // 0x64 — top bar sits at -100%, bottom at +100%
+
+  // ---- Motes (the idle/attract dust)
+  var MOTE_COUNT = 12;             // 0xc
+  var MOTE_SIZE_MIN = 4,   MOTE_SIZE_MAX = 12;    // px
+  var MOTE_LEFT_MIN = 4,   MOTE_LEFT_MAX = 96;    // %   (0x4 .. 0x60)
+  var MOTE_TOP_MIN = 10,   MOTE_TOP_MAX = 96;     // %   (0xa .. 0x60)
+  var MOTE_OPACITY_MIN = 0.25, MOTE_OPACITY_MAX = 0.7;
+  var MOTE_RISE_MIN = 40,  MOTE_RISE_MAX = 140;   // px  (0x28 .. 0x8c), negated
+  var MOTE_DRIFT = 30;                            // px  (+/- 0x1e)
+  var MOTE_DUR_MIN = 7,    MOTE_DUR_MAX = 14;     // s   (0x7 .. 0xe)
+  var MOTE_DELAY_MAX = 8;                         // s, applied as a NEGATIVE delay
+  var MOTE_FLICKER_MIN = 0.1, MOTE_FLICKER_MAX = 0.5;
+  var MOTE_FLICKER_DUR_MIN = 2.5, MOTE_FLICKER_DUR_MAX = 5;
+
+  // ---- Impact burst
+  var BURST_COUNT = 12;            // 0xc total
+  var BURST_HEART_COUNT = 8;       // first 8 are hearts, last 4 are white sparks
+  var BURST_ORIGIN_Y_FRAC = 0.42;  // burst origin = target top + height * 0.42
+  var BURST_HEART_SIZE_MIN = 12, BURST_HEART_SIZE_MAX = 22;  // 0xc .. 0x16
+  var BURST_SPARK_SIZE_MIN = 4,  BURST_SPARK_SIZE_MAX = 8;   // 0x4 .. 0x8
+  var BURST_HEART_DIST_MIN = 70, BURST_HEART_DIST_MAX = 190; // 0x46 .. 0xbe
+  var BURST_SPARK_DIST_MIN = 40, BURST_SPARK_DIST_MAX = 120; // 0x28 .. 0x78
+  var BURST_LIFT_MIN = 10, BURST_LIFT_MAX = 50;              // 0xa .. 0x32
+  var BURST_SPIN = 120;                                      // +/- 0x78 deg
+  var BURST_COLORS = ['#ff6f97', '#ffb14e', '#ff8fae', '#ffd36a', '#e23b67'];
+
+  // ---- Timing
+  var IDLE_DEMO_MS = 6500;         // 0x1964 — if the user does nothing this long,
+                                   //          the bow draws and fires itself.
+  var AUTO_DRAW_FRAC = 0.94;       // the self-demo pulls to maxDraw * 0.94
+  var AUTO_DRAW_DUR = 0.62;
+  var AUTO_DRAW_FIRE_DELAY = 0.16; // delayedCall before fire() once the pull lands
+  var SNAPBACK_DUR = 0.55;         // release below threshold -> elastic snap to 0
+  var ARROW_FLIGHT_DUR = 0.26;     // fixed. Draw depth changes DISTANCE, not time.
+  var FILM_DURATION = 4.00;        // 3.42 (bloom start) + 0.58 (bloom dur)
+  var ADVANCE_AFTER_FILM_MS = 8200;// 0x2008 — original then auto-advanced the scene
+  var ADVANCE_REDUCED_MS = 4200;   // 0x1068 — reduced-motion path
+  var ADVANCE_NO_GSAP_MS = 9000;   // 0x2328 — no-gsap path
+
+  // ---- CSS class names / ids used by the engine
+  var CLS_CHAR = 'om-bday-film-hlch';
+  var CLS_MOTE = 'om-bday-film-mote';
+  var CLS_BURST = 'om-bday-film-burst';
+  var SEL_BLOB = '.om-bday-film-blob';
+
+  /* ===========================================================================
+   * SECTION 2 — THE TWO HAND-ROLLED REPLACEMENTS FOR PAID GSAP CLUB PLUGINS
+   * ========================================================================= */
+
+  var drawnPluginRegistered = false;
+
+  /**
+   * VERBATIM replacement for DrawSVGPlugin (GSAP Club).
+   * Recovered exactly as written in film-opening-deob.js lines ~978-991.
+   *
+   * Usage: gsap.to(pathEl, { drawn: 1, duration: 0.45, ease: 'power2.inOut' })
+   * with a prior .set(pathEl, { drawn: 0 }).
+   *
+   * ratio 0 -> dashoffset = len      (path fully hidden)
+   * ratio 1 -> dashoffset = 0        (path fully drawn)
+   *
+   * Note the original's limitation, preserved: it always measures from a full
+   * dasharray, so it cannot animate a partial-to-partial range. That is fine
+   * for the one place it is used (the underline sweep at t=2.54).
+   */
+  function registerDrawnPlugin(gsap) {
+    if (drawnPluginRegistered) return;
+    gsap.registerPlugin({
+      name: 'drawn',
+      init: function (target, value) {
+        var len = target.getTotalLength();
+        target.style.strokeDasharray = len;
+        this.target = target;
+        this.len = len;
+        this.value = value;
+      },
+      render: function (ratio, data) {
+        data.target.style.strokeDashoffset = data.len * (1 - data.value * ratio);
+      }
+    });
+    drawnPluginRegistered = true;
+  }
+
+  /**
+   * VERBATIM replacement for SplitText (GSAP Club), with ONE BUG FIXED.
+   *
+   * The original was:
+   *     var chars = Array.prototype.slice.call(el.textContent);
+   *
+   * Array.prototype.slice.call() on a string walks it by INDEX, i.e. by UTF-16
+   * code unit. Any astral-plane character (emoji above U+FFFF, e.g. a cake or a
+   * heart emoji dropped into the headline by a user) is torn into its two
+   * surrogate halves, each wrapped in its own <span>. Those halves render as
+   * two replacement glyphs and then get staggered apart by the char animation,
+   * so the emoji is destroyed twice over.
+   *
+   * FIX: Array.from() (equivalently [...str]) iterates by code POINT, so a
+   * surrogate pair stays one character in one span. This still splits ZWJ
+   * sequences and skin-tone modifiers (family emoji, flags) — a full fix needs
+   * Intl.Segmenter with granularity 'grapheme', which is not available in every
+   * browser the original targeted. Code points are the correct minimum.
+   */
+  function splitChars(el) {
+    var chars = Array.from(el.textContent); // was Array.prototype.slice.call(...)
+    el.textContent = '';
+    return chars.map(function (ch) {
+      var span = document.createElement('span');
+      span.className = CLS_CHAR;
+      // A plain space in an inline-block span collapses; NBSP holds the gap.
+      span.textContent = ch === '\x20' ? '\u00a0' : ch;
+      el.appendChild(span);
+      return span;
+    });
+  }
+
+  /* ===========================================================================
+   * SECTION 3 — SMALL HELPERS (verbatim from the original)
+   * ========================================================================= */
+
+  function rand(min, max) { return min + Math.random() * (max - min); }
+  function pick(arr) { return arr[(Math.random() * arr.length) | 0]; }
+  function clamp(v, min, max) { return v < min ? min : (v > max ? max : v); }
+
+  function prefersReducedMotion() {
+    // app.deobfuscated.js @22135 (_0x2e2278)
+    try {
+      return typeof window.matchMedia === 'function' &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /** Rect of `el` expressed relative to an already-taken root rect. */
+  function relRect(el, rootRect) {
+    var r = el.getBoundingClientRect();
+    return {
+      left: r.left - rootRect.left,
+      top: r.top - rootRect.top,
+      width: r.width,
+      height: r.height
+    };
+  }
+
+  /** Inline heart SVG used by the impact burst particles. */
+  function heartSvg(color) {
+    return '<svg viewBox="0 0 24 22" width="100%" height="100%">' +
+      '<path d="M12 20C5.5 15 1.5 11.4 1.5 6.9 1.5 3.6 4 1.5 7 1.5c2 0 3.4 1.1 5 3 ' +
+      '1.6-1.9 3-3 5-3 3 0 5.5 2.1 5.5 5.4C23.5 11.4 19.5 15 12 20Z" fill="' + color + '"/></svg>';
+  }
+
+  /* ===========================================================================
+   * SECTION 4 — THE FACTORY
+   * ========================================================================= */
+
+  function createCupidFilm(root, opts) {
+    opts = opts || {};
+
+    var gsap = null;
+
+    // --- lifecycle flags (mirror the original's booleans) ---
+    var wired = false;      // _0x2c5ab8 — DOM refs resolved + listeners bound
+    var started = false;    // _0x39049f
+    var enabled = false;    // _0x160828 — false in the reduced-motion / no-gsap path
+    var fired = false;      // _0x113579 — the arrow has been released
+    var dragging = false;   // _0x3ccd63
+    var finished = false;   // _0x179bbc
+    var canAdvance = false; // _0x820f35 — exported so the host can gate a tap-to-skip
+
+    // --- element refs ---
+    var scene, hero, eyebrow, hint, motesWrap, target, targetHeart, heartGlow,
+      aim, archery, bow, arrow, strL, strR, serving, flood, field, camera,
+      fgrid, keyebrow, ksub, barTop, barBot, ulinePath, bloom, tip;
+
+    var chars1 = [];    // "Happy"
+    var chars2 = [];    // "Birthday"
+    var allChars = [];
+    var blobs = [];
+
+    // --- layout state ---
+    var sceneW = 0, sceneH = 0;
+    var bowScale = 1;                         // bowRect.width / 460
+    var arrowRestX = 0, arrowRestY = 0;       // arrow transform at zero draw
+    var maxDraw = MAX_DRAW_PX_DEFAULT;
+    var draw = 0;                             // current draw, px along the axis
+    var axisX = 0, axisY = 1;                 // unit draw axis (pointer projection)
+    var nock = { val: NOCK_REST_Y };          // tweenable proxy for the bowstring
+
+    // --- timelines / timers ---
+    var pulseTl = null;      // heart heartbeat loop
+    var fireTl = null;       // THE film timeline
+    var idleTimer = 0;
+    var introTl = null;
+
+    // --- bound listeners (kept so destroy() can unbind; the original never did) ---
+    var onPointerDown, onPointerMove, onPointerEnd, onKeyDown, onResize, onFontsReady;
+
+    /* -------------------------------------------------------------------------
+     * 4.1  DOM resolution
+     * ---------------------------------------------------------------------- */
+
+    function q(id) {
+      return (root && root.querySelector('#' + id)) || document.getElementById(id);
+    }
+
+    function resolveRefs() {
+      if (wired) return true;
+
+      // `root` doubles as the scene coordinate space (original: #om-bday-scene-tree).
+      scene = root;
+      hero = q('om-bday-film-hero');
+      if (!scene || !hero) return false;
+
+      eyebrow     = q('om-bday-film-eyebrow');
+      hint        = q('om-bday-film-hint');
+      motesWrap   = q('om-bday-film-motes');
+      target      = q('om-bday-film-target');
+      targetHeart = q('om-bday-film-targetheart');
+      heartGlow   = target.querySelector('.om-bday-film-heartglow');
+      aim         = q('om-bday-film-aim');
+      archery     = q('om-bday-film-archery');
+      bow         = q('om-bday-film-bow');
+      arrow       = q('om-bday-film-arrow');
+      strL        = q('omf-strL');
+      strR        = q('omf-strR');
+      serving     = q('omf-serving');
+      flood       = q('om-bday-film-flood');
+      field       = q('om-bday-film-field');
+      camera      = q('om-bday-film-camera');
+      fgrid       = q('om-bday-film-fgrid');
+      keyebrow    = q('om-bday-film-keyebrow');
+      ksub        = q('om-bday-film-ksub');
+      barTop      = q('om-bday-film-bartop');
+      barBot      = q('om-bday-film-barbot');
+      ulinePath   = q('om-bday-film-uline').querySelector('.om-bday-film-uline-path');
+      bloom       = q('om-bday-film-bloom');
+      tip         = q('omf-tip');
+
+      // The original used the bare global selector '.om-bday-film-blob'.
+      // Scoped to `root` here so two films on one page cannot cross-drive.
+      blobs = Array.prototype.slice.call(root.querySelectorAll(SEL_BLOB));
+
+      chars1 = splitChars(q('om-bday-film-wline1'));
+      chars2 = splitChars(q('om-bday-film-wline2'));
+      allChars = chars1.concat(chars2);
+
+      gsap = window.gsap || null;
+      if (gsap) {
+        registerDrawnPlugin(gsap);
+        bindPointer();
+
+        onResize = handleResize;
+        window.addEventListener('resize', onResize);
+
+        // Web fonts change the headline metrics, which change the bow/heart
+        // boxes, which change the draw axis. Re-layout once they land.
+        if (document.fonts && document.fonts.ready) {
+          onFontsReady = function () {
+            if (started && enabled && !fired) { layout(); setDraw(0); }
+          };
+          document.fonts.ready.then(onFontsReady);
+        }
+      }
+
+      wired = true;
+      return true;
+    }
+
+    /* -------------------------------------------------------------------------
+     * 4.2  LAYOUT — every getBoundingClientRect-derived value
+     *
+     * This positions the bow so its GRIP lands on (sceneW*0.24, sceneH*0.76),
+     * rotates it to point at the heart at (sceneW*0.50, sceneH*0.33), parks the
+     * arrow's nock notch exactly on the string's serving point, and derives the
+     * draw axis and the maximum draw distance.
+     * ---------------------------------------------------------------------- */
+
+    function applyNock() {
+      // The bowstring is two <line>s meeting at the serving <circle>. Pulling
+      // the string just moves that meeting point DOWN in bow viewBox units.
+      var v = nock.val;
+      strL.setAttribute('y2', v);
+      strR.setAttribute('y2', v);
+      serving.setAttribute('cy', v);
+    }
+
+    function layout() {
+      var r = scene.getBoundingClientRect();
+      sceneW = r.width;
+      sceneH = r.height;
+
+      var ax = sceneW * ARCHERY_ANCHOR_X;   // bow grip target x
+      var ay = sceneH * ARCHERY_ANCHOR_Y;   // bow grip target y
+      var tx = sceneW * TARGET_ANCHOR_X;    // heart x
+      var ty = sceneH * TARGET_ANCHOR_Y;    // heart y
+
+      // NOTE the argument order: atan2(dx, dy), not the usual atan2(dy, dx).
+      // The bow's "up" in its own viewBox is -y, so this angle is measured from
+      // vertical, which is exactly what gsap `rotation` (degrees, clockwise)
+      // wants when applied to a bow whose rest orientation is straight up.
+      var angle = Math.atan2(tx - ax, ay - ty);
+
+      // Draw axis = the DOWN-the-shaft direction, i.e. the direction the string
+      // travels when pulled. Pointer delta is projected onto it with a dot
+      // product in pointermove.
+      axisX = -Math.sin(angle);
+      axisY = Math.cos(angle);
+
+      nock.val = NOCK_REST_Y;
+      applyNock();
+
+      // Neutralise every transform before measuring, or the rects lie.
+      gsap.set(archery, { rotation: 0, scale: 1, x: 0, y: 0 });
+      archery.style.left = '0px';
+      archery.style.top = '0px';
+      gsap.set(arrow, { x: 0, y: 0 });
+
+      var aR  = relRect(archery, r);
+      var bR  = relRect(bow, r);
+      var sR  = relRect(serving, r);
+      var arR = relRect(arrow, r);
+
+      bowScale = bR.width / BOW_VB_W;   // px per bow-viewBox unit
+
+      // Pivot = the bow grip, expressed in the archery element's own box.
+      var pivotX = bR.left - aR.left + 0.5 * bR.width;
+      var pivotY = bR.top  - aR.top  + BOW_GRIP_Y_FRAC * bR.height;
+
+      // Serving (nocking point) centre, in the same box.
+      var servX = sR.left - aR.left + 0.5 * sR.width;
+      var servY = sR.top  - aR.top  + 0.5 * sR.height;
+
+      // Arrow rest transform: whatever it takes to drop the arrow's NOCK NOTCH
+      // (at ARROW_NOCK_Y_FRAC down its box) onto the serving point.
+      arrowRestX = servX - (arR.left - aR.left + 0.5 * arR.width);
+      arrowRestY = servY - (arR.top  - aR.top  + ARROW_NOCK_Y_FRAC * arR.height);
+
+      // Slide the whole archery element so the pivot lands on the anchor.
+      archery.style.left = (ax - pivotX) + 'px';
+      archery.style.top  = (ay - pivotY) + 'px';
+
+      gsap.set(archery, {
+        transformOrigin: pivotX + 'px ' + pivotY + 'px',
+        rotation: angle * 180 / Math.PI
+      });
+      gsap.set(arrow, { x: arrowRestX, y: arrowRestY });
+
+      // maxDraw = min(bowRect.height * 0.72, sceneH * 0.16, 132)
+      maxDraw = Math.min(
+        bR.height * MAX_DRAW_BOW_FRAC,
+        sceneH * MAX_DRAW_SCENE_FRAC,
+        MAX_DRAW_HARD_CAP
+      );
+
+      draw = 0;
+    }
+
+    /** Apply a draw depth (px along the axis): moves arrow, string and aim beam. */
+    function setDraw(d) {
+      draw = clamp(d, 0, maxDraw);
+      gsap.set(arrow, { x: arrowRestX, y: arrowRestY + draw });
+      // draw is in SCREEN px; the string lives in bow viewBox units -> /bowScale.
+      nock.val = NOCK_REST_Y + draw / bowScale;
+      applyNock();
+      gsap.set(aim, { opacity: AIM_MAX_OPACITY * (draw / maxDraw) });
+    }
+
+    /* -------------------------------------------------------------------------
+     * 4.3  MEASURE — the numbers the fire timeline needs, taken AT RELEASE TIME
+     * ---------------------------------------------------------------------- */
+
+    function measure() {
+      var r = scene.getBoundingClientRect();
+      sceneW = r.width;
+      sceneH = r.height;
+
+      // #omf-tip is a zero-radius <circle> at the arrowhead. Its rect is read
+      // AFTER the draw transform, so `dist` is the real drawn-tip-to-heart gap.
+      var tipR = tip.getBoundingClientRect();
+      var tgtR = target.getBoundingClientRect();
+
+      var tipX = tipR.left + tipR.width / 2 - r.left;
+      var tipY = tipR.top + tipR.height / 2 - r.top;
+      var tgtX = tgtR.left + tgtR.width / 2 - r.left;
+      var tgtY = tgtR.top + tgtR.height / 2 - r.top;
+
+      var dist = Math.hypot(tgtX - tipX, tgtY - tipY);
+
+      // How far the struck heart falls. Clamped so it does not leave the scene.
+      var fallPx = Math.min(
+        sceneH * FALL_SCENE_FRAC,
+        sceneH - tgtY - tgtR.height * FALL_TARGET_BOTTOM_PAD
+      );
+
+      // The flood erupts from where the heart LANDS, not where it started.
+      var restX = tgtX;
+      var restY = tgtY + fallPx;
+
+      // Distance from the landing point to the FARTHEST corner of the scene.
+      var cornerDist = Math.hypot(
+        Math.max(restX, sceneW - restX),
+        Math.max(restY, sceneH - restY)
+      );
+      var halfDiag = Math.hypot(sceneW / 2, sceneH / 2);
+
+      return {
+        arrowStartY: arrowRestY + draw,
+        arrowFlyY:   arrowRestY + draw - dist,  // travels `dist` in a fixed 0.26s,
+                                                // so a deeper draw = faster arrow.
+        drawnNock:   NOCK_REST_Y + draw / bowScale,
+        fallPx:      fallPx,
+        fx:          restX - sceneW / 2,  // flood is centred at 50%/50%; offset it
+        fy:          restY - sceneH / 2,  // to the heart's landing point
+        floodScale:  cornerDist * FLOOD_OVERSHOOT / FLOOD_RADIUS,
+        bloomScale:  halfDiag * BLOOM_OVERSHOOT / BLOOM_RADIUS
+      };
+    }
+
+    /* -------------------------------------------------------------------------
+     * 4.4  IDLE / ATTRACT STATE
+     * ---------------------------------------------------------------------- */
+
+    /** 12 drifting dust motes injected into #om-bday-film-motes. */
+    function buildMotes() {
+      motesWrap.innerHTML = '';
+      for (var i = 0; i < MOTE_COUNT; i++) {
+        var el = document.createElement('span');
+        el.className = CLS_MOTE;
+        var size = rand(MOTE_SIZE_MIN, MOTE_SIZE_MAX);
+        el.style.width = el.style.height = size + 'px';
+        el.style.left = rand(MOTE_LEFT_MIN, MOTE_LEFT_MAX) + '%';
+        el.style.top = rand(MOTE_TOP_MIN, MOTE_TOP_MAX) + '%';
+        motesWrap.appendChild(el);
+
+        gsap.set(el, { opacity: rand(MOTE_OPACITY_MIN, MOTE_OPACITY_MAX) });
+
+        // Slow rise + sideways drift, yoyoing forever. The NEGATIVE delay is the
+        // trick that desynchronises them without a stagger: each mote starts
+        // mid-flight rather than all together at t=0.
+        gsap.to(el, {
+          y: -rand(MOTE_RISE_MIN, MOTE_RISE_MAX),
+          x: rand(-MOTE_DRIFT, MOTE_DRIFT),
+          duration: rand(MOTE_DUR_MIN, MOTE_DUR_MAX),
+          repeat: -1,
+          yoyo: true,
+          ease: 'sine.inOut',
+          delay: -rand(0, MOTE_DELAY_MAX)
+        });
+
+        // Independent, slower opacity flicker.
+        gsap.to(el, {
+          opacity: rand(MOTE_FLICKER_MIN, MOTE_FLICKER_MAX),
+          duration: rand(MOTE_FLICKER_DUR_MIN, MOTE_FLICKER_DUR_MAX),
+          repeat: -1,
+          yoyo: true,
+          ease: 'sine.inOut'
+        });
+      }
+    }
+
+    /**
+     * The heart's double-thump heartbeat. Runs forever with a 0.5s rest between
+     * beats. Started by the intro timeline's onComplete, killed on fire().
+     */
+    function startHeartPulse() {
+      gsap.set(targetHeart, { scale: 1 });
+      gsap.set(heartGlow, { scale: 1, opacity: 0.7 });
+
+      pulseTl = gsap.timeline({ repeat: -1, repeatDelay: 0.5 });
+      pulseTl
+        .to(targetHeart, { scale: 1.07, duration: 0.13, ease: 'power2.out' }, 0)
+        .to(heartGlow,   { scale: 1.15, opacity: 0.9, duration: 0.13, ease: 'power2.out' }, 0)
+        .to(targetHeart, { scale: 1,    duration: 0.2,  ease: 'power2.in' },    0.13)
+        .to(targetHeart, { scale: 1.05, duration: 0.12, ease: 'power2.out' },   0.30)  // 2nd thump
+        .to(targetHeart, { scale: 1,    duration: 0.5,  ease: 'power2.inOut' }, 0.42)
+        .to(heartGlow,   { scale: 1, opacity: 0.7, duration: 0.7, ease: 'power2.inOut' }, 0.30);
+    }
+
+    function stopHeartPulse() {
+      if (pulseTl) { pulseTl.kill(); pulseTl = null; }
+      gsap.set(targetHeart, { scale: 1 });
+    }
+
+    /** The reveal that runs on start(): heart, glow, bow, eyebrow, hint. */
+    function playIntro() {
+      gsap.set(hero, { autoAlpha: 1 });
+      layout();
+      setDraw(0);
+
+      gsap.set([eyebrow, hint], { opacity: 0, y: 14 });
+      gsap.set(target,   { opacity: 0, y: 10, scaleX: 0.9, scaleY: 0.9 });
+      gsap.set(archery,  { opacity: 0, scale: 0.85 });  // keeps layout's rotation
+      gsap.set(heartGlow,{ opacity: 0, scale: 1 });
+      gsap.set(arrow,    { opacity: 1 });
+
+      introTl = gsap.timeline({ onComplete: startHeartPulse });
+      introTl
+        .to(target,    { opacity: 1, y: 0, scaleX: 1, scaleY: 1, duration: 0.8, ease: 'power3.out' }, 0.10)
+        .to(heartGlow, { opacity: 0.7,                           duration: 0.8, ease: 'power2.out' }, 0.20)
+        .to(archery,   { opacity: 1, scale: 1,                   duration: 0.8, ease: 'power3.out' }, 0.28)
+        .to(eyebrow,   { opacity: 1, y: 0,                       duration: 0.7, ease: 'power3.out' }, 0.40)
+        .to(hint,      { opacity: 1, y: 0,                       duration: 0.7, ease: 'power3.out' }, 0.70);
+    }
+
+    /* -------------------------------------------------------------------------
+     * 4.5  IMPACT BURST — 8 hearts + 4 white sparks, injected into the hero
+     * ---------------------------------------------------------------------- */
+
+    function impactBurst() {
+      var tgtR = target.getBoundingClientRect();
+      var heroR = hero.getBoundingClientRect();
+      var cx = tgtR.left - heroR.left + tgtR.width / 2;
+      var cy = tgtR.top - heroR.top + tgtR.height * BURST_ORIGIN_Y_FRAC;
+
+      var frag = document.createDocumentFragment();
+      var parts = [];
+
+      for (var i = 0; i < BURST_COUNT; i++) {
+        var isHeart = i < BURST_HEART_COUNT;
+        var el = document.createElement('span');
+        el.className = CLS_BURST;
+        var size = isHeart
+          ? rand(BURST_HEART_SIZE_MIN, BURST_HEART_SIZE_MAX)
+          : rand(BURST_SPARK_SIZE_MIN, BURST_SPARK_SIZE_MAX);
+
+        el.style.cssText =
+          'position:absolute;left:' + cx + 'px;top:' + cy + 'px;' +
+          'width:' + size + 'px;height:' + size + 'px;' +
+          'margin:' + (-size / 2) + 'px 0 0 ' + (-size / 2) + 'px;' +
+          'pointer-events:none;z-index:4;';
+
+        if (isHeart) {
+          el.innerHTML = heartSvg(pick(BURST_COLORS));
+        } else {
+          el.style.borderRadius = '50%';
+          el.style.background = 'radial-gradient(circle,#fff,rgba(255,210,150,0) 70%)';
+        }
+
+        frag.appendChild(el);
+        parts.push({ el: el, heart: isHeart });
+      }
+
+      hero.appendChild(frag);
+
+      parts.forEach(function (p) {
+        // angle in [-PI, 0] => the upper half-circle only; everything sprays up.
+        var angle = rand(-Math.PI, 0);
+        var dist = p.heart
+          ? rand(BURST_HEART_DIST_MIN, BURST_HEART_DIST_MAX)
+          : rand(BURST_SPARK_DIST_MIN, BURST_SPARK_DIST_MAX);
+
+        gsap.to(p.el, {
+          x: Math.cos(angle) * dist,
+          y: Math.sin(angle) * dist - rand(BURST_LIFT_MIN, BURST_LIFT_MAX),
+          rotation: rand(-BURST_SPIN, BURST_SPIN),
+          scale: p.heart ? rand(0.7, 1.2) : rand(0.4, 1),
+          duration: rand(0.7, 1.15),
+          ease: 'power2.out'
+        });
+        gsap.to(p.el, {
+          opacity: 0,
+          duration: 0.5,
+          delay: rand(0.35, 0.6),
+          ease: 'power1.in',
+          onComplete: function () { p.el.remove(); }
+        });
+      });
+    }
+
+    /* -------------------------------------------------------------------------
+     * 4.6  THE FIRE TIMELINE
+     *
+     * Absolute positions in seconds from release. Total duration = 4.00s
+     * (last beat starts at 3.42 and runs 0.58).
+     * ---------------------------------------------------------------------- */
+
+    function buildFireTimeline(m) {
+      var tl = gsap.timeline({
+        paused: true,
+        onComplete: function () {
+          gsap.set(field, { autoAlpha: 0 });
+          finished = true;
+          canAdvance = true;
+
+          // HAND-OFF. In the original this was treeEngine.start() — the canvas
+          // module that renders the next scene (the wish tree) and adds the
+          // 'is-in' class to #om-bday-tree-wish / #om-bday-tree-tap. Then the
+          // bloom faded out over 1.15s and a scene auto-advance was queued
+          // 8200ms later.
+          if (typeof opts.onComplete === 'function') opts.onComplete();
+          gsap.to(bloom, { autoAlpha: 0, duration: 1.15, ease: 'power2.out' });
+          if (typeof opts.onAdvanceRequest === 'function') {
+            opts.onAdvanceRequest(ADVANCE_AFTER_FILM_MS);
+          }
+        }
+      });
+
+      /* ---- t = 0 : hard reset of every layer the film touches ------------- */
+      tl.set(target, { y: 0, scaleX: 1, scaleY: 1, opacity: 1 })
+        .set(arrow,  { opacity: 1, x: arrowRestX, y: m.arrowStartY, scaleY: 1 })
+        .set([flood, bloom], { autoAlpha: 0, scale: 0.001, x: 0, y: 0 })
+        .set(flood,  { x: m.fx, y: m.fy })          // move flood to the landing spot
+        .set(field,  { autoAlpha: 0 })
+        .set(blobs,  { opacity: 0 })
+        .set(camera, { scale: 1, yPercent: 0 })
+        .set(fgrid,  { xPercent: 0, yPercent: 0 })
+        .set(barTop, { yPercent: -BAR_OFFSCREEN_PCT })
+        .set(barBot, { yPercent:  BAR_OFFSCREEN_PCT })
+        .set(keyebrow, { opacity: 0, y: 12 })
+        .set(ksub,     { opacity: 0, y: 12 })
+        .set(allChars, {
+          transformPerspective: CHAR_PERSPECTIVE,
+          transformOrigin: '50% 100%',
+          yPercent: CHAR_START_YPCT,
+          rotationX: CHAR_START_ROTX
+        })
+        .set(ulinePath, { drawn: 0 });
+
+      /* ---- 0.00 RELEASE --------------------------------------------------- */
+      tl.fromTo(nock,
+          { val: m.drawnNock },
+          { val: NOCK_REST_Y, duration: 0.5, ease: 'elastic.out(1,0.34)', onUpdate: applyNock },
+          0)
+        .to(arrow, { y: m.arrowFlyY, duration: ARROW_FLIGHT_DUR, ease: 'power2.in' }, 0)
+        .to(arrow, { scaleY: 1.16, duration: 0.14, ease: 'power2.in' }, 0)      // stretch
+        .to(arrow, { scaleY: 1,    duration: 0.10, ease: 'power1.out' }, 0.16)  // recover
+        .to(aim,   { opacity: 0, duration: 0.18 }, 0)
+        .to([eyebrow, hint], { opacity: 0, duration: 0.2, ease: 'power1.out' }, 0);
+
+      /* ---- 0.26 IMPACT ---------------------------------------------------- */
+      tl.add(function () {
+          // Original called startBgm() here — the music comes in ON the hit.
+          if (typeof opts.onImpact === 'function') opts.onImpact();
+        }, 0.26)
+        .add(impactBurst, 0.26)
+        .to(target, { x: 7, y: -9, duration: 0.06, ease: 'power2.out' }, 0.26)  // knock
+        .to(target, { x: 0, y: 0,  duration: 0.32, ease: 'power2.out' }, 0.32)
+        .to(target, { scale: 1.14, duration: 0.06, ease: 'power2.out' }, 0.26)  // flinch
+        .to(target, { scale: 1,    duration: 0.26, ease: 'power2.inOut' }, 0.32)
+
+      /* ---- 0.27 QUIVER (the arrow shaft vibrating in the heart) ----------- */
+        .to(arrow, {
+          rotation: '+=4', duration: 0.05, yoyo: true, repeat: 4, ease: 'sine.inOut'
+        }, 0.27)                                    // 0.05 * 5 legs = ends at 0.52
+        .set(arrow, { rotation: 0 }, 0.52)
+        .to(arrow, { opacity: 0, duration: 0.16, ease: 'power1.out' }, 0.56);
+
+      /* ---- 0.64 FALL / 0.98 SQUASH / 1.00 FLOOD --------------------------- */
+      tl.to(target, {
+          y: m.fallPx, scaleX: 0.84, scaleY: 1.3, duration: 0.34, ease: 'power1.in'
+        }, 0.64)                                    // stretches as it drops, lands 0.98
+        .to(target, {
+          scaleX: 1.4, scaleY: 0.6, duration: 0.07, ease: 'power2.out'
+        }, 0.98)                                    // pancake on contact
+        .set(flood, { autoAlpha: 1 }, 1.00)
+        .fromTo(flood,
+          { scale: FLOOD_START_SCALE },
+          { scale: m.floodScale, duration: 0.34, ease: 'power2.in' },
+          1.00)
+        .to(target, { opacity: 0, duration: 0.12, ease: 'power1.out' }, 1.06);
+
+      /* ---- 1.32 CROSS-FADE hero -> magenta field -------------------------- */
+      tl.set(field, { autoAlpha: 1 }, 1.32)
+        .set(hero,  { autoAlpha: 0 }, 1.33)
+        .to(blobs,  { opacity: 1, duration: 0.6, ease: 'power2.out' }, 1.34)
+        .set(flood, { autoAlpha: 0 }, 1.36);        // flood retired behind the field
+
+      /* ---- 1.38 CAMERA (a slow 2.6s push that runs under everything) ------ */
+      tl.fromTo(camera,
+          { scale: 1, yPercent: 0 },
+          { scale: 1.07, yPercent: -1.3, duration: 2.6, ease: 'none' },
+          1.38)
+        .fromTo(fgrid,
+          { xPercent: 0, yPercent: 0 },
+          { xPercent: -1.5, yPercent: -1, duration: 2.6, ease: 'none' },
+          1.38);                                    // grid drifts at a different rate
+                                                    // => parallax
+
+      /* ---- 1.50 LETTERBOX BARS IN ---------------------------------------- */
+      tl.to(barTop, { yPercent: 0, duration: 0.6, ease: 'power2.out' }, 1.50)
+        .to(barBot, { yPercent: 0, duration: 0.6, ease: 'power2.out' }, 1.50);
+
+      /* ---- 1.54 -> 2.74 TITLE CARD --------------------------------------- */
+      tl.to(keyebrow, { opacity: 1, y: 0, duration: 0.45, ease: 'power3.out' }, 1.54)
+        .to(chars1, {                                // "Happy"
+          yPercent: 0, rotationX: 0, duration: 0.55, ease: 'power3.out', stagger: CHAR_STAGGER
+        }, 1.68)
+        .to(chars2, {                                // "Birthday"
+          yPercent: 0, rotationX: 0, duration: 0.55, ease: 'power3.out', stagger: CHAR_STAGGER
+        }, 2.06)
+        .to(ulinePath, { drawn: 1, duration: 0.45, ease: 'power2.inOut' }, 2.54)
+        .to(ksub, { opacity: 1, y: 0, duration: 0.45, ease: 'power3.out' }, 2.74);
+
+      /* ---- 3.32 BARS OUT / 3.42 WHITE BLOOM WIPE (end of film) ------------ */
+      tl.to(barTop, { yPercent: -BAR_OFFSCREEN_PCT, duration: 0.5, ease: 'power2.in' }, 3.32)
+        .to(barBot, { yPercent:  BAR_OFFSCREEN_PCT, duration: 0.5, ease: 'power2.in' }, 3.32)
+        .set(bloom, { autoAlpha: 1 }, 3.42)
+        .fromTo(bloom,
+          { scale: BLOOM_START_SCALE },
+          { scale: m.bloomScale, duration: 0.58, ease: 'power2.in' },
+          3.42);                                    // ends at 4.00
+
+      return tl;
+    }
+
+    /* -------------------------------------------------------------------------
+     * 4.7  DRAG MECHANIC
+     * ---------------------------------------------------------------------- */
+
+    var pointerStartX = 0, pointerStartY = 0, drawAtPointerStart = 0;
+
+    function bindPointer() {
+      onPointerDown = function (e) {
+        if (fired) return;
+        dragging = true;
+        try { archery.setPointerCapture(e.pointerId); } catch (err) { /* older Safari */ }
+        pointerStartX = e.clientX;
+        pointerStartY = e.clientY;
+        drawAtPointerStart = draw;   // resume from wherever the string already is
+        e.preventDefault();
+      };
+
+      onPointerMove = function (e) {
+        if (!dragging) return;
+        // Project the pointer delta onto the unit draw axis (dot product).
+        // Movement perpendicular to the shaft contributes nothing.
+        var projected = (e.clientX - pointerStartX) * axisX +
+                        (e.clientY - pointerStartY) * axisY;
+        setDraw(drawAtPointerStart + projected);   // setDraw clamps to [0, maxDraw]
+      };
+
+      onPointerEnd = function () {
+        if (!dragging) return;
+        dragging = false;
+        // Release threshold: a shallow tug snaps back instead of firing.
+        if (draw > maxDraw * RELEASE_THRESHOLD) fire();
+        else snapBack();
+      };
+
+      onKeyDown = function (e) {
+        if (fired) return;
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          autoDraw();   // keyboard users get the scripted pull-and-fire
+        }
+      };
+
+      // NOTE: only ONE element listens — #om-bday-film-archery (the bow). Pointer
+      // Events only; there is no separate touch* path. This works on touch solely
+      // because the CSS gives .om-bday-film-archery `touch-action:none`.
+      archery.addEventListener('pointerdown', onPointerDown);
+      archery.addEventListener('pointermove', onPointerMove);
+      archery.addEventListener('pointerup', onPointerEnd);
+      archery.addEventListener('pointercancel', onPointerEnd);
+      archery.addEventListener('keydown', onKeyDown);
+    }
+
+    /** Under-threshold release: elastic snap back to rest. */
+    function snapBack() {
+      gsap.to({ d: draw }, {
+        d: 0,
+        duration: SNAPBACK_DUR,
+        ease: 'elastic.out(1,0.4)',
+        onUpdate: function () { setDraw(this.targets()[0].d); }
+      });
+    }
+
+    /** Scripted pull used by the idle demo and by keyboard activation. */
+    function autoDraw() {
+      if (fired) return;
+      gsap.to({ d: draw }, {
+        d: maxDraw * AUTO_DRAW_FRAC,
+        duration: AUTO_DRAW_DUR,
+        ease: 'power2.inOut',
+        onUpdate: function () { setDraw(this.targets()[0].d); },
+        onComplete: function () { gsap.delayedCall(AUTO_DRAW_FIRE_DELAY, fire); }
+      });
+    }
+
+    function clearIdleTimer() {
+      if (idleTimer) { clearTimeout(idleTimer); idleTimer = 0; }
+    }
+
+    /** If the user does nothing for 6.5s, the bow fires itself. */
+    function scheduleIdleDemo() {
+      clearIdleTimer();
+      idleTimer = setTimeout(function () {
+        idleTimer = 0;
+        if (fired) return;
+        if (dragging) { scheduleIdleDemo(); return; }  // mid-drag: wait another 6.5s
+        autoDraw();
+      }, IDLE_DEMO_MS);
+    }
+
+    function fire() {
+      if (fired) return;
+      fired = true;
+      dragging = false;
+      clearIdleTimer();
+      stopHeartPulse();
+      fireTl = buildFireTimeline(measure());
+      fireTl.play(0);
+    }
+
+    /* -------------------------------------------------------------------------
+     * 4.8  RESIZE — rebuild the timeline and re-seek to the same instant
+     * ---------------------------------------------------------------------- */
+
+    function handleResize() {
+      if (!started || !enabled || !gsap || finished) return;
+
+      if (fired && fireTl) {
+        var t = fireTl.time();
+        var wasActive = fireTl.isActive();
+        // The original did NOT kill the old timeline here — a leak that let a
+        // second copy keep running and fire onComplete twice. Killed first.
+        fireTl.kill();
+        fireTl = buildFireTimeline(measure());
+        fireTl.pause(t);
+        if (wasActive) fireTl.play(t);
+      } else {
+        layout();
+        setDraw(0);
+      }
+    }
+
+    /* -------------------------------------------------------------------------
+     * 4.9  RESET
+     * ---------------------------------------------------------------------- */
+
+    function resetFilm() {
+      if (fireTl) { fireTl.kill(); fireTl = null; }
+      if (introTl) { introTl.kill(); introTl = null; }
+      stopHeartPulse();
+
+      fired = false;
+      dragging = false;
+      finished = false;
+      canAdvance = false;
+      clearIdleTimer();
+
+      if (motesWrap) {
+        gsap.killTweensOf(motesWrap.querySelectorAll('.' + CLS_MOTE));
+        motesWrap.innerHTML = '';
+      }
+
+      var bursts = hero.querySelectorAll('.' + CLS_BURST);
+      for (var i = 0; i < bursts.length; i++) bursts[i].remove();
+
+      gsap.set([flood, bloom], { autoAlpha: 0, scale: 0.001 });
+      gsap.set(field, { autoAlpha: 0 });
+      gsap.set(hero,  { autoAlpha: 1 });
+      gsap.set(arrow, { opacity: 1, scaleY: 1, rotation: 0 });
+      gsap.set(target, { opacity: 1, x: 0, y: 0, scale: 1, scaleX: 1, scaleY: 1 });
+    }
+
+    /* -------------------------------------------------------------------------
+     * 4.10  PUBLIC API
+     * ---------------------------------------------------------------------- */
+
+    function start() {
+      if (!resolveRefs()) return false;
+      started = true;
+      gsap = window.gsap || null;
+
+      // No GSAP at all: the caller must fall back.
+      if (!gsap) {
+        started = false;
+        return false;
+      }
+
+      if (prefersReducedMotion()) {
+        // Reduced-motion path: skip the whole film, hand off immediately.
+        // (The CSS also display:none's .om-bday-film-hero/-field/-flood/-bloom
+        //  under prefers-reduced-motion, so nothing is left on screen.)
+        enabled = false;
+        fired = true;
+        finished = true;
+        canAdvance = true;
+        if (hero) hero.style.display = 'none';
+        if (typeof opts.onComplete === 'function') opts.onComplete();
+        if (typeof opts.onImpact === 'function') opts.onImpact();  // was startBgm()
+        if (typeof opts.onAdvanceRequest === 'function') {
+          opts.onAdvanceRequest(ADVANCE_REDUCED_MS);
+        }
+        return true;
+      }
+
+      enabled = true;
+      if (hero) hero.style.display = '';
+      resetFilm();
+      buildMotes();
+      playIntro();
+      scheduleIdleDemo();
+      return true;
+    }
+
+    function stop() {
+      started = false;
+      enabled = false;
+      clearIdleTimer();
+      if (fireTl) { fireTl.kill(); fireTl = null; }
+      if (introTl) { introTl.kill(); introTl = null; }
+      if (pulseTl) { pulseTl.kill(); pulseTl = null; }
+      fired = false;
+      dragging = false;
+      finished = false;
+      canAdvance = false;
+    }
+
+    /**
+     * TESTING ADDITION (not in the original).
+     * Scrub the film to an absolute time in seconds from release.
+     * Building the timeline necessarily arms the film, so this puts the engine
+     * into the "fired" state: the idle demo and the drag stop responding.
+     */
+    function seek(t) {
+      if (!resolveRefs()) return false;
+      gsap = window.gsap || null;
+      if (!gsap) return false;
+      if (!fireTl) {
+        if (!fired) { layout(); setDraw(0); }
+        clearIdleTimer();
+        stopHeartPulse();
+        fired = true;
+        fireTl = buildFireTimeline(measure());
+        // Prime it. A brand-new paused timeline has never rendered, so pausing it
+        // straight at 0 leaves the position-0 .set() calls unapplied (GSAP only
+        // crosses a zero-duration tween when the playhead MOVES over it). Step a
+        // hair forward once so every reset .set() lands, then scrub freely.
+        fireTl.pause(0.001);
+      }
+      // Floor at 1ms, not 0. Landing the playhead on exactly 0 makes GSAP
+      // UN-apply the zero-duration .set() calls that sit at position 0, which
+      // leaves the reset state half-applied. 1ms of a 4000ms film is invisible.
+      fireTl.pause(clamp(t, 0.001, fireTl.duration()));
+      return true;
+    }
+
+    /**
+     * TESTING ADDITION. Total film length in seconds from release.
+     * Returns the live timeline's duration once one exists; otherwise the
+     * constant, which is fully determined by the fixed beat positions
+     * (last beat starts at 3.42, runs 0.58) and does not depend on measurement.
+     */
+    function duration() {
+      return fireTl ? fireTl.duration() : FILM_DURATION;
+    }
+
+    function destroy() {
+      stop();
+      if (archery) {
+        archery.removeEventListener('pointerdown', onPointerDown);
+        archery.removeEventListener('pointermove', onPointerMove);
+        archery.removeEventListener('pointerup', onPointerEnd);
+        archery.removeEventListener('pointercancel', onPointerEnd);
+        archery.removeEventListener('keydown', onKeyDown);
+      }
+      if (onResize) window.removeEventListener('resize', onResize);
+      if (gsap && motesWrap) {
+        gsap.killTweensOf(motesWrap.querySelectorAll('.' + CLS_MOTE));
+        motesWrap.innerHTML = '';
+      }
+      wired = false;
+    }
+
+    return {
+      start: start,
+      stop: stop,
+      seek: seek,
+      destroy: destroy,
+      duration: duration,
+      /** Original public surface: true once the film has finished and the host
+       *  may let a tap advance to the next scene. */
+      canAdvance: function () { return canAdvance; },
+      /** Escape hatch for testing — the raw GSAP timeline, or null. */
+      timeline: function () { return fireTl; }
+    };
+  }
+
+  return createCupidFilm;
+}());
+
+/* =============================================================================
+ * TODO(GUESS) — everything below is NOT recoverable from the sources given.
+ * All values above this line are verbatim from film-opening-deob.js.
+ *
+ * 1. opts.onImpact / opts.onAdvanceRequest names.
+ *    The original called two module-scope functions that live outside the film:
+ *      - at t=0.26 : startBgm()      (app.deobfuscated.js _0xb6e14 — plays the
+ *                                     looping mp3 at ourmoments.live/.../blue-
+ *                                     instrumental_128k-1.mp3)
+ *      - at onComplete: treeEngine.start()  (app.deobfuscated.js _0x1f7a0b — the
+ *                                     requestAnimationFrame canvas module for the
+ *                                     next scene) and then sceneTimeout(advance,
+ *                                     8200).
+ *    I surfaced these as callbacks. The hook NAMES are mine; the call SITES,
+ *    ordering and the 8200/4200/9000 ms values are verbatim.
+ *
+ * 2. No class is set on any element at hand-off. The original's only DOM signal
+ *    was the tree module ADDING 'is-in' to #om-bday-tree-wish / #om-bday-tree-tap
+ *    (and the film REMOVING it on reset, via _0x4cd386). I dropped that removal
+ *    because it reaches outside `root` into the next scene's DOM — do it in the
+ *    host if you need it.
+ *
+ * 3. `scene` === `root`. In the original these were two different lookups
+ *    (#om-bday-scene-tree for the coordinate space, #om-bday-film-hero for the
+ *    stage) and #om-bday-scene-tree was located globally. Collapsing the
+ *    coordinate space onto `root` is correct ONLY if you pass #om-bday-scene-tree
+ *    (or an element with the same box). Passing the hero itself would work too,
+ *    since CSS gives it `position:absolute;inset:0` inside the scene — but then
+ *    the flood/field/bloom siblings would not be found by the `q()` lookups.
+ *
+ * 4. handleResize now kills the previous timeline before rebuilding. The
+ *    original did not (see the comment at that site). This is a deliberate,
+ *    behaviour-changing correction, not a transcription.
+ *
+ * 5. blobs are scoped to `root`; the original used a bare '.om-bday-film-blob'
+ *    global selector string passed straight to gsap.
+ *
+ * 6. splitChars uses Array.from instead of Array.prototype.slice.call — the
+ *    requested surrogate-pair fix. See the comment on the function.
+ *
+ * 7. The reduced-motion branch's callback ORDER is mine. The original ran, in
+ *    order: hero.style.display='none'; resetTreeText(); treeEngine.start();
+ *    startBgm(); sceneTimeout(advance, reducedMotion?4200:9000). I fire
+ *    onComplete before onImpact to match "hand-off first, audio second".
+ *
+ * 8. The original's reduced-motion branch used the SAME code path for "no gsap"
+ *    (falling back to 9000ms). Here start() returns false with no gsap, per the
+ *    brief, so ADVANCE_NO_GSAP_MS (9000) is recorded above but never used.
+ * ========================================================================== */
+
+/* ===== end film engine ===== */
+
   let bmTree = null;
+  let bmFilm = null;
+
   function startTree(){
     const cv = document.getElementById('treeCanvas');
     if(!cv || typeof createBlossomTree !== 'function') return;
@@ -1652,6 +3233,45 @@ function createBlossomTree(canvas, opts) {
       });
     }
     bmTree.start();
+  }
+
+  // The film is an enhancement over the tree, never a gate in front of it:
+  // if GSAP fails to load or motion is reduced, the tree simply starts and
+  // the scene still works. The reference is built the same way.
+  function startTreeScene(){
+    const wrap = document.getElementById('treeWrap');
+    const hero = document.getElementById('om-bday-film-hero');
+    const canPlayFilm = !!window.gsap && !fxReduced() && typeof createCupidFilm === 'function' && hero;
+
+    if(!canPlayFilm){
+      if(hero) hero.style.display = 'none';
+      startTree();
+      return;
+    }
+
+    if(wrap) wrap.classList.add('film-playing');
+    try {
+      bmFilm = createCupidFilm(wrap, {
+        onComplete: function(){
+          if(wrap) wrap.classList.remove('film-playing');
+          startTree();
+        }
+      });
+      if(bmFilm.start() === false) throw new Error('film declined to start');
+    } catch(e){
+      // Any failure degrades to a working card rather than a dead screen.
+      if(wrap) wrap.classList.remove('film-playing');
+      if(hero) hero.style.display = 'none';
+      bmFilm = null;
+      startTree();
+    }
+  }
+
+  // Ignore taps while the film is still running, otherwise the first drag on
+  // the bowstring would skip the whole scene.
+  function treeSceneTap(){
+    if(bmFilm && bmFilm.canAdvance && !bmFilm.canAdvance()) return;
+    toStep('title');
   }
 
   // Scene-scoped timers, flushed on every transition so a finale that is left
@@ -1674,8 +3294,11 @@ function createBlossomTree(canvas, opts) {
         try { navigator.vibrate && navigator.vibrate([16, 60, 24]); } catch(e){}
       }, 500));
     }
-    if(n === 'tree') startTree();
-    else if(bmTree) bmTree.stop();
+    if(n === 'tree') startTreeScene();
+    else {
+      if(bmTree) bmTree.stop();
+      if(bmFilm && bmFilm.stop) bmFilm.stop();
+    }
     if(n === 'balloons') renderPopBalloons();
     if(n === 'photos') renderPhotos();
     if(n === 'closing') confettiBurst();
