@@ -74,7 +74,21 @@ if ( ! defined( 'ABSPATH' ) ) {
   .grid3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:6px; }
   .cake-card{ border:1.5px solid #f6e6d0; border-radius:16px; padding:16px 6px; text-align:center; cursor:pointer; background:#fffaf3; transition:transform .25s var(--spring), border-color .2s ease, background .2s ease, box-shadow .2s ease; }
   .cake-icon{ width:48px; height:46px; margin:0 auto 8px; position:relative; }
-  .cake-icon .flame{ width:6px; height:9px; border-radius:50% 50% 50% 0; background:#ffb238; margin:0 auto; transform:rotate(45deg); box-shadow:0 0 6px rgba(255,178,56,.7); }
+  /* Five layers on a 7px flame: outer body, inner core, and a glow, each on a
+     near-coprime period (.15s / .2s / 1s / .8s / 1.5s). Because none of those
+     divide into each other they never realign, so the flame never visibly
+     loops — that irregularity is the whole effect. Durations are the
+     reference's exactly; the sizes are scaled to our 48px cake icon.
+     Layers are position:absolute so the width/height flicker cannot reflow
+     the cake beneath them. */
+  .cake-icon .flame{ position:relative; width:7px; height:11px; margin:0 auto; border-radius:50% 50% 50% 50%/62% 62% 38% 38%; background:radial-gradient(circle at 50% 32%,#fffbe8 0,#ffd98a 34%,#ffb74d 62%,#ff7a30 100%); box-shadow:0 0 8px 2px rgba(255,183,77,.5), 0 0 20px 6px rgba(255,183,77,.2); transform-origin:50% 100%; animation:flameFlicker .15s infinite alternate, flameSway 1s ease-in-out infinite alternate; }
+  .cake-icon .flame::before{ content:''; position:absolute; left:50%; bottom:1px; width:3.5px; height:6px; border-radius:50% 50% 50% 50%/62% 62% 38% 38%; background:radial-gradient(circle at 50% 40%,#fffdf4 0,#ffe9b0 60%,#ffc46b 100%); transform-origin:50% 100%; animation:flameFlickerInner .2s infinite alternate, flameSwayInner .8s ease-in-out infinite alternate-reverse; }
+  .cake-icon .flame::after{ content:''; position:absolute; left:50%; top:45%; width:22px; height:22px; margin:-11px 0 0 -11px; border-radius:50%; background:radial-gradient(circle,rgba(255,183,77,.45) 0,transparent 70%); pointer-events:none; animation:flameGlow 1.5s ease-in-out infinite alternate; }
+  @keyframes flameFlicker{ 0%{ height:11px; width:7px; opacity:1; } 100%{ height:10px; width:6.3px; opacity:.92; } }
+  @keyframes flameFlickerInner{ 0%{ height:6px; opacity:.95; } 100%{ height:5px; opacity:.8; } }
+  @keyframes flameSway{ 0%{ transform:rotate(-2deg); } 100%{ transform:rotate(2deg); } }
+  @keyframes flameSwayInner{ 0%{ transform:translateX(-50%) rotate(3deg); } 100%{ transform:translateX(-50%) rotate(-3deg); } }
+  @keyframes flameGlow{ 0%{ opacity:.5; transform:scale(.9); } 100%{ opacity:1; transform:scale(1.15); } }
   .cake-icon .candle{ width:3px; height:11px; background:#fff8e0; margin:1px auto 0; }
   .cake-icon .tier-top{ width:26px; height:14px; border-radius:6px 6px 2px 2px; margin:0 auto; position:relative; }
   .cake-icon .tier-top::after{ content:''; position:absolute; inset:0 0 auto 0; height:4px; background:rgba(255,255,255,.55); border-radius:6px 6px 0 0; }
@@ -187,6 +201,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     .reason-card{ animation:none; }
     .reason-card::before{ animation:none; opacity:0; }
     .night-btn::after, .primary-btn::after{ animation:none; opacity:0; }
+    .cake-icon .flame, .cake-icon .flame::before, .cake-icon .flame::after{ animation:none; }
     .photo-carousel-item, .photo-carousel-item img,
     .envelope-wrap .tap, .envelope, .spool{ animation:none; }
   }
