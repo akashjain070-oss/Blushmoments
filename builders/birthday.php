@@ -49,7 +49,10 @@ if ( ! defined( 'ABSPATH' ) ) {
   @keyframes float{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-6px); } }
   .wordmark{ position:relative; z-index:4; text-align:center; padding:14px 0 0; }
   .wordmark img{ height:46px; width:auto; }
-  .stage{ max-width:420px; margin:0 auto; min-height:100vh; position:relative; padding-bottom:40px; }
+  .stage{ max-width:420px; margin:0 auto; min-height:100vh; position:relative; padding-bottom:40px; display:flex; flex-direction:column; }
+  /* Steps are stacked absolutely, so they need a containing block that starts
+     BELOW the wordmark and progress bar rather than on top of them. */
+  .step-stack{ position:relative; flex:1 1 auto; }
   .progress{ display:flex; align-items:center; gap:6px; padding:18px 20px 6px; font-size:.72rem; font-weight:700; color:var(--gold-deep); letter-spacing:.3px; }
   .progress .balloons{ display:flex; gap:3px; margin-right:8px; }
   .progress .balloons span{ font-size:.85rem; opacity:.25; }
@@ -264,8 +267,15 @@ if ( ! defined( 'ABSPATH' ) ) {
   .wa-btn{ background:#25d366; color:#fff; }
   .copy-btn{ background:var(--peach-soft); color:var(--gold-deep); }
   .prev-btn{ background:none; border:1.5px solid var(--gold-deep) !important; color:var(--gold-deep); }
-  .step{ display:none; }
-  .step.active{ display:block; animation:stepIn .5s cubic-bezier(.2,.82,.3,1) both; }
+  /* Scenes are stacked and cross-faded rather than display-toggled — a
+     display swap has no frame where both scenes exist, which is what made
+     transitions read as a slideshow. Out is fast and undelayed; in is slower
+     and delayed, so the outgoing scene has cleared before the new one commits. */
+  .step{ position:absolute; inset:0; overflow-y:auto; -webkit-overflow-scrolling:touch; opacity:0; pointer-events:none; transform:translateY(14px); transition:opacity .28s ease; }
+  .step.active{ opacity:1; pointer-events:auto; transform:translateY(0); transition:opacity .5s ease .16s, transform .55s cubic-bezier(.2,.7,.3,1) .06s; }
+  /* Every scene now stays in the render tree, so idle scenes would otherwise
+     keep burning GPU on their own loops (ken burns, balloon bob, sway). */
+  .step:not(.active) *{ animation-play-state:paused; }
   /* z-index 40 deliberately: below .sound-toggle (45) and below the paywall
      .overlay (50), so a firework never paints over the payment modal. */
   #bmFx{ position:fixed; inset:0; width:100%; height:100%; pointer-events:none; z-index:40; }
@@ -296,6 +306,8 @@ if ( ! defined( 'ABSPATH' ) ) {
     <div class="balloons" id="progressBalloons"></div>
     <span id="progressLabel">Step 1 of 5</span>
   </div>
+
+  <div class="step-stack">
 
   <div class="step active" data-step="1">
     <div class="card">
@@ -475,6 +487,8 @@ if ( ! defined( 'ABSPATH' ) ) {
       </div>
       <div class="link-note">📅 Your link and its photos stay live for 90 days</div>
     </div>
+  </div>
+
   </div>
 
 </div>
@@ -990,7 +1004,10 @@ if ( ! defined( 'ABSPATH' ) ) {
   const sceneTimers = [];
 
   let advancing = false;
-  function toStep(n){
+  function toStep(n, force){
+    if(advancing && !force) return;
+    advancing = true;
+    setTimeout(() => { advancing = false; }, 450);
     sceneTimers.forEach(t => { clearTimeout(t); clearInterval(t); });
     sceneTimers.length = 0;
     document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));

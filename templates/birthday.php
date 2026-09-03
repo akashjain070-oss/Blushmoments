@@ -222,8 +222,15 @@ $cake_label = $cake_labels[ $cake_key ] ?? 'Strawberry Blush';
     .bg-balloon{ animation-duration:26s; }
     .photo-carousel-item{ animation:none; }
   }
-  .step{ display:none; }
-  .step.active{ display:block; animation:stepIn .5s cubic-bezier(.2,.82,.3,1) both; }
+  /* Scenes are stacked and cross-faded rather than display-toggled — a
+     display swap has no frame where both scenes exist, which is what made
+     transitions read as a slideshow. Out is fast and undelayed; in is slower
+     and delayed, so the outgoing scene has cleared before the new one commits. */
+  .step{ position:absolute; inset:0; overflow-y:auto; -webkit-overflow-scrolling:touch; opacity:0; pointer-events:none; transform:translateY(14px); transition:opacity .28s ease; }
+  .step.active{ opacity:1; pointer-events:auto; transform:translateY(0); transition:opacity .5s ease .16s, transform .55s cubic-bezier(.2,.7,.3,1) .06s; }
+  /* Every scene now stays in the render tree, so idle scenes would otherwise
+     keep burning GPU on their own loops (ken burns, balloon bob, sway). */
+  .step:not(.active) *{ animation-play-state:paused; }
   /* z-index 40 deliberately: below .sound-toggle (45), so a firework never paints
      over the mute button. Do NOT copy the reference's 9000. */
   #bmFx{ position:fixed; inset:0; width:100%; height:100%; pointer-events:none; z-index:40; }
@@ -529,7 +536,10 @@ $cake_label = $cake_labels[ $cake_key ] ?? 'Strawberry Blush';
   const sceneTimers = [];
 
   let advancing = false;
-  function toStep(n){
+  function toStep(n, force){
+    if(advancing && !force) return;
+    advancing = true;
+    setTimeout(() => { advancing = false; }, 450);
     sceneTimers.forEach(t => { clearTimeout(t); clearInterval(t); });
     sceneTimers.length = 0;
     document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
