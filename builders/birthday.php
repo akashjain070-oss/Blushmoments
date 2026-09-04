@@ -1102,12 +1102,16 @@ if ( is_readable( $bm_gsap_path ) ) {
     const rate = audioCtx.sampleRate;
     const len = Math.max(1, Math.floor(seconds * rate));
     const buf = audioCtx.createBuffer(2, len, rate);
+    // This runs inside the gift-open tap, where a stall is visible, and the
+    // envelope is the expensive half — compute it once and share both channels.
+    const env = new Float32Array(len);
+    for(let i = 0; i < len; i++) env[i] = Math.pow(1 - i / len, decay);
     for(let c = 0; c < 2; c++){
       const d = buf.getChannelData(c);
+      const seed = c ? 12.9898 : 78.233;
       for(let i = 0; i < len; i++){
-        let n = Math.sin(i * (c ? 12.9898 : 78.233)) * 43758.5453;
-        n = (n - Math.floor(n)) * 2 - 1;
-        d[i] = n * Math.pow(1 - i / len, decay);
+        const n = Math.sin(i * seed) * 43758.5453;
+        d[i] = ((n - Math.floor(n)) * 2 - 1) * env[i];
       }
     }
     return buf;
@@ -1115,38 +1119,40 @@ if ( is_readable( $bm_gsap_path ) ) {
 
   function ensureBus(){
     if(bus || !audioCtx) return bus;
-    const master = audioCtx.createGain();
-    master.gain.value = soundOn ? 1 : 0;
+    try {
+      const master = audioCtx.createGain();
+      master.gain.value = soundOn ? 1 : 0;
 
-    const comp = audioCtx.createDynamicsCompressor();
-    comp.threshold.value = -18;
-    comp.knee.value = 24;
-    comp.ratio.value = 3;
-    comp.attack.value = 0.006;
-    comp.release.value = 0.25;
+      const comp = audioCtx.createDynamicsCompressor();
+      comp.threshold.value = -18;
+      comp.knee.value = 24;
+      comp.ratio.value = 3;
+      comp.attack.value = 0.006;
+      comp.release.value = 0.25;
 
-    const dry = audioCtx.createGain();
-    const music = audioCtx.createGain();
-    music.gain.value = MUSIC_VOLUME;
-    const sfx = audioCtx.createGain();
-    sfx.gain.value = 0.9;
+      const dry = audioCtx.createGain();
+      const music = audioCtx.createGain();
+      music.gain.value = MUSIC_VOLUME;
+      const sfx = audioCtx.createGain();
+      sfx.gain.value = 0.9;
 
-    const conv = audioCtx.createConvolver();
-    conv.buffer = makeImpulse(1.7, 2.6);
-    const wetLP = audioCtx.createBiquadFilter();
-    wetLP.type = 'lowpass';
-    wetLP.frequency.value = 3400;
-    const wet = audioCtx.createGain();
-    wet.gain.value = 0.30;
+      const conv = audioCtx.createConvolver();
+      conv.buffer = makeImpulse(1.7, 2.6);
+      const wetLP = audioCtx.createBiquadFilter();
+      wetLP.type = 'lowpass';
+      wetLP.frequency.value = 3400;
+      const wet = audioCtx.createGain();
+      wet.gain.value = 0.30;
 
-    music.connect(dry);
-    sfx.connect(dry);
-    dry.connect(comp);
-    dry.connect(conv);
-    conv.connect(wetLP).connect(wet).connect(comp);
-    comp.connect(master).connect(audioCtx.destination);
+      music.connect(dry);
+      sfx.connect(dry);
+      dry.connect(comp);
+      dry.connect(conv);
+      conv.connect(wetLP).connect(wet).connect(comp);
+      comp.connect(master).connect(audioCtx.destination);
 
-    bus = { music: music, sfx: sfx, master: master };
+      bus = { music: music, sfx: sfx, master: master };
+    } catch(e){ bus = null; }
     return bus;
   }
 
@@ -1195,8 +1201,9 @@ if ( is_readable( $bm_gsap_path ) ) {
     [5.430, 0.095, 0.16]
   ];
 
-  function vMusicBox(freq, when, beats, vel){
+  function vMusicBox(freq, when, beats, vel, dest){
     if(!bus) return;
+    const target = dest || bus.music;
     const dur = Math.max(0.9, beats * BEAT * 2.2);
     const v = (vel === undefined) ? 1 : vel;
     for(let i = 0; i < MB_PARTIALS.length; i++){
@@ -1214,7 +1221,7 @@ if ( is_readable( $bm_gsap_path ) ) {
       g.gain.setValueAtTime(0.0001, when);
       g.gain.exponentialRampToValueAtTime(peak, when + 0.004);
       g.gain.exponentialRampToValueAtTime(0.0001, when + dec);
-      osc.connect(g).connect(bus.music);
+      osc.connect(g).connect(target);
       osc.start(when);
       osc.stop(when + dec + 0.02);
     }
@@ -1316,6 +1323,10 @@ if ( is_readable( $bm_gsap_path ) ) {
   const MUSIC_LOOKAHEAD = 2.0;
   let musicTimer = null;
   let musicStarted = false;
+  // Whether the score has been ASKED for, which is not the same as whether it
+  // is currently running. Conflating the two let a muted, backgrounded page
+  // reach a state where unmuting could never restart the scheduler.
+  let musicWanted = false;
   let cycleStart = 0;
   let cycleIndex = 0;
   let eventPtr = 0;
@@ -1343,11 +1354,17 @@ if ( is_readable( $bm_gsap_path ) ) {
   }
 
   function startBackgroundMusic(){
-    if(musicStarted || !audioCtx) return;
+    musicWanted = true;
+    if(!audioCtx) return;
+    // A muted page must genuinely cost nothing. Building the bus here would
+    // spin up the convolver and run the whole synth into a zero gain, which is
+    // exactly what a visitor arriving with sound already off used to get.
+    if(!soundOn) return;
+    // The interval is the single source of truth for "is it running".
+    if(musicTimer) return;
     if(!ensureBus()) return;
     musicStarted = true;
     cycleStart = audioCtx.currentTime + 0.15;
-    cycleIndex = 0;
     eventPtr = 0;
     musicTick();
     musicTimer = setInterval(musicTick, 500);
@@ -1365,9 +1382,21 @@ if ( is_readable( $bm_gsap_path ) ) {
     try { localStorage.setItem('bm_sound_off', soundOn ? '0' : '1'); } catch(e){}
     updateSoundIcon();
     if(!audioCtx) return;
-    if(bus) bus.master.gain.setTargetAtTime(soundOn ? 1 : 0, audioCtx.currentTime, 0.2);
+    // The toggle is a genuine user gesture, which is what iOS wants to see
+    // before it will resume a context an interruption left suspended.
+    if(soundOn) initAudio();
+    if(bus){
+      const g = bus.master.gain;
+      const t = audioCtx.currentTime;
+      // Mute has to read as instant. setTargetAtTime with a 0.2 time constant
+      // stayed audible for roughly half a second; 30ms still declicks a summed
+      // oscillator stack but nobody hears it as a fade.
+      g.cancelScheduledValues(t);
+      g.setValueAtTime(g.value, t);
+      g.linearRampToValueAtTime(soundOn ? 1 : 0, t + 0.03);
+    }
     if(soundOn){
-      if(!musicStarted) startBackgroundMusic();
+      if(musicWanted) startBackgroundMusic();
     } else {
       stopBackgroundMusic();
     }
@@ -1376,12 +1405,14 @@ if ( is_readable( $bm_gsap_path ) ) {
   // Nothing should keep scheduling for a page nobody is looking at.
   document.addEventListener('visibilitychange', function(){
     if(document.hidden){
-      if(musicTimer){ clearInterval(musicTimer); musicTimer = null; }
-    } else if(soundOn && musicStarted && audioCtx && !musicTimer){
-      cycleStart = audioCtx.currentTime + 0.15;
-      eventPtr = 0;
-      musicTick();
-      musicTimer = setInterval(musicTick, 500);
+      // Clear both pieces of state together — leaving musicStarted claiming a
+      // live scheduler is what stranded the page before.
+      stopBackgroundMusic();
+    } else if(musicWanted && soundOn && audioCtx){
+      // A call, a lock or an app switch can leave the context suspended, and
+      // nothing else on the page would ever resume it.
+      initAudio();
+      startBackgroundMusic();
     }
   });
 
@@ -1404,7 +1435,8 @@ if ( is_readable( $bm_gsap_path ) ) {
 
   // Filtered noise — the basis of every percussive, airy or impact sound here.
   function noiseBurst(when, dur, freq, q, vol, type){
-    if(!soundOn || !audioCtx || !bus) return;
+    if(!soundOn || !audioCtx) return;
+    if(!ensureBus()) return;
     const len = Math.max(1, Math.floor(dur * audioCtx.sampleRate));
     const buf = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
     const d = buf.getChannelData(0);
@@ -1428,7 +1460,7 @@ if ( is_readable( $bm_gsap_path ) ) {
 
   function playPop(){
     if(!soundOn || !audioCtx) return;
-    ensureBus();
+    const b = ensureBus(); if(!b) return;
     const t = audioCtx.currentTime;
     // A balloon pop is a click plus a short body, not a beep.
     noiseBurst(t, 0.06, 1800, 1.2, 0.34, 'bandpass');
@@ -1439,16 +1471,16 @@ if ( is_readable( $bm_gsap_path ) ) {
     osc.frequency.exponentialRampToValueAtTime(180, t + 0.14);
     g.gain.setValueAtTime(0.22, t);
     g.gain.exponentialRampToValueAtTime(0.0001, t + 0.16);
-    osc.connect(g).connect(bus.sfx);
+    osc.connect(g).connect(b.sfx);
     osc.start(t); osc.stop(t + 0.18);
   }
 
   function playChime(){
     if(!soundOn || !audioCtx) return;
-    ensureBus();
+    const b = ensureBus(); if(!b) return;
     const t = audioCtx.currentTime;
     [523.25, 659.25, 783.99, 1046.50].forEach(function(f, i){
-      vMusicBox(f, t + i * 0.075, 1.1, 0.55);
+      vMusicBox(f, t + i * 0.075, 1.1, 0.55, b.sfx);
     });
   }
 
@@ -1457,7 +1489,7 @@ if ( is_readable( $bm_gsap_path ) ) {
      headline at 2.06 and opens the bloom at 3.42, running 4.00 in total. */
   function playFilmSfx(name){
     if(!soundOn || !audioCtx) return;
-    ensureBus();
+    const b = ensureBus(); if(!b) return;
     const t = audioCtx.currentTime;
     if(name === 'draw'){
       noiseBurst(t, 0.18, 320, 0.8, 0.10, 'bandpass');
@@ -1474,16 +1506,16 @@ if ( is_readable( $bm_gsap_path ) ) {
       g.gain.setValueAtTime(0.0001, t);
       g.gain.exponentialRampToValueAtTime(0.30, t + 0.06);
       g.gain.exponentialRampToValueAtTime(0.0001, t + 0.8);
-      osc.connect(g).connect(bus.sfx);
+      osc.connect(g).connect(b.sfx);
       osc.start(t); osc.stop(t + 0.85);
       noiseBurst(t, 0.55, 700, 0.5, 0.16, 'lowpass');
     } else if(name === 'headline'){
       [523.25, 659.25, 783.99, 1318.51].forEach(function(f, i){
-        vMusicBox(f, t + i * 0.045, 1.6, 0.7);
+        vMusicBox(f, t + i * 0.045, 1.6, 0.7, b.sfx);
       });
     } else if(name === 'bloom'){
       [659.25, 783.99, 1046.50, 1318.51, 1567.98].forEach(function(f, i){
-        vMusicBox(f, t + i * 0.09, 1.2, 0.42);
+        vMusicBox(f, t + i * 0.09, 1.2, 0.42, b.sfx);
       });
       noiseBurst(t, 0.9, 5200, 0.6, 0.07, 'highpass');
     }
@@ -4054,18 +4086,26 @@ var createCupidFilm = (function () {
     const archery = document.getElementById('om-bday-film-archery');
     if(archery && !archery.dataset.bmSfx){
       archery.dataset.bmSfx = '1';
-      archery.addEventListener('pointerdown', function(){ initAudio(); playFilmSfx('draw'); });
+      archery.addEventListener('pointerdown', function(){
+        // Once the arrow is away, a tap would play the draw sound over the film.
+        if(bmFilm && typeof bmFilm.timeline === 'function' && bmFilm.timeline()) return;
+        initAudio();
+        playFilmSfx('draw');
+      });
     }
     bmFilmSfxStop();
     let waited = 0;
+    let released = false;
     bmFilmSfxTimer = setInterval(function(){
       // Give up rather than poll forever if the film never fires.
       if((waited += 60) > 120000){ bmFilmSfxStop(); return; }
       if(!bmFilm || typeof bmFilm.timeline !== 'function') return;
       const tl = bmFilm.timeline();
-      if(!tl) return;
-      bmFilmSfxStop();
-      playFilmSfx('release');
+      // Keep watching after the first arm: a resize rebuilds the fire timeline,
+      // and the replacement would otherwise carry none of these callbacks.
+      if(!tl || tl._bmSfxArmed) return;
+      tl._bmSfxArmed = true;
+      if(!released){ released = true; playFilmSfx('release'); }
       tl.call(function(){ playFilmSfx('ignite'); },   null, 1.00);
       tl.call(function(){ playFilmSfx('headline'); }, null, 2.06);
       tl.call(function(){ playFilmSfx('bloom'); },    null, 3.42);
@@ -4090,6 +4130,7 @@ var createCupidFilm = (function () {
     try {
       bmFilm = createCupidFilm(wrap, {
         onComplete: function(){
+          bmFilmSfxStop();
           if(wrap) wrap.classList.remove('film-playing');
           startTree();
         }
