@@ -1062,110 +1062,431 @@ if ( is_readable( $bm_gsap_path ) ) {
   const MAX_PHOTOS = 5;
   const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
 
-  // Synthesized with the Web Audio API rather than shipped audio files —
-  // the plugin has no audio assets, and a couple of tasteful oscillator
-  // tones cover the preview's interaction sounds without adding binary
-  // asset management or licensing questions. Mirrors templates/birthday.php.
+  // Synthesized with the Web Audio API rather than shipped audio files — the
+  // plugin ships no audio binaries at all, so there is nothing to license,
+  // host or cache-bust. Everything below is built from oscillators plus one
+  // procedurally generated reverb impulse.
+  //
+  // The melody is "Happy Birthday to You", which entered the public domain
+  // with Marya v. Warner/Chappell (2016).
   let audioCtx = null;
   let soundOn = true;
   try { soundOn = localStorage.getItem('bm_sound_off') !== '1'; } catch(e){}
 
   function updateSoundIcon(){
-    document.getElementById('soundToggle').textContent = soundOn ? '🔊' : '🔇';
+    const el = document.getElementById('soundToggle');
+    if(el) el.textContent = soundOn ? '🔊' : '🔇';
   }
   updateSoundIcon();
-
-  function toggleSound(){
-    soundOn = !soundOn;
-    try { localStorage.setItem('bm_sound_off', soundOn ? '0' : '1'); } catch(e){}
-    updateSoundIcon();
-    if(musicGain) musicGain.gain.setTargetAtTime(soundOn ? MUSIC_VOLUME : 0, audioCtx.currentTime, .3);
-  }
 
   function initAudio(){
     if(!audioCtx){
       try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){}
     }
-    // Safari/iOS in particular can leave a freshly-created context
-    // 'suspended' even inside a click handler — resume() is safe to call
-    // unconditionally and is a no-op once the context is already running.
+    // Safari/iOS in particular can leave a freshly-created context 'suspended'
+    // even inside a click handler — resume() is safe to call unconditionally
+    // and is a no-op once the context is already running.
     if(audioCtx && audioCtx.state === 'suspended'){
       audioCtx.resume().catch(() => {});
     }
   }
 
-  function playTone(freq, duration, type, vol){
-    if(!soundOn || !audioCtx) return;
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = type;
-    osc.frequency.value = freq;
-    gain.gain.setValueAtTime(vol, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-    osc.connect(gain).connect(audioCtx.destination);
-    osc.start();
-    osc.stop(audioCtx.currentTime + duration);
+  /* ---------------------------------------------------------------- the bus
+     One shared chain: everything lands on a compressor (oscillator stacks add
+     up fast and would otherwise clip on a phone) and a master gain that mute
+     rides. A convolver fed by a procedural impulse supplies the room. */
+  const MUSIC_VOLUME = 0.45;
+  let bus = null;
+
+  function makeImpulse(seconds, decay){
+    const rate = audioCtx.sampleRate;
+    const len = Math.max(1, Math.floor(seconds * rate));
+    const buf = audioCtx.createBuffer(2, len, rate);
+    for(let c = 0; c < 2; c++){
+      const d = buf.getChannelData(c);
+      for(let i = 0; i < len; i++){
+        let n = Math.sin(i * (c ? 12.9898 : 78.233)) * 43758.5453;
+        n = (n - Math.floor(n)) * 2 - 1;
+        d[i] = n * Math.pow(1 - i / len, decay);
+      }
+    }
+    return buf;
   }
 
-  function playPop(){
-    playTone(600, .15, 'triangle', .2);
-    setTimeout(() => playTone(900, .1, 'triangle', .15), 40);
+  function ensureBus(){
+    if(bus || !audioCtx) return bus;
+    const master = audioCtx.createGain();
+    master.gain.value = soundOn ? 1 : 0;
+
+    const comp = audioCtx.createDynamicsCompressor();
+    comp.threshold.value = -18;
+    comp.knee.value = 24;
+    comp.ratio.value = 3;
+    comp.attack.value = 0.006;
+    comp.release.value = 0.25;
+
+    const dry = audioCtx.createGain();
+    const music = audioCtx.createGain();
+    music.gain.value = MUSIC_VOLUME;
+    const sfx = audioCtx.createGain();
+    sfx.gain.value = 0.9;
+
+    const conv = audioCtx.createConvolver();
+    conv.buffer = makeImpulse(1.7, 2.6);
+    const wetLP = audioCtx.createBiquadFilter();
+    wetLP.type = 'lowpass';
+    wetLP.frequency.value = 3400;
+    const wet = audioCtx.createGain();
+    wet.gain.value = 0.30;
+
+    music.connect(dry);
+    sfx.connect(dry);
+    dry.connect(comp);
+    dry.connect(conv);
+    conv.connect(wetLP).connect(wet).connect(comp);
+    comp.connect(master).connect(audioCtx.destination);
+
+    bus = { music: music, sfx: sfx, master: master };
+    return bus;
   }
 
-  function playChime(){
-    [523, 659, 784].forEach((f, i) => setTimeout(() => playTone(f, .4, 'sine', .12), i * 90));
-  }
+  /* -------------------------------------------------------------- the score */
+  const BEAT = 0.46;
+  const LOOP_BEATS = 25;
+  const TAIL_BEATS = 2;
+  const CYCLE_BEATS = LOOP_BEATS + TAIL_BEATS;
 
-  // A soft music-box rendition of "Happy Birthday" looping under the whole
-  // preview — actual melody notes rather than an abstract ambient pad,
-  // since generic drone tones didn't read as "birthday music" at all.
-  // Runs independently of step navigation so it keeps looping across every
-  // screen once the creator reaches the preview, until sound is muted.
-  const MUSIC_VOLUME = 0.09;
-  const BEAT_SEC = 0.42;
   const HAPPY_BIRTHDAY_MELODY = [
     [392.00,0.5],[392.00,0.5],[440.00,1],[392.00,1],[523.25,1],[493.88,2],
     [392.00,0.5],[392.00,0.5],[440.00,1],[392.00,1],[587.33,1],[523.25,2],
     [392.00,0.5],[392.00,0.5],[783.99,1],[659.25,1],[523.25,1],[493.88,1],[440.00,2],
-    [698.46,0.5],[698.46,0.5],[659.25,1],[523.25,1],[587.33,1],[523.25,2],
+    [698.46,0.5],[698.46,0.5],[659.25,1],[523.25,1],[587.33,1],[523.25,2]
   ];
-  let musicGain = null;
-  let musicStarted = false;
 
-  function scheduleMelodyNote(freq, startTime, beats){
-    if(!audioCtx || !musicGain) return;
-    const dur = beats * BEAT_SEC;
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = 'triangle';
-    osc.frequency.value = freq;
-    gain.gain.setValueAtTime(0, startTime);
-    gain.gain.linearRampToValueAtTime(1, startTime + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.0001, startTime + dur * 0.9);
-    osc.connect(gain).connect(musicGain);
-    osc.start(startTime);
-    osc.stop(startTime + dur);
+  const MELODY_NOTES = (function(){
+    const out = []; let t = 0;
+    HAPPY_BIRTHDAY_MELODY.forEach(function(n){ out.push({f:n[0], b:n[1], at:t}); t += n[1]; });
+    return out;
+  })();
+
+  // C major. The root of each chord belongs to the bass voice, not the pad.
+  const CHORD_TONES = {
+    C:  [130.81, 261.63, 329.63, 392.00],
+    G7: [ 98.00, 246.94, 293.66, 349.23],
+    F:  [174.61, 261.63, 349.23, 440.00]
+  };
+  const CHORD_PLAN = [
+    [0,4,'C'], [4,2,'G7'],
+    [6,3,'C'], [9,1,'G7'], [10,2,'C'],
+    [12,4,'C'], [16,3,'G7'],
+    [19,2,'F'], [21,1,'C'], [22,1,'G7'], [23,2,'C']
+  ];
+  const SPARKLE_SCALE = [1046.50, 1174.66, 1318.51, 1567.98, 1760.00];
+
+  /* ------------------------------------------------------------------ voices
+     A music box is a struck metal tine: fast attack, long exponential decay,
+     and an inharmonic upper partial that dies far sooner than the fundamental.
+     A bare triangle oscillator has none of that, which is why a single-osc
+     melody reads as a ringtone rather than a gift. */
+  const MB_PARTIALS = [
+    [1.000, 0.62, 1.00],
+    [2.004, 0.26, 0.62],
+    [3.011, 0.10, 0.38],
+    [5.430, 0.095, 0.16]
+  ];
+
+  function vMusicBox(freq, when, beats, vel){
+    if(!bus) return;
+    const dur = Math.max(0.9, beats * BEAT * 2.2);
+    const v = (vel === undefined) ? 1 : vel;
+    for(let i = 0; i < MB_PARTIALS.length; i++){
+      const p = MB_PARTIALS[i];
+      const f = freq * p[0];
+      if(f > 17000) continue;
+      const osc = audioCtx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.value = f;
+      osc.detune.value = (i % 2 ? 1 : -1) * (2 + i);
+      const g = audioCtx.createGain();
+      const peak = Math.max(0.0002, p[1] * v * 0.5);
+      const dec = dur * p[2];
+      // Never ramp exponentially to 0 — it is a no-op and leaves the gain stuck.
+      g.gain.setValueAtTime(0.0001, when);
+      g.gain.exponentialRampToValueAtTime(peak, when + 0.004);
+      g.gain.exponentialRampToValueAtTime(0.0001, when + dec);
+      osc.connect(g).connect(bus.music);
+      osc.start(when);
+      osc.stop(when + dec + 0.02);
+    }
   }
 
-  function playMelodyLoop(){
-    if(!audioCtx) return;
-    let t = audioCtx.currentTime + 0.1;
-    let totalBeats = 0;
-    HAPPY_BIRTHDAY_MELODY.forEach(([freq, beats]) => {
-      scheduleMelodyNote(freq, t, beats);
-      t += beats * BEAT_SEC;
-      totalBeats += beats;
+  const PAD_DETUNE = [-8, 8];
+
+  function vPad(freqs, when, beats){
+    if(!bus) return;
+    const dur = beats * BEAT;
+    const out = audioCtx.createGain();
+    out.gain.setValueAtTime(0.0001, when);
+    out.gain.exponentialRampToValueAtTime(0.055, when + 0.35);
+    out.gain.setValueAtTime(0.055, when + Math.max(0.4, dur - 0.35));
+    out.gain.exponentialRampToValueAtTime(0.0001, when + dur + 0.30);
+
+    const lp = audioCtx.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.setValueAtTime(520, when);
+    lp.frequency.linearRampToValueAtTime(1500, when + dur * 0.6);
+    lp.frequency.linearRampToValueAtTime(900, when + dur + 0.3);
+    lp.Q.value = 0.6;
+    lp.connect(out);
+    out.connect(bus.music);
+
+    for(let i = 1; i < freqs.length; i++){
+      for(let d = 0; d < PAD_DETUNE.length; d++){
+        const osc = audioCtx.createOscillator();
+        osc.type = 'sawtooth';
+        osc.frequency.value = freqs[i];
+        osc.detune.value = PAD_DETUNE[d];
+        const g = audioCtx.createGain();
+        g.gain.value = 0.42;
+        osc.connect(g).connect(lp);
+        osc.start(when);
+        osc.stop(when + dur + 0.35);
+      }
+    }
+  }
+
+  function vBass(freq, when, beats){
+    if(!bus) return;
+    const dur = beats * BEAT;
+    const lp = audioCtx.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.value = 320;
+    const g = audioCtx.createGain();
+    g.gain.setValueAtTime(0.0001, when);
+    g.gain.exponentialRampToValueAtTime(0.10, when + 0.05);
+    g.gain.exponentialRampToValueAtTime(0.0001, when + dur * 0.95);
+    const a = audioCtx.createOscillator();
+    a.type = 'sine';
+    a.frequency.value = freq / 2;
+    const b = audioCtx.createOscillator();
+    b.type = 'triangle';
+    b.frequency.value = freq / 2;
+    const bg = audioCtx.createGain();
+    bg.gain.value = 0.18;
+    a.connect(lp);
+    b.connect(bg).connect(lp);
+    lp.connect(g).connect(bus.music);
+    a.start(when); a.stop(when + dur + 0.05);
+    b.start(when); b.stop(when + dur + 0.05);
+  }
+
+  /* --------------------------------------------------------------- scheduler
+     A lookahead scheduler rather than a setTimeout per note: setTimeout drifts
+     and, worse, keeps firing while the tab is backgrounded, which used to pile
+     up notes and dump them all at once on return. Events are laid out in beats
+     and only committed to the clock a couple of seconds ahead. */
+  const MUSIC_EVENTS = (function(){
+    const ev = [];
+    MELODY_NOTES.forEach(function(n){
+      const vel = n.b >= 2 ? 1.0 : 0.82;
+      ev.push({at:n.at, run:function(w){ vMusicBox(n.f, w, n.b, vel); }});
+      // Octave doubling on held notes adds body without extra note density.
+      if(n.b >= 2) ev.push({at:n.at, run:function(w){ vMusicBox(n.f * 2, w, n.b, 0.16); }});
     });
-    setTimeout(playMelodyLoop, (totalBeats * BEAT_SEC + 1.6) * 1000);
+    CHORD_PLAN.forEach(function(c){
+      const freqs = CHORD_TONES[c[2]];
+      ev.push({at:c[0], run:function(w){ vPad(freqs, w, c[1]); vBass(freqs[0], w, c[1]); }});
+    });
+    // The pad carries through the seam so cycles join without a hole.
+    ev.push({at:LOOP_BEATS, run:function(w){
+      vPad(CHORD_TONES.C, w, TAIL_BEATS + 0.5);
+      vBass(CHORD_TONES.C[0], w, TAIL_BEATS + 0.5);
+    }});
+    // A different sparkle each cycle, so leaving the page open does not become
+    // a literal repeat.
+    ev.push({at:LOOP_BEATS, run:function(w, cycle){
+      const n = 3 + (cycle % 3);
+      for(let i = 0; i < n; i++){
+        vMusicBox(SPARKLE_SCALE[(i * 2 + cycle) % SPARKLE_SCALE.length], w + i * BEAT * 0.75, 0.4, 0.18);
+      }
+    }});
+    return ev.sort(function(a, b){ return a.at - b.at; });
+  })();
+
+  const MUSIC_LOOKAHEAD = 2.0;
+  let musicTimer = null;
+  let musicStarted = false;
+  let cycleStart = 0;
+  let cycleIndex = 0;
+  let eventPtr = 0;
+
+  function musicTick(){
+    if(!audioCtx || !bus) return;
+    const horizon = audioCtx.currentTime + MUSIC_LOOKAHEAD;
+    // Bounded so a long background pause can never spin here.
+    let guard = 0;
+    while(guard++ < 400){
+      if(eventPtr >= MUSIC_EVENTS.length){
+        cycleStart += CYCLE_BEATS * BEAT;
+        cycleIndex++;
+        eventPtr = 0;
+      }
+      const ev = MUSIC_EVENTS[eventPtr];
+      const when = cycleStart + ev.at * BEAT;
+      if(when > horizon) break;
+      // A tab that was hidden for minutes must not dump its backlog at once.
+      if(when >= audioCtx.currentTime - 0.05){
+        try { ev.run(when, cycleIndex); } catch(e){}
+      }
+      eventPtr++;
+    }
   }
 
   function startBackgroundMusic(){
     if(musicStarted || !audioCtx) return;
+    if(!ensureBus()) return;
     musicStarted = true;
-    musicGain = audioCtx.createGain();
-    musicGain.gain.value = soundOn ? MUSIC_VOLUME : 0;
-    musicGain.connect(audioCtx.destination);
-    playMelodyLoop();
+    cycleStart = audioCtx.currentTime + 0.15;
+    cycleIndex = 0;
+    eventPtr = 0;
+    musicTick();
+    musicTimer = setInterval(musicTick, 500);
+  }
+
+  function stopBackgroundMusic(){
+    if(musicTimer){ clearInterval(musicTimer); musicTimer = null; }
+    musicStarted = false;
+  }
+
+  // Muting stops the scheduler outright rather than just pulling the fader, so
+  // a muted page costs nothing. Unmuting restarts the cycle from the clock.
+  function toggleSound(){
+    soundOn = !soundOn;
+    try { localStorage.setItem('bm_sound_off', soundOn ? '0' : '1'); } catch(e){}
+    updateSoundIcon();
+    if(!audioCtx) return;
+    if(bus) bus.master.gain.setTargetAtTime(soundOn ? 1 : 0, audioCtx.currentTime, 0.2);
+    if(soundOn){
+      if(!musicStarted) startBackgroundMusic();
+    } else {
+      stopBackgroundMusic();
+    }
+  }
+
+  // Nothing should keep scheduling for a page nobody is looking at.
+  document.addEventListener('visibilitychange', function(){
+    if(document.hidden){
+      if(musicTimer){ clearInterval(musicTimer); musicTimer = null; }
+    } else if(soundOn && musicStarted && audioCtx && !musicTimer){
+      cycleStart = audioCtx.currentTime + 0.15;
+      eventPtr = 0;
+      musicTick();
+      musicTimer = setInterval(musicTick, 500);
+    }
+  });
+
+  /* -------------------------------------------------------------------- sfx */
+
+  // Kept for the callers that predate the bus (boomSfx among them).
+  function playTone(freq, duration, type, vol){
+    if(!soundOn || !audioCtx) return;
+    ensureBus();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(Math.max(0.0002, vol), audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+    osc.connect(gain).connect(bus ? bus.sfx : audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+  }
+
+  // Filtered noise — the basis of every percussive, airy or impact sound here.
+  function noiseBurst(when, dur, freq, q, vol, type){
+    if(!soundOn || !audioCtx || !bus) return;
+    const len = Math.max(1, Math.floor(dur * audioCtx.sampleRate));
+    const buf = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
+    const d = buf.getChannelData(0);
+    for(let i = 0; i < len; i++){
+      let n = Math.sin(i * 91.7351) * 43758.5453;
+      d[i] = ((n - Math.floor(n)) * 2 - 1) * (1 - i / len);
+    }
+    const src = audioCtx.createBufferSource();
+    src.buffer = buf;
+    const f = audioCtx.createBiquadFilter();
+    f.type = type || 'bandpass';
+    f.frequency.value = freq;
+    f.Q.value = q;
+    const g = audioCtx.createGain();
+    g.gain.setValueAtTime(Math.max(0.0002, vol), when);
+    g.gain.exponentialRampToValueAtTime(0.0001, when + dur);
+    src.connect(f).connect(g).connect(bus.sfx);
+    src.start(when);
+    src.stop(when + dur + 0.02);
+  }
+
+  function playPop(){
+    if(!soundOn || !audioCtx) return;
+    ensureBus();
+    const t = audioCtx.currentTime;
+    // A balloon pop is a click plus a short body, not a beep.
+    noiseBurst(t, 0.06, 1800, 1.2, 0.34, 'bandpass');
+    const osc = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(760, t);
+    osc.frequency.exponentialRampToValueAtTime(180, t + 0.14);
+    g.gain.setValueAtTime(0.22, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.16);
+    osc.connect(g).connect(bus.sfx);
+    osc.start(t); osc.stop(t + 0.18);
+  }
+
+  function playChime(){
+    if(!soundOn || !audioCtx) return;
+    ensureBus();
+    const t = audioCtx.currentTime;
+    [523.25, 659.25, 783.99, 1046.50].forEach(function(f, i){
+      vMusicBox(f, t + i * 0.075, 1.1, 0.55);
+    });
+  }
+
+  /* The cupid film's beats. Times are seconds from the arrow's release and
+     match the fire timeline exactly: it ignites the flood at 1.00, lands the
+     headline at 2.06 and opens the bloom at 3.42, running 4.00 in total. */
+  function playFilmSfx(name){
+    if(!soundOn || !audioCtx) return;
+    ensureBus();
+    const t = audioCtx.currentTime;
+    if(name === 'draw'){
+      noiseBurst(t, 0.18, 320, 0.8, 0.10, 'bandpass');
+    } else if(name === 'release'){
+      // bowstring snap, then the arrow leaving
+      noiseBurst(t, 0.09, 2600, 1.6, 0.30, 'bandpass');
+      noiseBurst(t + 0.03, 0.26, 900, 0.7, 0.16, 'highpass');
+    } else if(name === 'ignite'){
+      const osc = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(110, t);
+      osc.frequency.exponentialRampToValueAtTime(55, t + 0.7);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.30, t + 0.06);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.8);
+      osc.connect(g).connect(bus.sfx);
+      osc.start(t); osc.stop(t + 0.85);
+      noiseBurst(t, 0.55, 700, 0.5, 0.16, 'lowpass');
+    } else if(name === 'headline'){
+      [523.25, 659.25, 783.99, 1318.51].forEach(function(f, i){
+        vMusicBox(f, t + i * 0.045, 1.6, 0.7);
+      });
+    } else if(name === 'bloom'){
+      [659.25, 783.99, 1046.50, 1318.51, 1567.98].forEach(function(f, i){
+        vMusicBox(f, t + i * 0.09, 1.2, 0.42);
+      });
+      noiseBurst(t, 0.9, 5200, 0.6, 0.07, 'highpass');
+    }
   }
 
   // Silently creates or updates the draft on the server as the wizard
@@ -3718,6 +4039,39 @@ var createCupidFilm = (function () {
     bmTree.start();
   }
 
+// The film engine is reference code we keep re-syncable, so its sound is
+  // hooked from outside rather than edited in. The fire timeline only exists
+  // once the arrow is released, so watch briefly for it and hang the beats off
+  // it — GSAP fires them as the playhead crosses, which keeps them in sync even
+  // when a resize rebuilds the timeline.
+  let bmFilmSfxTimer = null;
+
+  function bmFilmSfxStop(){
+    if(bmFilmSfxTimer){ clearInterval(bmFilmSfxTimer); bmFilmSfxTimer = null; }
+  }
+
+  function bmFilmSfxWatch(){
+    const archery = document.getElementById('om-bday-film-archery');
+    if(archery && !archery.dataset.bmSfx){
+      archery.dataset.bmSfx = '1';
+      archery.addEventListener('pointerdown', function(){ initAudio(); playFilmSfx('draw'); });
+    }
+    bmFilmSfxStop();
+    let waited = 0;
+    bmFilmSfxTimer = setInterval(function(){
+      // Give up rather than poll forever if the film never fires.
+      if((waited += 60) > 120000){ bmFilmSfxStop(); return; }
+      if(!bmFilm || typeof bmFilm.timeline !== 'function') return;
+      const tl = bmFilm.timeline();
+      if(!tl) return;
+      bmFilmSfxStop();
+      playFilmSfx('release');
+      tl.call(function(){ playFilmSfx('ignite'); },   null, 1.00);
+      tl.call(function(){ playFilmSfx('headline'); }, null, 2.06);
+      tl.call(function(){ playFilmSfx('bloom'); },    null, 3.42);
+    }, 60);
+  }
+
   // The film is an enhancement over the tree, never a gate in front of it:
   // if GSAP fails to load or motion is reduced, the tree simply starts and
   // the scene still works. The reference is built the same way.
@@ -3741,8 +4095,10 @@ var createCupidFilm = (function () {
         }
       });
       if(bmFilm.start() === false) throw new Error('film declined to start');
+      bmFilmSfxWatch();
     } catch(e){
       // Any failure degrades to a working card rather than a dead screen.
+      bmFilmSfxStop();
       if(wrap) wrap.classList.remove('film-playing');
       if(hero) hero.style.display = 'none';
       bmFilm = null;
@@ -3795,6 +4151,7 @@ var createCupidFilm = (function () {
     else {
       if(bmTree) bmTree.stop();
       if(bmFilm && bmFilm.stop) bmFilm.stop();
+      bmFilmSfxStop();
     }
     if(n === 'balloons') renderPopBalloons();
     if(n === 'photos') renderFairyPhotos();
